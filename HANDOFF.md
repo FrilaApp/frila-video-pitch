@@ -22,7 +22,7 @@
 | # | Critério |
 |---|---|
 | 1 | MP4 1920×1080, 60 fps, H.264, áudio AAC 256 kbit/s 48 kHz estéreo, idioma `por`, comentário "Narração com voz sintética (IA)" |
-| 2 | Duração entre **95 e 105 s** (meta ~100 s), terminando no fim de um compasso da trilha |
+| 2 | Duração **~80 s** (alvo 78–90 s; texto enxuto aprovado em 26/10/2026), terminando no fim de um compasso da trilha |
 | 3 | Texto na tela = campo `legenda` do `roteiro.json`; `.srt` com o mesmo texto e tempos |
 | 4 | Todas as frases passam na conferência (`vozes/eleven.py conferir`) **ou** têm exceção registrada aprovada de ouvido pelo Fabrício |
 | 5 | Nenhuma palavra cortada no MP4 final (conferir o áudio final com o Scribe, com ~250 ms de contexto em cada lado) |
@@ -48,7 +48,7 @@
 | D1 em v06, v07 e v09 (T7) | **Implementado e aprovado** (Fabrício, 26/10/2026): escala 1,10 após medir invasão da faixa em 1,20 | `DESIGN.md` §19 e capturas em `motor/cache/qa-v5/` |
 | Render, mix, QA, entrega | **Não** | — |
 
-**Decididas pelo Fabrício em 26/10/2026:** texto final aprovado; nota "Frila em teste no iPhone" mantida; histórico de profissional novo fora do vídeo; assinatura "Turno combinado, regra clara" mantida; metas do piloto em público com a tag "hipótese a calibrar".
+**Decididas pelo Fabrício em 26/10/2026 (tarde): texto enxuto de 13 cenas (sem o teaser v08), ~80 s; a v4 (nota 8/10) é a base visual; produção por blocos (`PLAYBOOK.md`). O fluxo T4–T12 desta página é o antigo; vale o PLAYBOOK.** Antes: texto final aprovado; nota "Frila em teste no iPhone" mantida; histórico de profissional novo fora do vídeo; assinatura "Turno combinado, regra clara" mantida; metas do piloto em público com a tag "hipótese a calibrar".
 
 **Pendente** (o vídeo não pode ir para anúncio pago sem ela):
 1. **Licença do ElevenLabs:** presume-se que o plano usado permita uso comercial, **mas isso não foi conferido** na página de preços. Confirmar antes de usar em anúncio pago.
