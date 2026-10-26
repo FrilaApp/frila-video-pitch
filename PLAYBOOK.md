@@ -59,7 +59,9 @@ Cada papel trabalha no seu worktree e commita no seu branch, sem push. O Maestro
 
 **D6. Todo texto visível vem de fonte conhecida.** Cada string na tela ou em proposta tem de estar no `roteiro.json` (`legenda` ou `tela`) ou ser texto de uma tela real do app (`docs/v4/`). Texto novo, mesmo em estudo, exige aprovação prévia do Fabrício. Proposta com texto inventado é reprovada.
 
-**D7. O aparelho é um objeto contínuo.** O celular atravessa os cortes como o mesmo objeto (como na v4); apagar o aparelho e reacendê-lo num corte (o "mergulho no vazio" da v5 em ~42,5 s) é defeito bloqueante. Close-up da tela só no momento da ação principal, com zoom contínuo, nunca como troca seca de enquadramento.
+**D7. O aparelho é um objeto contínuo.** O celular atravessa os cortes como o mesmo objeto (como na v4); apagar o aparelho e reacendê-lo num corte (o "mergulho no vazio" da v5 em ~42,5 s) é defeito bloqueante. Aproximação é **movimento de câmera sobre o conjunto**: escala geral uniforme do mockup, aparelho e UI juntos (moldura incluída), com parallax entre planos. **É proibido ampliar ou rolar o conteúdo dentro do aparelho** como se fosse um zoom (a moldura nunca fica parada enquanto a tela cresce) e nunca há troca seca de enquadramento.
+
+**D8. Sem cursor.** Nenhuma cena usa ponteiro de mouse ou cursor para demonstrar uma ação. A demonstração é a **mudança de estado da própria UI** (campo preenchido, botão pressionado, item selecionado, destaque do passo), sem elemento de interface que o app não tenha.
 
 ## 5b. Gates: bloqueia, informa, aprova
 Detector automático só **bloqueia** quando a regra é objetiva e calibrada (margens, vazamento de chave, texto fora da lista). Caso contrário **informa** (pista ordenada). Toda ferramenta declara a recall contra casos conhecidos; sem calibração só informa. **Aprovar** é do olhar e da escuta do Fabrício.
