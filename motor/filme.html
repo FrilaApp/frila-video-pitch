@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8">
-<title>Frila · motor v4</title>
-<!-- Motor v4: cada quadro é calculado por seek(t). Nada depende do relógio do navegador.
+<title>Frila · motor v5</title>
+<!-- Motor v5: cada quadro é calculado por seek(t). Nada depende do relógio do navegador.
      Molas em forma fechada (sem bounce), um único ponto laranja que atravessa o filme, cursor que clica de verdade.
      O render.py chama window.boot(tempos, idioma) e depois window.seek(t) a 240 quadros por segundo. -->
 <style>
@@ -106,46 +106,30 @@ function mkSlot(el,txt,voltas=1){
   return {set(t,a,stg=.09){ it.forEach((k,i)=>{ const u=spr(t-a-i*stg,'count'); k.s.style.transform=`translateY(${(-k.n*u).toFixed(4)}em)`; }); }};
 }
 
-/* ---------- textos ---------- */
-const TX={
-pt:{c01:['Faltou gente','no turno de hoje'], pill:['Garçom · hoje, 19h','R$ 120'],
-  c02:['Gente perto.','Turno coberto.'],
-  c03k:'Rotatividade em bares e restaurantes · 12 meses', c03n:'##,##%', c03s:'cerca de 7 em cada 10', c03f:'Fonte: Abrasel, via Monitor Mercantil, 09/12/2025.',
-  c04a:' em 10', c04s:'dos empresários acham difícil contratar', c04f:'Fonte: Abrasel, 30/04/2025.',
-  c05:[['Contratante','precisa de gente hoje'],['Profissional','quer trabalhar hoje']], chip:'Garçom · hoje, 19h',
-  passos:'4 passos', steps:[['Contratante publica a vaga','função, horário, endereço, valor'],['Profissional recebe o aviso','até 15 km'],['Contratante escolhe quem vai','vê o histórico'],['Os dois lados conferem','check-in, sim ou não']],
-  form:{role:'Contratante',t:'Nova vaga',f1:'Função',ph:'Escolha a função',v1:'Garçom',f2:'Horário',v2:['19h às ','h'],f3:'Endereço',v3:'Plano Piloto',f4:'Valor',v4:'R$ 120',b:'Publicar',b2:'Vaga publicada'},
-  lock:{role:'Profissional',clock:'17:52',app:'FRILA · agora',t:'Garçom · hoje, 19h',b:'R$ 120 · a 2,4 km'},
-  cand:{role:'Contratante',t:'Candidatos',n1:'Bruno T.',d1:'Garçom · a 3 km',s1:'Compareceu a 18 de 20 turnos',s2:'10 de 12 chamariam de novo',b:'Escolher',b2:'Escolhido',n2:'Carla M.',d2:'sem histórico'},
-  chk:{role:'Os dois lados',t:'Check-in',ring:'200 m',ok:'Check-in feito',d:'a 45 m do local',av:'Avaliação',sim:'Sim',nao:'Não'},
-  mapa:{k1:'Aviso',v1:'até 15 km',d1:'no máximo 1 aviso a cada 30 min',k2:'Presença',v2:'200 m',d2:'check-in e check-out a até 200 m do local',r1:'15 km',r2:'200 m'},
-  c09:['Cadastro','não é turno.'], c09hi:1,
-  c10:{url:'estaff.com.br',k:'eStaff',n1:'1,5',l1:'milhão de cadastrados',n2:'533',l2:'mil disponíveis',f:'Números do site estaff.com.br, como a empresa os declara. Acesso em 22/10/2026.'},
-  c11:['Quem aparece,','não quem se cadastra.'],
-  c12k:'Antes de escolher',
-  c13:{h:'Em teste no iPhone',d1:'20/10/2026',l1:'Teste fechado no TestFlight',d2:'13/11/2026',l2:'Meta: App Store, versão 1.0'},
-  c14:{coin:'R$ 0',a:'Contratante',b:'Profissional',h:'Grátis no piloto'},
-  c16:{tag:'Turno combinado, regra clara.',rod:'Narração com voz sintética (IA). Frila em teste no iPhone.'}},
-en:{c01:['Short on staff','for today’s shift'], pill:['Waiter · today, 7 pm','R$ 120'],
-  c02:['People nearby.','Shift covered.'],
-  c03k:'Staff turnover in bars and restaurants · 12 months', c03n:'##.##%', c03s:'about 7 in 10', c03f:'Source: Abrasel, via Monitor Mercantil, Dec 9, 2025.',
-  c04a:' in 10', c04s:'owners say hiring is hard', c04f:'Source: Abrasel, Apr 30, 2025.',
-  c05:[['Business','needs staff today'],['Worker','wants to work today']], chip:'Waiter · today, 7 pm',
-  passos:'4 steps', steps:[['Business posts a shift','role, time, address, pay'],['Worker gets an alert','up to 15 km'],['Business picks who goes','sees the track record'],['Both sides confirm','check-in, yes or no']],
-  form:{role:'Business',t:'New shift',f1:'Role',ph:'Choose a role',v1:'Waiter',f2:'Time',v2:['7 pm to ',' pm'],f3:'Address',v3:'Plano Piloto',f4:'Pay',v4:'R$ 120',b:'Post',b2:'Shift posted'},
-  lock:{role:'Worker',clock:'5:52',app:'FRILA · now',t:'Waiter · today, 7 pm',b:'R$ 120 · 2.4 km away'},
-  cand:{role:'Business',t:'Candidates',n1:'Bruno T.',d1:'Waiter · 3 km away',s1:'Showed up to 18 of 20 shifts',s2:'10 of 12 would hire again',b:'Choose',b2:'Chosen',n2:'Carla M.',d2:'no track record'},
-  chk:{role:'Both sides',t:'Check-in',ring:'200 m',ok:'Checked in',d:'45 m from the venue',av:'Rating',sim:'Yes',nao:'No'},
-  mapa:{k1:'Alert',v1:'up to 15 km',d1:'at most 1 alert every 30 min',k2:'Check-in',v2:'200 m',d2:'check-in and check-out within 200 m of the venue',r1:'15 km',r2:'200 m'},
-  c09:['Signing up','isn’t showing up.'], c09hi:2,
-  c10:{url:'estaff.com.br',k:'eStaff',n1:'1.5',l1:'million signed up',n2:'533',l2:'thousand available',f:'Figures from the estaff.com.br website, as the company states them. Accessed Oct 22, 2026.'},
-  c11:['Who shows up,','not who signs up.'],
-  c12k:'Before choosing',
-  c13:{h:'In testing on iPhone',d1:'Oct 20, 2026',l1:'Closed TestFlight test',d2:'Nov 13, 2026',l2:'Target: App Store, version 1.0'},
-  c14:{coin:'R$ 0',a:'Business',b:'Worker',h:'Free during the pilot'},
-  c16:{tag:'Shifts agreed, rules clear.',rod:'Narrated with a synthetic (AI) voice. Frila is in testing on iPhone.'}}
-};
-
+/* ---------- textos da v5: sem promover o rascunho a roteiro aprovado ---------- */
+const TX={pt:{
+  exemplo:'Exemplo',
+  v01:{a:'Faltou gente',b:'no turno de hoje',pill:'Garçom · hoje, 19h'},
+  v02:{k:'Contratar · bares e restaurantes',n:'9',em:' em 10',sub:'empresários acham difícil contratar',fonte:'Dado · Abrasel, 30/04/2025.'},
+  v03:{pergunta:'E quem se candidata, dá para contar?',url:'estaff.com.br',marca:'eStaff',n1:'1,5',l1:'milhão de cadastrados',n2:'533',l2:'mil disponíveis',a:'Cadastro',b:'não é turno.',nota:'Inferência · cadastro não mede comparecimento',fonte:'Dado declarado · estaff.com.br, como a empresa declara. Acesso em 22/10/2026.'},
+  v04:{k:'Rotatividade · bares e restaurantes',n:'##,##%',periodo:'dez/2024 a nov/2025',escala:['Escala','Escala','Escala'],vaga:'Nova vaga · garçom',fonte:'Dado · Abrasel, dez/2024 a nov/2025.'},
+  v05:{k:'Mapeamos essas dores',a:['Contratante','precisa de gente hoje'],b:['Profissional','quer trabalhar hoje'],marcas:['Urgência','Confiança','Rotatividade'],chip:'Garçom · hoje, 19h'},
+  steps:[['Publicar a vaga','função, horário, endereço, valor'],['Receber o aviso','profissionais até 15 km'],['Escolher pelo histórico','check-in no local · até 200 m'],['Avaliar dos dois lados','chamaria de novo?']],
+  form:{role:'Contratante',t:'Nova vaga',campos:[['Função','Garçom'],['Horário','19h às 23h'],['Endereço','Plano Piloto'],['Valor','R$ 120']],b:'Publicar',ok:'Vaga publicada'},
+  lock:{role:'Profissional',hora:'17:52',app:'FRILA · agora',t:'Garçom · hoje, 19h',b:'R$ 120 · a 2,4 km',cand:'Candidatar-se',ok:'Candidatura enviada'},
+  cand:{role:'Contratante',t:'Candidatos',nome:'Bruno T.',funcao:'Garçom · a 3 km',presenca:'Compareceu a 18 de 20 turnos',retorno:'10 de 12 chamariam de novo',b:'Escolher',ok:'Escolhido'},
+  chk:{role:'Profissional',t:'Check-in',raio:'200 m',ok:'Check-in feito',dist:'a 45 m do local'},
+  review:{role:'Os dois lados',t:'Depois do turno',pergunta:'Chamaria de novo?',sim:'Sim',nao:'Não',ok:'Avaliação registrada',hist:'Histórico ilustrativo'},
+  v06:{titulo:'Publique. Avise. Conecte.',mapa:'Aviso até 15 km',nota:'Mapa esquemático'},
+  v07:{titulo:'Escolha com histórico.',sub:'Presença no local · até 200 m'},
+  v08:{k:'Uma pergunta ainda em aberto',a:'Quantas vezes falta',b:'alguém no turno?',contador:'—',unidade:'vezes por ano',nota:'Lacuna · não achamos esse número em pesquisa pública'},
+  v09:{titulo:'O turno vira histórico.',sub:'Avaliação dos dois lados'},
+  v10:{k:'Dos 22 apps estudados',a:'Comparecimento medido',sub:'nenhum dos 22 mostra esse dado',frila:'Frila',fonte:'Pesquisa interna · 22 concorrentes, 01/10/2026. Recorte estudado, não todo o mercado.'},
+  v11:{tag:'Meta do piloto · hipótese a calibrar [H]',numeros:['#','##','##%'],alvos:[8,50,90],rotulos:['semanas','vagas por semana','profissionais presentes']},
+  v12:{k:'Estratégia de prospecção',fases:['Núcleo de 15 km','Eventos e buffets','Bares e restaurantes','Distrito Federal'],escala:'Mapa esquemático · escala aproximada',n1:'23.271',l1:'empresas ativas no DF',n2:'~1.300',l2:'restaurantes e bares com 10+ pessoas',fonte:'Dados · CNPJs ativos no DF; IBGE 2024. Referências em NARRATIVA-v5-100s.md.'},
+  v13:{frases:['Menos tempo procurando gente.','Mais tempo no seu negócio.','Deixa que o Frila cuida.','Foque no essencial.']},
+  v14:{tag:'Turno combinado, regra clara.',contato:'frila.org@gmail.com',rod:'Narração com voz sintética (IA). Frila em teste no iPhone.'}
+}};
 /* ---------- ícones ---------- */
 const ICO={
   pessoa:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8.5" r="4"/><path d="M4.5 20.5c1.2-3.8 4.2-5.8 7.5-5.8s6.3 2 7.5 5.8"/></svg>`,
@@ -154,669 +138,160 @@ const ICO={
   cursor:`<svg width="34" height="46" viewBox="0 0 34 46"><path d="M3 2 L3 34 L11 26.5 L16.5 39.5 L22.5 37 L17 24.5 L28 24.5 Z" fill="#18191C" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/></svg>`
 };
 
-/* ---------- cenas ---------- */
+/* ---------- montagem: componentes herdados da v4 ---------- */
 let T,L,X,S={},ORD=[];
-const W=$('#world'), OV=$('#ov'), HUD=$('#hud');
-function add(par,html){ const d=document.createElement('div'); d.innerHTML=html.trim(); const el=d.firstElementChild; par.appendChild(el); return el; }
-const E={}; // elementos medidos/usados
-const SC=[];  // {id,root,run,plan}
-
-function cena(id,html,plan,run,par=W){ const root=add(par,`<div class="sc" id="${id}">${html}</div>`); SC.push({id,root,plan,run}); return root; }
-
+const W=$('#world'),OV=$('#ov'),HUD=$('#hud'),E={},SC=[];
+function add(par,html){const d=document.createElement('div');d.innerHTML=html.trim();const el=d.firstElementChild;par.appendChild(el);return el;}
+function cena(id,html,plan,run){const root=add(W,`<div class="sc" id="${id}">${html}</div>`);SC.push({id,root,plan,run});}
+const pos=(x,y,w,h)=>`left:${x}px;top:${y}px;${w==null?'':`width:${w}px;`}${h==null?'':`height:${h}px;`}`;
+const texto=(classe,x,y,w,size,tx,extra='')=>`<div class="ab ${classe}" style="${pos(x,y,w)}font-size:${size}px;${extra}">${tx}</div>`;
+const tag=(x,y,tx)=>texto('k',x,y,null,20,tx,`color:${C.ob};letter-spacing:.08em`);
+const check=()=>`<span style="display:inline-block;width:24px;height:24px">${ICO.check}</span>`;
+function botao(id,tx,ok,y=658){return `<div class="ab btn" id="${id}" style="${pos(24,y,304,66)}font-size:23px"><span class="antes">${tx}</span><span class="depois" style="display:none;align-items:center;gap:10px">${check()}${ok}</span></div>`;}
+function perfil(){const c=X.cand;return `<div class="ab card" style="${pos(16,166,320,310)}border-radius:22px">
+  <div class="ab av" style="${pos(18,18,58,58)}font-size:20px">BT</div>
+  ${texto('h',90,22,210,26,c.nome)}${texto('mut',90,60,215,19,c.funcao)}
+  ${texto('',18,111,285,19,c.presenca)}
+  <div class="ab" style="${pos(18,149,280,16)}display:flex;gap:5px">${Array.from({length:20},(_,i)=>`<span style="width:9px;height:9px;border-radius:50%;background:${i<18?C.o:C.line}"></span>`).join('')}</div>
+  ${texto('',18,185,285,19,c.retorno)}
+  <div class="ab" style="${pos(18,226,280,16)}display:flex;gap:7px">${Array.from({length:12},(_,i)=>`<span style="width:15px;height:7px;border-radius:4px;background:${i<10?C.ink:C.line}"></span>`).join('')}</div></div>`;}
+function telefone(id,telas){return `<div class="ab depth phone" data-depth="1" style="${pos(484,48,352,752)}border-radius:50px;background:${C.paper};border:2px solid ${C.ink};overflow:hidden;box-shadow:0 24px 60px rgba(24,25,28,.07)">
+  ${telas}<div class="ab" style="${pos(121,12,110,28)}background:#000;border-radius:16px"></div></div>`;}
+function passos(id,titulo){return `<div class="ab depth steps" data-depth=".85" style="${pos(1000,115,750,650)}">
+  ${texto('h',0,0,720,52,titulo)}
+  ${X.steps.map((s,i)=>`<div class="ab step" style="${pos(0,135+i*118,710,104)}border-radius:24px">
+    <div class="ab num" style="${pos(20,18,64,64)}border-radius:16px;background:${C.soft};display:flex;align-items:center;justify-content:center;font:800 28px PJS">0${i+1}</div>
+    ${texto('h',108,18,580,31,s[0])}${texto('mut',108,60,580,24,s[1])}</div>`).join('')}</div>`;}
+function mapa(id,x,y,w=840,h=480){return `<svg class="ab depth" data-depth=".6" id="${id}" style="${pos(x,y)}" width="${w}" height="${h}" viewBox="0 0 960 552">
+  <path class="contorno-df" d="M70 6L930 6L915 80L940 160L918 240L950 320L925 400L955 480L935 546L40 546L30 470L55 390L18 300L48 220L10 140L55 70Z" fill="${C.map}" stroke="${C.ink}" stroke-width="2.5"/>
+  <circle class="raio" cx="388" cy="280" r="136" fill="none" stroke="${C.o}" stroke-width="3"/>
+  <g class="ancoras">${[[318,250],[468,235],[410,350]].map(([cx,cy])=>`<circle class="ancora" cx="${cx}" cy="${cy}" r="12" fill="${C.o}"/>`).join('')}</g>
+  <g class="menores">${[[800,120],[790,440],[860,300],[85,80],[70,490],[780,500],[840,220],[750,70]].map(([cx,cy])=>`<circle class="mercado" cx="${cx}" cy="${cy}" r="5" fill="${C.mut}"/>`).join('')}</g></svg>`;}
 function build(){
   const x=X;
-  /* camadas abaixo do ponto */
-  cena('c08m',`
-    <svg class="ab" id="mapa" style="left:560px;top:264px;overflow:visible" width="960" height="552" viewBox="0 0 960 552">
-      <path id="df" d="M70 6L930 6L915 80L940 160L918 240L950 320L925 400L955 480L935 546L40 546L30 470L55 390L18 300L48 220L10 140L55 70Z" fill="${C.map}" stroke="${C.ink}" stroke-width="2.5" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 1"/>
-      <g id="reg" font-family="AHN" font-weight="700" font-size="15" letter-spacing="1.6" fill="${C.mut}" text-anchor="middle">
-        ${[['Plano Piloto',388,166],['Taguatinga',172,372],['Ceilândia',150,292],['Gama',223,490],['Sobradinho',485,128],['Planaltina',680,100],['São Sebastião',560,412],['Brazlândia',132,212]].map(r=>`<text x="${r[1]}" y="${r[2]}">${r[0].toUpperCase()}</text>`).join('')}
-      </g>
-      <g id="gente"></g>
-      <circle id="r15" cx="388" cy="311" r="136" fill="${C.o}" fill-opacity=".08" stroke="${C.o}" stroke-width="3"/>
-      <text id="r15t" x="${388+104}" y="${311-108}" font-family="PJS" font-weight="800" font-size="34" fill="${C.ink}">${x.mapa.r1}</text>
-      <circle id="r200" cx="388" cy="311" r="32" fill="none" stroke="${C.ink}" stroke-width="1.6" stroke-dasharray="4 4"/>
-      <text id="r200t" x="${388+26}" y="${311-28}" font-family="PJS" font-weight="800" font-size="11" fill="${C.ink}">${x.mapa.r2}</text>
-      <g id="anda"><circle r="5.5" fill="${C.ink}"/></g>
-    </svg>`,null,null);
-  /* o ponto */
-  E.dot=add(W,`<div id="dot"></div>`);
-
-  /* c01 */
-  cena('c01',`
-    <div class="ab" id="pill" style="left:660px;top:488px;width:600px;height:104px;display:flex;align-items:center;justify-content:center;gap:22px;color:#fff;font-family:PJS;font-weight:700;font-size:36px">
-      <span style="width:16px;height:16px;border-radius:50%;background:${C.o}"></span><span>${x.pill[0]}</span><span style="width:2px;height:36px;background:#3A3B40"></span><span style="color:#B9B4AD">${x.pill[1]}</span></div>
-    <div class="ab h ctr" id="c01a" style="top:250px;font-size:116px">${x.c01[0]}</div>
-    <div class="ab h ctr" id="c01b" style="top:370px;font-size:116px"><span id="c01bw">${x.c01[1]}</span><svg id="q" width="60" height="118" viewBox="0 0 56 112" style="display:inline-block;vertical-align:-24px;margin-left:6px;overflow:visible"><path id="qh" d="M11 32 A17.5 17.5 0 1 1 41 44.5 L29 55 V68" fill="none" stroke="${C.ink}" stroke-width="15" pathLength="1" stroke-dasharray="1 1"/></svg></div>`,
-    planC01, runC01);
-
-  /* c02 */
-  const AV=[[-35,160],[42,260],[148,160],[205,260],[-112,260],[96,260],[-165,362],[8,362],[-62,362]];   // cada pessoa no vão entre dois anéis (110, 210, 310), sem encostar neles
-  cena('c02',`
-    <div class="ab h" id="c02a" style="left:150px;top:372px;font-size:104px">${x.c02[0]}</div>
-    <div class="ab h" id="c02b" style="left:150px;top:494px;font-size:104px">${x.c02[1]}</div>
-    <svg class="ab" style="left:0;top:0;overflow:visible" width="1920" height="1080">
-      ${[110,210,310].map((r,i)=>`<circle class="ring" cx="1320" cy="470" r="${r}" fill="none" stroke="${C.ink}" stroke-opacity=".14" stroke-width="2"/>`).join('')}
-      <circle id="wave" cx="1320" cy="470" r="40" fill="none" stroke="${C.o}" stroke-width="2.5"/>
-      <line id="c02l" x1="1320" y1="470" x2="1320" y2="470" stroke="${C.o}" stroke-width="3"/>
-    </svg>
-    ${AV.map(([a,r],i)=>{const X0=1320+r*Math.cos(a*Math.PI/180), Y0=470+r*Math.sin(a*Math.PI/180);
-      return `<div class="ab av c02av" data-x="${X0}" data-y="${Y0}" style="left:${X0-34}px;top:${Y0-34}px;width:68px;height:68px;background:#fff;border:2px solid ${C.line};color:${C.ink}">
-        <div class="ab" style="left:15px;top:15px;width:34px;height:34px;color:${C.ink}">${ICO.pessoa}</div>
-        ${i===0?`<div class="ab ok" style="left:15px;top:15px;width:34px;height:34px;color:#fff">${ICO.check}</div>`:''}</div>`;}).join('')}`,
-    planC02, runC02);
-
-  /* fileira de pessoas (c03 e c04) */
-  cena('row',Array.from({length:10},(_,i)=>`<div class="ab ra" data-i="${i}" style="border-radius:50%;background:${C.ink}"></div><div class="ab rb" data-i="${i}" style="border-radius:50%;border:4px solid ${C.ink}"></div>`).join(''),planRow,runRow);
-
-  /* c03 */
-  cena('c03',`
-    <div class="ab k ctr" id="c03k" style="top:226px"><span id="c03ks">${x.c03k}</span></div>
-    <div class="ab h ctr" style="top:272px;font-size:236px;letter-spacing:-0.045em"><span id="c03n"></span></div>
-    <div class="ab ctr" id="c03s" style="top:540px;font-family:PJS;font-weight:700;font-size:46px">${x.c03s}</div>`,
-    planC03, runC03);
-
-  /* c04 */
-  cena('c04',`
-    <div class="ab h ctr" id="c04n" style="top:236px;font-size:210px;letter-spacing:-0.045em"><span id="c04d"></span><span>${x.c04a}</span></div>
-    <div class="ab ctr" id="c04s" style="top:470px;font-family:PJS;font-weight:700;font-size:50px">${x.c04s}</div>`,
-    planC04, runC04);
-
-  /* c05 */
-  cena('c05',`
-    <svg class="ab" style="left:0;top:0" width="1920" height="1080">${['c05l','c05l2'].map(i=>`<line id="${i}" x1="780" y1="460" x2="1140" y2="460" stroke="${C.ink}" stroke-width="3" stroke-dasharray="2 10" stroke-linecap="round"/>`).join('')}</svg>
-    ${x.c05.map((c,i)=>`<div class="ab card c05c" style="left:${i?1140:220}px;top:320px;width:560px;height:280px;box-shadow:0 24px 60px rgba(24,25,28,.07)">
-       <div class="ab av" style="left:36px;top:36px;width:76px;height:76px"><div style="width:40px;height:40px">${i?ICO.pessoa:ICO.loja}</div></div>
-       <div class="ab k" style="left:36px;top:142px;color:${C.ob}">${c[0]}</div>
-       <div class="ab h" style="left:36px;top:180px;font-size:46px;width:500px">${c[1]}</div></div>`).join('')}
-    <div class="ab" id="chip" style="left:0;top:0;height:56px;padding:0 24px;border-radius:28px;background:${C.ink};color:#fff;font-family:PJS;font-weight:700;font-size:24px;display:flex;align-items:center;white-space:nowrap">${x.chip}</div>`,
-    planC05, runC05);
-
-  /* c06 + c07: telefone e lista de passos */
-  const f=x.form, lk=x.lock, cd=x.cand, ck=x.chk;
-  cena('fluxo',`
-    <div class="ab h" id="pss" style="left:1000px;top:138px;font-size:64px">${x.passos}</div>
-    <div class="ab" id="ind" style="left:992px;width:800px;border-radius:24px;background:#fff;border:2px solid ${C.line};box-shadow:0 18px 44px rgba(24,25,28,.06)"></div>
-    ${x.steps.map((s,i)=>`<div class="ab stp" style="left:1000px;top:${262+i*130}px;width:780px;height:110px">
-      <div class="ab num" style="left:24px;top:23px;width:64px;height:64px;border-radius:16px;background:${C.soft};display:flex;align-items:center;justify-content:center;font-family:PJS;font-weight:800;font-size:28px">0${i+1}</div>
-      <div class="ab tt" style="left:116px;top:16px;font-family:PJS;font-weight:700;font-size:36px;white-space:nowrap">${s[0]}</div>
-      <div class="ab mut" style="left:116px;top:62px;font-size:25px">${s[1]}</div></div>`).join('')}
-    <div class="ab" id="scr" style="left:484px;top:104px;width:352px;height:752px;border-radius:50px;background:${C.paper};overflow:hidden">
-      <div class="ab" id="isl" style="background:#000;border-radius:16px;overflow:hidden">
-        <div class="ab" id="nt" style="left:0;top:0;width:324px;height:128px;opacity:0">
-          <div class="ab" style="left:18px;top:20px;width:46px;height:46px;border-radius:12px;background:${C.o};display:flex;align-items:center;justify-content:center"><span style="width:14px;height:14px;border-radius:50%;background:#fff"></span></div>
-          <div class="ab" style="left:78px;top:18px;font-size:14px;font-weight:700;letter-spacing:.1em;color:#9C9894">${lk.app}</div>
-          <div class="ab" style="left:78px;top:40px;font-family:PJS;font-weight:700;font-size:21px;color:#fff;white-space:nowrap">${lk.t}</div>
-          <div class="ab" style="left:78px;top:72px;font-size:19px;color:#D8D3CC;white-space:nowrap">${lk.b}</div></div></div>
-      <!-- A: formulário -->
-      <div class="ab scA" style="left:0;top:0;width:352px;height:752px">
-        <div class="ab lbl" style="left:26px;top:62px;color:${C.ob}">${f.role}</div>
-        <div class="ab h" style="left:24px;top:86px;font-size:38px">${f.t}</div>
-        <div class="ab lbl" style="left:26px;top:166px">${f.f1}</div>
-        <div class="ab fld" id="fF" style="left:24px;top:190px;width:304px;height:64px"><div class="ab mut" id="fFp" style="left:20px;top:17px;font-size:22px">${f.ph}</div><div class="ab" id="fFv" style="left:20px;top:15px;font-family:PJS;font-weight:700;font-size:24px">${f.v1}</div><div class="ab" id="fFk" style="left:262px;top:19px;width:24px;height:24px;color:${C.o}">${ICO.check}</div></div>
-        <div class="ab lbl" style="left:26px;top:278px">${f.f2}</div>
-        <div class="ab fld" style="left:24px;top:302px;width:304px;height:104px"><div class="ab" style="left:20px;top:14px;font-family:PJS;font-weight:700;font-size:24px">${f.v2[0]}<span id="hora" style="display:inline-block;min-width:26px"></span>${f.v2[1]}</div>
-          <div class="ab" style="left:20px;top:70px;width:264px;height:6px;border-radius:3px;background:${C.line}"></div><div class="ab" id="trk" style="left:20px;top:70px;height:6px;border-radius:3px;background:${C.ink}"></div>
-          <div class="ab" id="hnd" style="top:60px;width:26px;height:26px;border-radius:50%;background:#fff;border:2px solid ${C.ink}"></div></div>
-        <div class="ab lbl" style="left:26px;top:430px">${f.f3}</div>
-        <div class="ab fld" style="left:24px;top:454px;width:304px;height:64px"><div class="ab" style="left:20px;top:15px;font-family:PJS;font-weight:700;font-size:24px">${f.v3}</div></div>
-        <div class="ab lbl" style="left:26px;top:542px">${f.f4}</div>
-        <div class="ab fld" style="left:24px;top:566px;width:304px;height:64px"><div class="ab" style="left:20px;top:15px;font-family:PJS;font-weight:700;font-size:24px">${f.v4}</div></div>
-        <div class="ab btn" id="pub" style="left:24px;top:658px;width:304px;height:66px;font-size:24px;overflow:hidden">
-          <span class="ab" id="pubA" style="left:0;width:304px;text-align:center">${f.b}</span>
-          <svg class="ab" id="pubS" style="left:136px;top:17px" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="none" stroke="#fff" stroke-opacity=".3" stroke-width="3.5"/><path d="M16 4a12 12 0 0 1 12 12" fill="none" stroke="#fff" stroke-width="3.5"/></svg>
-          <span class="ab" id="pubB" style="left:0;width:304px;display:flex;align-items:center;justify-content:center;gap:10px"><span style="width:26px;height:26px">${ICO.check}</span>${f.b2}</span></div>
-      </div>
-      <!-- B: tela de bloqueio -->
-      <div class="ab scB" style="left:0;top:0;width:352px;height:752px">
-        <div class="ab lbl" id="lkr" style="left:0;width:352px;text-align:center;top:214px;color:${C.ob}">${lk.role}</div>
-        <div class="ab h" style="left:0;width:352px;text-align:center;top:250px;font-size:96px;letter-spacing:-0.04em">${lk.clock}</div>
-      </div>
-      <!-- C: candidatos -->
-      <div class="ab scC" style="left:0;top:0;width:352px;height:752px">
-        <div class="ab lbl" style="left:26px;top:62px;color:${C.ob}">${cd.role}</div>
-        <div class="ab h" style="left:24px;top:86px;font-size:38px">${cd.t}</div>
-        <div class="ab card" style="left:16px;top:160px;width:320px;height:262px;border-radius:22px">
-          <div class="ab av" style="left:18px;top:18px;width:58px;height:58px;font-size:20px">BT</div>
-          <div class="ab" style="left:90px;top:18px;font-family:PJS;font-weight:800;font-size:26px">${cd.n1}</div>
-          <div class="ab mut" style="left:90px;top:52px;font-size:19px;white-space:nowrap">${cd.d1}</div>
-          <div class="ab" style="left:18px;top:100px;font-size:19px;font-weight:600;display:flex;gap:10px;align-items:center;white-space:nowrap"><span style="width:10px;height:10px;border-radius:50%;background:${C.o}"></span>${cd.s1}</div>
-          <div class="ab" style="left:18px;top:132px;font-size:19px;font-weight:600;display:flex;gap:10px;align-items:center;white-space:nowrap"><span style="width:10px;height:10px;border-radius:50%;background:${C.o}"></span>${cd.s2}</div>
-          <div class="ab btn" id="esc" style="left:18px;top:184px;width:284px;height:58px;font-size:22px;overflow:hidden">
-            <span class="ab" id="escA" style="left:0;width:284px;text-align:center">${cd.b}</span>
-            <span class="ab" id="escB" style="left:0;width:284px;display:flex;align-items:center;justify-content:center;gap:8px"><span style="width:24px;height:24px">${ICO.check}</span>${cd.b2}</span></div></div>
-        <div class="ab card" id="carla" style="left:16px;top:438px;width:320px;height:96px;border-radius:22px">
-          <div class="ab av" style="left:18px;top:18px;width:58px;height:58px;font-size:20px">CM</div>
-          <div class="ab" style="left:90px;top:16px;font-family:PJS;font-weight:800;font-size:26px">${cd.n2}</div>
-          <div class="ab mut" style="left:90px;top:50px;font-size:19px">${cd.d2}</div></div>
-      </div>
-      <!-- D: check-in e avaliação -->
-      <div class="ab scD" style="left:0;top:0;width:352px;height:752px">
-        <div class="ab lbl" style="left:26px;top:62px;color:${C.ob}">${ck.role}</div>
-        <div class="ab h" style="left:24px;top:86px;font-size:38px">${ck.t}</div>
-        <div class="ab" style="left:16px;top:160px;width:320px;height:270px;border-radius:22px;background:${C.map};overflow:hidden">
-          <svg class="ab" style="left:0;top:0" width="320" height="270"><circle id="ck200" cx="160" cy="138" r="96" fill="none" stroke="${C.ink}" stroke-width="2" stroke-dasharray="6 6"/>
-            <text id="ck200t" x="160" y="30" text-anchor="middle" font-family="PJS" font-weight="800" font-size="18" fill="${C.ink}">${ck.ring}</text></svg>
-          <div class="ab" style="left:150px;top:128px;width:20px;height:20px;border-radius:50%;background:${C.o}"></div>
-          <div class="ab" id="ckp" style="width:30px;height:30px;border-radius:50%;background:${C.ink};border:3px solid #fff;color:#fff"><div class="ab" id="ckpk" style="left:4px;top:4px;width:16px;height:16px">${ICO.check}</div></div></div>
-        <div class="ab" id="ckok" style="left:24px;top:448px;font-family:PJS;font-weight:800;font-size:28px;display:flex;align-items:center;gap:10px"><span style="width:28px;height:28px;color:${C.o}">${ICO.check}</span>${ck.ok}</div>
-        <div class="ab mut" id="ckd" style="left:62px;top:486px;font-size:21px">${ck.d}</div>
-        <div class="ab lbl" style="left:26px;top:552px">${ck.av}</div>
-        <div class="ab" style="left:16px;top:578px;width:320px;height:68px;border-radius:34px;background:${C.soft}"></div>
-        <div class="ab" id="thumb" style="top:584px;height:56px;border-radius:28px;background:${C.o}"></div>
-        <div class="ab" id="sim" style="left:16px;top:578px;width:160px;height:68px;display:flex;align-items:center;justify-content:center;font-family:PJS;font-weight:700;font-size:24px">${ck.sim}</div>
-        <div class="ab" style="left:176px;top:578px;width:160px;height:68px;display:flex;align-items:center;justify-content:center;font-family:PJS;font-weight:700;font-size:24px">${ck.nao}</div>
-      </div>
-    </div>`, planFluxo, runFluxo);
-
-  /* c08 painel (fora da câmera) */
-  cena('c08p',`
-    <div class="ab card" id="pan" style="left:96px;top:330px;width:430px;height:300px;box-shadow:0 24px 60px rgba(24,25,28,.07)">
-      <div class="ab k pA" style="left:36px;top:40px;color:${C.ob}">${x.mapa.k1}</div>
-      <div class="ab h pA" style="left:36px;top:80px;font-size:66px">${x.mapa.v1}</div>
-      <div class="ab mut pA" style="left:36px;top:170px;width:360px;font-size:27px;line-height:1.3">${x.mapa.d1}</div>
-      <div class="ab k pB" style="left:36px;top:40px;color:${C.ob}">${x.mapa.k2}</div>
-      <div class="ab h pB" style="left:36px;top:80px;font-size:66px">${x.mapa.v2}</div>
-      <div class="ab mut pB" style="left:36px;top:170px;width:360px;font-size:27px;line-height:1.3">${x.mapa.d2}</div></div>`, planC08, runC08, OV);
-
-  /* c09 */
-  cena('c09',`
-    <div class="ab h ctr" id="c09a" style="top:300px;font-size:160px;color:${C.paper}">${x.c09[0]}</div>
-    <div class="ab h ctr" id="c09b" style="top:470px;font-size:160px;color:${C.paper}">${x.c09[1]}</div>`, planC09, runC09, OV);
-
-  /* c10 */
-  cena('c10',`
-    <div class="ab" id="brw" style="left:410px;top:190px;width:1100px;height:560px;border-radius:26px;background:#222327;border:1.5px solid #34353A;overflow:hidden">
-      <div class="ab" style="left:0;top:0;width:1100px;height:64px;border-bottom:1.5px solid #34353A"></div>
-      ${[0,1,2].map(i=>`<div class="ab" style="left:${26+i*24}px;top:25px;width:14px;height:14px;border-radius:50%;background:#3A3B40"></div>`).join('')}
-      <div class="ab" style="left:300px;top:14px;width:500px;height:36px;border-radius:18px;background:#2C2D31;color:#9C9894;font-size:19px;display:flex;align-items:center;justify-content:center">${x.c10.url}</div>
-      <div class="ab" id="c10k" style="left:70px;top:116px;font-family:PJS;font-weight:800;font-size:30px;letter-spacing:-0.01em;color:#9C9894">${x.c10.k}</div>
-      <div class="ab h" style="left:70px;top:196px;font-size:150px;color:${C.paper};letter-spacing:-0.045em"><span id="n1"></span></div>
-      <div class="ab c10l" style="left:74px;top:372px;font-family:PJS;font-weight:700;font-size:36px;color:#9C9894;white-space:nowrap">${x.c10.l1}</div>
-      <div class="ab" id="c10d" style="left:620px;top:160px;width:2px;height:300px;background:#34353A"></div>
-      <div class="ab h" style="left:690px;top:196px;font-size:150px;color:${C.o};letter-spacing:-0.045em"><span id="n2"></span></div>
-      <div class="ab c10l" style="left:694px;top:372px;font-family:PJS;font-weight:700;font-size:36px;color:#9C9894;white-space:nowrap">${x.c10.l2}</div>
-    </div>`, planC10, runC10);
-
-  /* c11 */
-  cena('c11',`
-    <canvas id="ht" class="ab" width="1920" height="1080" style="left:0;top:0"></canvas>
-    <div class="ab h ctr" id="c11a" style="top:330px;font-size:128px;color:${C.paper}">${x.c11[0]}</div>
-    <div class="ab h ctr" id="c11b" style="top:470px;font-size:128px;color:#7E838A">${x.c11[1]}</div>`, planC11, runC11);
-
-  /* c12 */
-  cena('c12',`
-    <div class="ab k ctr" id="c12k" style="top:176px">${x.c12k}</div>
-    <div class="ab c12i" style="left:590px;top:280px;width:96px;height:96px;font-size:34px" ><div class="av" style="width:96px;height:96px">BT</div></div>
-    <div class="ab h c12i" style="left:710px;top:282px;font-size:50px">${cd.n1}</div>
-    <div class="ab mut c12i" style="left:712px;top:344px;font-size:29px">${cd.d1}</div>
-    <div class="ab btn c12i" id="c12b" style="left:1132px;top:290px;width:200px;height:64px;font-size:26px;overflow:hidden">
-      <span class="ab" id="c12bA" style="left:0;width:200px;text-align:center">${cd.b}</span>
-      <span class="ab" id="c12bB" style="left:0;width:200px;display:flex;align-items:center;justify-content:center;gap:8px"><span style="width:24px;height:24px">${ICO.check}</span>${cd.b2}</span></div>
-    <div class="ab c12i" style="left:590px;top:404px;width:740px;height:2px;background:${C.line}"></div>
-    <div class="ab c12i" style="left:590px;top:430px;font-family:PJS;font-weight:700;font-size:30px">${cd.s1}</div>
-    ${Array.from({length:20},(_,i)=>`<div class="ab c12d" style="left:${590+i*28}px;top:482px;width:18px;height:18px;border-radius:50%;background:${C.line}"></div>`).join('')}
-    <div class="ab c12i" style="left:590px;top:526px;font-family:PJS;font-weight:700;font-size:30px">${cd.s2}</div>
-    ${Array.from({length:12},(_,i)=>`<div class="ab c12s" style="left:${590+i*47}px;top:578px;width:39px;height:14px;border-radius:7px;background:${C.line}"></div>`).join('')}`,
-    planC12, runC12);
-
-  /* c13 */
-  const t13=x.c13;
-  cena('c13',`
-    <div class="ab h ctr" id="c13h" style="top:226px;font-size:76px">${t13.h}</div>
-    <svg class="ab" style="left:0;top:0" width="1920" height="1080">
-      ${['a','a2'].map(k=>`<line id="c13${k}" x1="420" y1="560" x2="420" y2="560" stroke="${C.ink}" stroke-width="4"/>`).join('')}
-      ${['b','b2'].map(k=>`<line id="c13${k}" x1="730" y1="560" x2="730" y2="560" stroke="${C.ink}" stroke-opacity=".45" stroke-width="4" stroke-dasharray="10 12"/>`).join('')}
-      <circle id="c13B" cx="1220" cy="560" r="26" fill="none" stroke="${C.o}" stroke-width="4"/></svg>
-    <div class="ab" id="c13A" style="left:678px;top:538px;width:44px;height:44px;border-radius:50%;background:${C.ink};color:#fff"><div class="ab" style="left:10px;top:10px;width:24px;height:24px">${ICO.check}</div></div>
-    <div class="ab h c13l1" style="left:450px;width:500px;text-align:center;top:446px;font-size:44px">${t13.d1}</div>
-    <div class="ab mut c13l1" style="left:450px;width:500px;text-align:center;top:614px;font-size:29px">${t13.l1}</div>
-    <div class="ab h c13l2" style="left:970px;width:500px;text-align:center;top:446px;font-size:44px">${t13.d2}</div>
-    <div class="ab mut c13l2" style="left:970px;width:500px;text-align:center;top:614px;font-size:29px">${t13.l2}</div>`, planC13, runC13);
-
-  /* c14 */
-  cena('c14',`
-    <div class="ab h" id="coin" style="left:810px;top:300px;width:300px;height:300px;display:flex;align-items:center;justify-content:center;font-size:96px;color:#fff;letter-spacing:-0.04em;border-radius:50%;overflow:hidden">${x.c14.coin}</div>
-    <div class="ab h c14a" style="left:220px;width:500px;text-align:right;top:420px;font-size:52px">${x.c14.a}</div>
-    <div class="ab h c14b" style="left:1200px;width:500px;top:420px;font-size:52px">${x.c14.b}</div>
-    <svg class="ab" style="left:0;top:0" width="1920" height="1080"><line id="c14l" x1="740" y1="450" x2="790" y2="450" stroke="${C.ink}" stroke-width="3"/><line id="c14r" x1="1130" y1="450" x2="1180" y2="450" stroke="${C.ink}" stroke-width="3"/></svg>
-    <div class="ab ctr mut" id="c14h" style="top:672px;font-family:PJS;font-weight:700;font-size:48px">${x.c14.h}</div>`, planC14, runC14);
-
-  /* c16 */
-  cena('c16',`
-    <svg class="ab" id="logo" style="left:610px;top:291px" width="700" height="318.6" viewBox="-4 -6 245 111.5" fill="none" stroke="${C.ink}" stroke-width="19" stroke-linecap="butt" stroke-linejoin="miter">
+  cena('v01',`${texto('h ctr',0,240,1920,116,x.v01.a)}${texto('h ctr',0,366,1920,108,`<span class="gancho-b">${x.v01.b}</span><svg id="q" width="60" height="118" viewBox="0 0 56 112" style="display:inline-block;vertical-align:-24px;margin-left:10px"><path d="M11 32A17.5 17.5 0 1 1 41 44.5L29 55V68" fill="none" stroke="${C.ink}" stroke-width="15"/></svg>`)}
+    <div class="ab card pill" style="${pos(660,640,600,104)}background:${C.ink};border:0;border-radius:52px;color:white;display:flex;align-items:center;justify-content:center;font:700 36px PJS">${x.v01.pill}</div>${tag(1450,744,x.exemplo)}`,planV01,runV01);
+  cena('v02',`${texto('k ctr',0,180,1920,24,x.v02.k)}${texto('h ctr',0,250,1920,210,`<span class="contador"></span>${x.v02.em}`)}${texto('ctr',0,494,1920,48,x.v02.sub)}
+    <div class="ab dots" style="${pos(485,650,950,64)}display:flex;justify-content:space-between">${Array.from({length:10},()=>`<div style="width:54px;height:54px;border-radius:50%;background:${C.ink}"></div>`).join('')}</div>`,planV02,runV02);
+  cena('v03',`${texto('h ctr pergunta',0,95,1920,56,x.v03.pergunta,'color:'+C.paper)}
+    <div class="ab browser" style="${pos(410,210,1100,460)}border-radius:26px;background:#222327;border:1.5px solid #34353A;overflow:hidden;color:${C.paper}">
+    <div style="height:64px;border-bottom:1.5px solid #34353A;padding:20px 30px;color:#9C9894;font-size:20px">${x.v03.url}</div>
+    ${texto('h',70,100,700,28,x.v03.marca,'color:#9C9894')}
+    ${texto('h',70,165,500,136,'<span class="n1"></span>')}${texto('',74,330,520,32,x.v03.l1,'color:#9C9894')}
+    ${texto('h',690,165,370,136,'<span class="n2"></span>','color:'+C.o)}${texto('',694,330,370,32,x.v03.l2,'color:#9C9894')}</div>
+    ${texto('h ctr tese',0,355,1920,138,`${x.v03.a}<br><span style="color:${C.o}">${x.v03.b}</span>`,'color:'+C.paper)}
+    ${texto('ctr inferencia',0,728,1920,22,x.v03.nota,'color:#8A8F96')}`,planV03,runV03);
+  cena('v04',`${texto('k ctr',0,156,1920,24,x.v04.k)}${texto('h ctr',0,220,1920,226,'<span class="contador"></span>')}${texto('ctr mut',0,480,1920,34,x.v04.periodo)}
+    <div class="ab escalas" style="${pos(390,600,1140,170)}display:flex;gap:30px">${x.v04.escala.map((e,i)=>`<div class="card escala" style="width:360px;height:150px;padding:24px 28px"><div class="k" style="font-size:19px">${e}</div><div style="display:flex;gap:12px;margin-top:22px">${[0,1,2,3].map(()=>`<span class="pessoa" style="width:48px;height:48px;border-radius:50%;background:${C.ink}"></span>`).join('')}</div></div>`).join('')}</div>
+    ${texto('h nova',1150,790,550,30,x.v04.vaga,'color:'+C.ob)}`,planV04,runV04);
+  cena('v05',`${texto('k ctr',0,130,1920,24,x.v05.k)}
+    ${[x.v05.a,x.v05.b].map((c,i)=>`<div class="ab card lado" style="${pos(i?1140:220,285,560,280)}padding:36px">${ICO[i?'pessoa':'loja'].replace('<svg ','<svg width="60" height="60" ')}<div class="k" style="margin-top:20px;color:${C.ob}">${c[0]}</div><div class="h" style="margin-top:18px;font-size:38px">${c[1]}</div></div>`).join('')}
+    <div class="ab chip" style="${pos(790,380,340,56)}border-radius:28px;background:${C.ink};color:white;display:flex;align-items:center;justify-content:center;font:700 22px PJS">${x.v05.chip}</div>
+    <div class="ab marcas" style="${pos(430,700,1060,70)}display:flex;justify-content:space-between">${x.v05.marcas.map(c=>`<div class="k" style="color:${C.ob}">${c}</div>`).join('')}</div>
+    <div class="ab mini" style="${pos(590,245,240,470)}border-radius:34px;background:${C.paper};border:2px solid ${C.ink};padding:50px 22px">${tag(24,18,x.exemplo)}<div class="h" style="font-size:28px">${x.form.t}</div><div class="fld" style="margin-top:28px;padding:18px;font:700 20px PJS">${x.form.campos[0][1]}</div><div class="btn" style="margin-top:25px;padding:18px">${x.form.b}</div></div>`,planV05,runV05);
+  // v06: formulário → publicação → aviso com mapa → candidatura.
+  const f=x.form,lk=x.lock,cd=x.cand,ck=x.chk,rv=x.review;
+  cena('v06',telefone('v06',`
+    <div class="ab tela form" style="${pos(0,0,352,752)}">${tag(24,58,f.role)}${texto('h',24,88,304,38,f.t)}
+      ${f.campos.map(([label,value],i)=>`${texto('lbl',26,166+i*112,304,15,label)}<div class="ab fld" style="${pos(24,190+i*112,304,64)}padding:16px 20px;font:700 23px PJS">${value}</div>`).join('')}${botao('publicar',f.b,f.ok)}</div>
+    <div class="ab tela aviso" style="${pos(0,0,352,752)}">${tag(24,58,lk.role)}${texto('h',24,125,304,80,lk.hora)}
+      <div class="ab card notification" style="${pos(14,260,320,150)}background:${C.ink};border:0;color:white;padding:20px;border-radius:28px"><div style="font-size:16px;letter-spacing:.1em;color:#D8D3CC">${lk.app}</div><div class="h" style="font-size:24px;margin-top:16px">${lk.t}</div><div style="font-size:20px;margin-top:12px;color:#D8D3CC">${lk.b}</div></div>${botao('candidatar',lk.cand,lk.ok,580)}</div>`)+passos('v06',x.v06.titulo)+
+    `<div class="ab depth mini-mapa" data-depth=".6" style="${pos(145,240,250,350)}">${texto('h',0,0,250,28,x.v06.mapa)}<svg style="position:absolute;left:0;top:85px" width="250" height="220"><circle cx="122" cy="108" r="90" fill="none" stroke="${C.line}" stroke-width="2"/>${[[80,70],[170,93],[140,165]].map(([cx,cy])=>`<circle cx="${cx}" cy="${cy}" r="6" fill="${C.ink}"/>`).join('')}</svg>${texto('mut',0,320,250,18,x.v06.nota)}</div>`+tag(345,760,x.exemplo),planV06,runV06);
+  cena('v07',telefone('v07',`<div class="ab tela candidato" style="${pos(0,0,352,752)}">${tag(24,58,cd.role)}${texto('h',24,88,304,38,cd.t)}${perfil()}${botao('escolher',cd.b,cd.ok,530)}</div>
+    <div class="ab tela checkin" style="${pos(0,0,352,752)}">${tag(24,58,ck.role)}${texto('h',24,88,304,38,ck.t)}
+    <div class="ab" style="${pos(16,182,320,290)}border-radius:22px;background:${C.map};overflow:hidden">
+    <svg width="320" height="290"><circle cx="160" cy="155" r="96" fill="none" stroke="${C.ink}" stroke-width="2" stroke-dasharray="6 6"/></svg>${texto('h',110,22,130,22,ck.raio)}
+    <div class="ab" style="${pos(146,141,28,28)}border-radius:50%;background:${C.o}"></div><div class="ab walker" style="${pos(198,172,32,32)}border-radius:50%;border:3px solid white;background:${C.ink}"></div></div>
+    ${texto('h confirmado',24,520,304,27,ck.ok)}${texto('mut confirmado',24,565,304,22,ck.dist)}</div>`)+passos('v07',x.v07.titulo)+tag(345,760,x.exemplo),planV07,runV07);
+  cena('v08',`${texto('k ctr',0,160,1920,24,x.v08.k)}${texto('h ctr',0,275,1920,100,x.v08.a)}${texto('h ctr',0,390,1920,100,x.v08.b)}${texto('h ctr vazio',0,550,1920,136,x.v08.contador)}${texto('ctr mut',0,710,1920,34,x.v08.unidade)}${texto('ctr mut',0,804,1920,22,x.v08.nota)}`,planV08,runV08);
+  cena('v09',telefone('v09',`<div class="ab tela avaliacao" style="${pos(0,0,352,752)}">${tag(24,58,rv.role)}${texto('h',24,95,304,34,rv.t)}${texto('h',24,230,304,38,rv.pergunta)}
+    <div class="ab btn sim" style="${pos(24,370,140,66)}font-size:24px">${rv.sim}</div><div class="ab btn nao" style="${pos(184,370,140,66)}font-size:24px;background:${C.soft};color:${C.ink}">${rv.nao}</div>
+    ${texto('mut registrado',24,500,304,24,rv.ok)}</div>
+    <div class="ab tela historico" style="${pos(0,0,352,752)}">${tag(24,58,x.exemplo)}${texto('h',24,95,304,32,rv.hist)}${perfil()}</div>`)+passos('v09',x.v09.titulo)+tag(345,760,x.exemplo),planV09,runV09);
+  cena('v10',`${texto('k ctr',0,146,1920,24,x.v10.k)}${texto('h ctr',0,226,1920,88,x.v10.a)}${texto('ctr mut',0,345,1920,36,x.v10.sub)}
+    <div class="ab grade" style="${pos(275,510,1000,190)}display:grid;grid-template-columns:repeat(11,52px);gap:52px 36px">${Array.from({length:22},()=>`<div style="width:44px;height:44px;border-radius:50%;background:#8A8F96"></div>`).join('')}</div>
+    <div class="ab frila" style="${pos(1460,500,150,170)}">${texto('h',-30,95,200,34,x.v10.frila)}</div>`,planV10,runV10);
+  cena('v11',`${texto('k ctr',0,164,1920,24,x.v11.tag,`color:${C.ob}`)}
+    ${x.v11.rotulos.map((r,i)=>`<div class="ab metrica" style="${pos(160+i*560,310,480,390)}text-align:center"><div class="h numero" style="font-size:${i===2?142:174}px"></div><div style="margin-top:45px;font:700 32px PJS">${r}</div></div>`).join('')}`,planV11,runV11);
+  cena('v12',`${texto('k',130,105,1600,24,x.v12.k)}${mapa('mapa-v12',870,235,900,515)}
+    ${texto('h fase',130,210,680,66,x.v12.fases[0])}${texto('h sequencia',130,320,650,43,x.v12.fases[1])}
+    ${texto('h',130,470,650,64,x.v12.n1)}${texto('mut',130,548,650,28,x.v12.l1)}${texto('h',130,613,650,64,x.v12.n2)}${texto('mut',130,691,690,27,x.v12.l2)}
+    ${texto('mut',930,796,800,22,x.v12.escala)}`,planV12,runV12);
+  cena('v13',`${texto('h ctr frase',0,330,1920,84,x.v13.frases[0])}
+    <svg class="ab relogio" style="${pos(854,550)}" width="212" height="212" viewBox="0 0 212 212"><circle cx="106" cy="106" r="94" fill="none" stroke="${C.line}" stroke-width="4"/><g class="ponteiro" fill="none" stroke="${C.ink}" stroke-width="5" stroke-linecap="round"><path d="M106 46V82"/><path d="M128 117L146 126"/></g></svg>`,planV13,runV13);
+  cena('v14',`    <svg class="ab" id="logo" style="left:610px;top:291px" width="700" height="318.6" viewBox="-4 -6 245 111.5" fill="none" stroke="${C.ink}" stroke-width="19" stroke-linecap="butt" stroke-linejoin="miter">
       ${['M20 100V30A21.5 21.5 0 0 1 41.5 8.5H51','M0 45.5H73.5','M64 100V45.5','M64 67.5A22 22 0 0 1 86 45.5H95','M117.5 100V36','M149.5 100V0','M226.5 68a23 23 0 1 0 -46 0a23 23 0 1 0 46 0','M226.5 36V100'].map(d=>`<path class="lg" d="${d}" pathLength="1" stroke-dasharray="1 1"/>`).reduce((g,h,i)=>{ const k=[0,0,0,0,1,2,3,3][i]; (g[k]=g[k]||[]).push(h); return g; },[]).map(h=>`<g class="lgl">${h.join('')}</g>`).join('')}</svg>
-    <div class="ab h ctr" id="c16t" style="top:676px;font-size:60px">${x.c16.tag}</div>
-    <div class="ab ctr mut" id="c16r" style="top:1006px;font-size:22px">${x.c16.rod}</div>`, planC16, runC16);
+${texto('h ctr assinatura',0,676,1920,60,x.v14.tag)}${texto('ctr mut contato',0,790,1920,29,x.v14.contato)}${texto('ctr mut rodape',0,1006,1920,22,x.v14.rod)}`,planV14,runV14);
+  E.dot=add(OV,'<div id="dot"></div>');E.cur=add(OV,`<div class="ab" id="cur" style="transform-origin:3px 2px">${ICO.cursor}</div>`);
+  add(HUD,'<div><div id="src"></div><div id="cap"></div></div>');
+}
+/* ---------- planos e execução: sempre função do tempo absoluto ---------- */
+const F=(id,k)=>S[id].f[k-1];
+const Q=(s,sel)=>$(sel,s.root),QA=(s,sel)=>$$(sel,s.root);
+const momento=(f,u)=>lerp(f.ini,f.fim,u);
+function ponto(s,x=1760,y=815){D(s.ini,{x,y,w:28,h:28,r:14,c:C.o,sh:0},'soft');}
+function base(t,s){st(s.root,{o:fade(t,s.ini,.18)*(1-fade(t,s.end-.22,.22))});}
+function troca(el,on){el.style.display=on?'block':'none';}
+function confirmar(el,t,a){const on=t>=a;el.style.background=on?C.o:C.ink;$('.antes',el).style.display=on?'none':'inline';$('.depois',el).style.display=on?'flex':'none';st(el,{s:1-.04*spr(t-a,'ui')*(1-spr(t-a-.1,'ui'))});}
+function usarCursor(s,a,b,x,y){CUR(a-.65,x+8,y+8,'snap');key('ko',a-.22,1);CUR(a-.17,x,y);click(a);key('ko',b,0);}
+function planV01(s){s.a=F(s.id,1).ini;s.b=F(s.id,2).ini;s.cai=s.ini+.3;s.pingo=momento(F(s.id,2),.25);ponto(s,1760,815);D(s.pingo-.45,{x:E.q.x,y:815});D(s.pingo,{y:E.q.y+4,w:22,h:22,r:11});ev(s.cai,'swish',.5);ev(s.pingo,'pop',.6);}
+function runV01(t,s){base(t,s);wio(E.ganchoA,t,s.a-.1,.06,null);wio(E.ganchoB,t,s.b-.1,.06,null);st(Q(s,'#q'),{o:fade(t,s.pingo,.2)});const u=spr(t-s.cai,'move');st(Q(s,'.pill'),{o:fade(t,s.cai,.2),y:(1-u)*-130});}
+function planV02(s){ponto(s);s.cont=F(s.id,1).ini+.25;for(let i=0;i<9;i++)ev(s.cont+i*.11,'tick',.35);}
+function runV02(t,s){base(t,s);E.o2.set(9*cl(spr(t-s.cont,'count')));QA(s,'.dots>div').forEach((e,i)=>{const u=i<9?spr(t-s.cont-i*.11,'ui'):0;e.style.background=mixc(C.ink,C.o,u);st(e,{s:1+.08*u*(1-spr(t-s.cont-i*.11-.1,'ui'))});});}
+function planV03(s){ponto(s);s.janela=F(s.id,2).ini;s.tese=F(s.id,3).ini;key('th',s.ini,1,'snap');ev(s.ini,'grave',.7);ev(s.janela+.15,'roll',.6);ev(s.janela+.7,'roll',.4);}
+function runV03(t,s){base(t,s);io(Q(s,'.pergunta'),t,s.ini+.1,s.janela-.2,20);const tese=t>=s.tese-.2;troca(Q(s,'.browser'),!tese&&t>=s.janela-.2);troca(Q(s,'.tese'),tese);troca(Q(s,'.inferencia'),tese);E.o3a.set(t,s.janela);E.o3b.set(t,s.janela+.55);if(tese)io(Q(s,'.tese'),t,s.tese-.2,null,30);}
+function planV04(s){ponto(s);key('th',s.ini,0,'snap');ev(s.ini,'grave',.55);s.cont=F(s.id,1).ini+.3;s.troca=momento(F(s.id,1),.55);ev(s.cont,'roll',.6);for(let i=0;i<3;i++)ev(s.troca+i*.25,'swish',.35);}
+function runV04(t,s){base(t,s);E.o4.set(7349*cl(spr(t-s.cont,'count')));QA(s,'.escala').forEach((e,i)=>{const u=spr(t-s.troca-i*.25,'ui');st(e,{y:-12*u});$$('.pessoa',e).forEach((p,j)=>{p.style.background=mixc(C.ink,j===3?C.paper:C.soft,u);p.style.border=j===3?`2px dashed ${C.o}`:'0';});});io(Q(s,'.nova'),t,s.troca+.85,null,15);}
+function planV05(s){ponto(s);s.morph=F(s.id,2).ini;ev(s.ini+.3,'pop',.5);ev(s.morph,'swish',.6);}
+function runV05(t,s){base(t,s);QA(s,'.lado').forEach((e,i)=>st(e,{o:1-fade(t,s.morph,.2)*(i?0:1),y:(1-spr(t-s.ini-.1-i*.12,'ui'))*30}));io(Q(s,'.mini'),t,s.morph+.26,null,24);const chip=Q(s,'.chip');st(chip,{x:0,y:lerp(0,180,spr(t-s.morph,'soft')),o:1-fade(t,s.morph,.2)});}
+// D1: foco de câmera, com os fatores de profundidade do DESIGN §14.
+const D1={escala:1.10,centroX:660,centroY:430,parallaxMax:30};
+function foco(s){s.foco=s.ini+.18;s.volta=s.end-1.0;CAM(s.foco,{x:660+(960-D1.centroX)/D1.escala,y:424+(540-D1.centroY)/D1.escala,s:D1.escala});CAM(s.volta,{x:960,y:540,s:1});ev(s.foco,'swish',.4);}
+function profundidade(t,s){const cx=val('cx',t),cy=val('cy',t),z=val('cs',t);const u=cl((z-1)/(D1.escala-1));QA(s,'.depth').forEach(el=>{const f=+el.dataset.depth;const dx=cl((cx-960)*(1-f),-D1.parallaxMax,D1.parallaxMax),dy=cl((cy-540)*(1-f),-D1.parallaxMax,D1.parallaxMax);st(el,{x:dx+(el.classList.contains('steps')?30*u:0),y:dy,o:el.classList.contains('steps')?1-.72*u:1});});}
+function acender(s,t,tempos){QA(s,'.step').forEach((e,i)=>{const on=t>=tempos[i]&&(i===3||t<tempos[i+1]);$('.num',e).style.background=on?C.o:C.soft;$('.num',e).style.color=on?C.white:C.ink;e.style.background=on?C.white:'transparent';});}
+function planV06(s){ponto(s,1650,720);foco(s);s.pub=momento(F(s.id,1),.5);s.aviso=F(s.id,2).ini;s.cand=momento(F(s.id,2),.72);ev(s.pub,'ok',.7);ev(s.aviso,'aviso',.65);usarCursor(s,s.pub,s.pub+.3,484+318,48+663);usarCursor(s,s.cand,s.cand+.3,484+318,48+585);ev(s.cand+.05,'ok',.5);}
+function runV06(t,s){base(t,s);profundidade(t,s);troca(Q(s,'.form'),t<s.aviso);troca(Q(s,'.aviso'),t>=s.aviso);troca(Q(s,'.mini-mapa'),t>=s.aviso);confirmar(Q(s,'#publicar'),t,s.pub);confirmar(Q(s,'#candidatar'),t,s.cand);acender(s,t,[s.ini,s.aviso,Infinity,Infinity]);}
+function planV07(s){ponto(s,1650,720);foco(s);s.escolha=momento(F(s.id,1),.7);s.check=F(s.id,2).ini;s.chegou=momento(F(s.id,2),.55);usarCursor(s,s.escolha,s.escolha+.3,484+318,48+535);ev(s.escolha+.05,'ok',.6);ev(s.chegou,'ok',.7);}
+function runV07(t,s){base(t,s);profundidade(t,s);troca(Q(s,'.candidato'),t<s.check);troca(Q(s,'.checkin'),t>=s.check);confirmar(Q(s,'#escolher'),t,s.escolha);const u=cl(spr(t-s.check,'soft'));st(Q(s,'.walker'),{x:-14*u,y:-3*u});Q(s,'.walker').style.background=mixc(C.ink,C.o,fade(t,s.chegou,.15));QA(s,'.confirmado').forEach(e=>io(e,t,s.chegou,null,12));acender(s,t,[-Infinity,-Infinity,s.ini,Infinity]);}
+function planV08(s){ponto(s);ev(s.ini+.3,'pop',.3);}
+function runV08(t,s){base(t,s);st(Q(s,'.vazio'),{y:-4*Math.sin((t-s.ini)*.7)});}
+function planV09(s){ponto(s,1650,720);foco(s);s.sim=momento(F(s.id,1),.7);s.hist=F(s.id,2).ini;usarCursor(s,s.sim,s.sim+.3,484+28,48+403);ev(s.sim+.05,'ok',.6);}
+function runV09(t,s){base(t,s);profundidade(t,s);troca(Q(s,'.avaliacao'),t<s.hist);troca(Q(s,'.historico'),t>=s.hist);Q(s,'.sim').style.background=t>=s.sim?C.o:C.ink;io(Q(s,'.registrado'),t,s.sim+.1,null,15);acender(s,t,[-Infinity,-Infinity,-Infinity,s.ini]);}
+function planV10(s){ponto(s,1525,540);D(s.ini,{w:72,h:72,r:36});s.check=momento(F(s.id,1),.65);ev(s.check,'ok',.6);E.checkDado=add(E.dot,`<div class="ab check" style="inset:0;display:flex;align-items:center;justify-content:center;color:white"><span style="width:34px;height:34px">${ICO.check}</span></div>`);}
+function runV10(t,s){base(t,s);QA(s,'.grade>div').forEach((e,i)=>io(e,t,s.ini+.1+i*.018,null,10));st(E.checkDado,{o:fade(t,s.check,.15)});}
+function planV11(s){ponto(s);s.cont=F(s.id,1).ini+.2;[0,1,2].forEach((i)=>ev(s.cont+i*.3,'roll',.4));}
+function runV11(t,s){base(t,s);st(s.root,{o:fade(t,s.ini+.25,.18)*(1-fade(t,s.end-.22,.22))});E.metas.forEach((o,i)=>o.set(X.v11.alvos[i]*cl(spr(t-s.cont-i*.3,'count'))));}
+function planV12(s){ponto(s,1233.75,496.23);s.b=F(s.id,2).ini;s.c=F(s.id,3).ini;ev(s.ini+.3,'swish',.4);ev(s.b,'tick',.35);ev(s.c,'swish',.5);}
+function runV12(t,s){base(t,s);const a=cl(spr(t-s.ini-1.0,'soft')),b=cl(spr(t-s.b,'soft')),c=cl(spr(t-s.c,'soft'));Q(s,'.raio').setAttribute('r',136*a+190*c);QA(s,'.ancoras circle').forEach((e,i)=>st(e,{o:fade(t,s.ini+2.0+i*.16,.2)}));Q(s,'.menores').style.opacity=b;Q(s,'.fase').textContent=t>=s.c?X.v12.fases[3]:X.v12.fases[0];Q(s,'.sequencia').textContent=t>=s.c?X.v12.fases[2]:t>=s.b?X.v12.fases[2]:X.v12.fases[1];}
+function planV13(s){ponto(s,960,656);}
+function runV13(t,s){base(t,s);let k=0;s.f.forEach((f,i)=>{if(t>=f.ini)k=i;});const el=Q(s,'.frase');el.textContent=X.v13.frases[k];io(el,t,s.f[k].ini-.05,k+1<s.f.length?s.f[k+1].ini-.2:null,14);st(Q(s,'.relogio'),{o:fade(t,s.ini+.9,.2)});Q(s,'.ponteiro').style.transformOrigin='106px 106px';Q(s,'.ponteiro').style.transform=`rotate(${cl((t-s.ini)/s.dur)*18}deg)`;}
+function planV14(s){s.land=F(s.id,1).ini+.05;D(s.ini,{w:34,h:34,r:17});D(s.land-.2,{x:E.idot.x,y:E.idot.y},'move');ev(s.land,'pouso',.7);}
+function runV14(t,s){base(t,s);QA(s,'.lgl').forEach((g,k)=>{const a=s.land+.65+k*.13;$$('.lg',g).forEach(p=>p.style.strokeDashoffset=(1-eio(ramp(t,a,.62))).toFixed(4));st(g,{o:fade(t,a,.3),y:(1-spr(t-a,'ui'))*14});});io(Q(s,'.assinatura'),t,F(s.id,2).ini-.1,null,20);io(Q(s,'.contato'),t,F(s.id,2).ini+.3,null,12);io(Q(s,'.rodape'),t,s.ini+.5,null,10);}
 
-  /* cursor (no mundo) */
-  E.cur=add(W,`<div class="ab" id="cur" style="left:0;top:0;transform-origin:3px 2px">${ICO.cursor}</div>`);
-
-  /* HUD */
-  add(HUD,`<div>
-    <div id="src"></div><div id="cap"></div></div>`);
+/* ---------- HUD, câmera, ponto e cursor ---------- */
+const NOCAP=new Set(['v01','v13','v14']);
+function runHUD(t){const th=val('th',t);$('#stage').style.background=mixc(C.paper,C.ink,th);const ink=mixc(C.ink,C.paper,th),mut=mixc(C.mut,'#8A8F96',th);const cp=$('#cap');const fl=T.falas.find(f=>t>=f.leg_ini&&t<f.leg_fim);
+  if(fl&&!NOCAP.has(fl.cena.slice(0,3))){cp.textContent=fl.legenda;cp.style.color=ink;st(cp,{o:fade(t,fl.leg_ini,.14)*(1-fade(t,fl.leg_fim-.14,.14)),y:(1-spr(t-fl.leg_ini,'ui'))*10});}else cp.style.opacity=0;
+  const sr=$('#src'),s=ORD.find(s=>t>=s.ini&&t<s.end),fonte=s&&X[s.id].fonte;sr.textContent=fonte||'';sr.style.color=mut;st(sr,{o:fonte?fade(t,s.ini+.3,.2)*(1-fade(t,s.end-.3,.2)):0});
 }
-
-/* ---------- plano (trilhas) e execução por cena ---------- */
-function F(id,k){ return S[id].f[k-1]; }
-
-/* c01: o ponto vira a vaga, a vaga volta a ser ponto, o ponto vira o ponto da interrogação */
-function planC01(s){
-  const f=F('c01',1);
-  D(.24,{c:C.ink},'snap'); D(.30,{h:104,r:52},'ui'); D(.30,{w:600},'move');
-  D(.95,{y:760},'move');
-  D(2.05,{w:28,h:28,r:14},'ui'); D(2.2,{c:C.o},'snap'); ev(2.05,'pop',.6);
-  D(2.1,{x:E.q.x},'move'); D(2.34,{y:E.q.y,w:E.q.d,h:E.q.d,r:E.q.d/2},'move');   // anda por baixo do texto e sobe na coluna do "?", sem cruzar as palavras
-  ev(.30,'swish',.5);
-}
-function runC01(t,s){
-  const f=F('c01',1), ws=E.c01w, n=ws.length, stg=Math.min(.24,(f.fim-f.ini)*.8/n);
-  wio(ws,t,f.ini-.04,stg,s.end-.3,46);
-  const qi=f.ini+(n-.6)*stg, qo=fade(t,s.end-.3+n*.03,.2);
-  $('#qh').style.strokeDashoffset=(1-eo(ramp(t,qi,.35))).toFixed(4); $('#q').style.opacity=t>qi?1-qo:0;
-  const p=$('#pill'); st(p,{o:fade(t,.48,.2)*(1-fade(t,1.9,.12)),y:val('dy',t)-540});
-}
-
-/* c02: pin, radar, gente perto; o mais perto vira o turno coberto */
-function planC02(s){
-  const f=F('c02',1), d=f.fim-f.ini;
-  D(s.ini+.02,{x:1320,y:470,w:30,h:30,r:15},'move');   // só sai do "?" depois que o texto sumiu
-  s.av0=g(s.ini+.1)+P+.45;   // as pessoas só aparecem depois que os anéis abriram (o anel não passa por cima delas) E.c02av.forEach((a,i)=>ev(s.av0+i*P/4,'tick',.35));
-  s.pick=g(f.ini+.6*d,2); ev(s.pick,'pop',.8);
-  D(s.end-.42,{x:E.c03b.x,y:E.c03b.y,w:18,h:18,r:9},'move');
-}
-function runC02(t,s){
-  const f=F('c02',1), out=s.end-.25;
-  io($('#c02a'),t,f.ini+.05,out,30); io($('#c02b'),t,s.pick+.05,out,30);
-  $$('.ring',s.root).forEach((r,i)=>{ const a=g(s.ini+.1)+i*P/2, u=spr(t-a,'move'); r.setAttribute('r',Math.max(0,(110+i*100)*u)); r.setAttribute('stroke-opacity',(.14*(1-.6*spr(t-s.pick,'ui'))*(1-fade(t,out,.15))).toFixed(3)); });   // sai sumindo, sem encolher por cima das pessoas
-  const wv=$('#wave'), w0=g(s.ini+.1), ph=((t-w0)%(4*P))/(4*P), on=t>w0&&t<s.pick;
-  wv.setAttribute('r',Math.max(0,24+ph*92)); wv.style.opacity=on?(1-ph)*.7:0;   // a onda morre antes da primeira pessoa
-  E.c02av.forEach((a,i)=>{ const a0=s.av0+i*P/4, u=spr(t-a0,'pop')*(1-spr(t-out-.02*i,'ui'));
-    const pk=spr(t-s.pick,'ui'); let dx=0,dy=0;
-    if(i===0){
-      a.style.background=mixc(C.white,C.o,pk); a.style.borderColor=mixc(C.line,C.o,pk);
-      a.children[0].style.opacity=1-pk; a.children[1].style.opacity=pk; }
-    st(a,{o:Math.min(1,u*1.4)*(i===0?1:1-.6*fade(t,s.pick,.3)),x:dx,y:dy,s:u});
-  });
-  const l=$('#c02l'), a0=E.c02av[0], X1=+a0.dataset.x, Y1=+a0.dataset.y, pk=spr(t-s.pick,'ui');
-  const ex=lerp(1320,X1,pk), ey=lerp(470,Y1,pk);
-  l.setAttribute('x2',ex); l.setAttribute('y2',ey); l.style.opacity=pk*(1-fade(t,out,.2));
-}
-
-/* fileira: 10 pessoas, 7 trocam (c03); 9 em 10 ficam laranja (c04) e se juntam no ponto (c05) */
-const SWAP=[0,1,3,4,6,7,9];
-function planRow(s){
-  const c3=S.c03, c4=S.c04, c5=S.c05;
-  key('rcx',-9,960); key('rsp',-9,80); key('ry',-9,722); key('rsz',-9,40);
-  key('rsp',c4.ini+.05,120,'move'); key('rsz',c4.ini+.05,72,'move'); key('ry',c4.ini+.05,650,'move');
-  s.in0=g(c3.ini+.55); s.sw0=g(c3.cnt+1.0,4);
-  SWAP.forEach((i,k)=>ev(s.sw0+k*P/4,'tick',.5));
-  s.fill0=c4.fill0; s.merge=c5.ini-.36;
-}
-function runRow(t,s){
-  const c4=S.c04, cx=val('rcx',t), sp=val('rsp',t), y=val('ry',t), sz=val('rsz',t);
-  const ra=$$('.ra',s.root), rb=$$('.rb',s.root), solid=spr(t-c4.ini-.05,'ui');
-  for(let i=0;i<10;i++){
-    const x=cx+(i-4.5)*sp, u=spr(t-s.in0-i*P/8,'pop');
-    const k=SWAP.indexOf(i), ts=k<0?1e9:s.sw0+k*P/4, dn=spr(t-ts,'ui'), up=spr(t-ts-.08,'ui');
-    const m=i<9?spr(t-s.merge,'move'):0, mx=lerp(x,960,m), my=lerp(y,600,m), msz=sz*Math.pow(1-m,2.5);   // todas andam juntas (o espaço entre elas encolhe por igual) e somem antes de encostar; quem vira o ponto é o ponto laranja, que já está no lugar da primeira
-    const fo=i===0?0:(i<9?spr(t-c4.fill0-(i-1)*P/4,'ui'):0);
-    const col=mixc(C.ink,C.o,fo), gone=i===9?fade(t,s.merge,.2):(i===0?fade(t,c4.ini+.4,.1):0), end=i<9?fade(t,s.merge+.34,.06):0;
-    box(ra[i],mx-msz/2,my-msz/2,msz,msz); ra[i].style.background=col;
-    st(ra[i],{o:Math.min(1,u*1.5)*(k<0?1:(1-fade(t,ts,.16)))*(1-gone)*(1-end),y:(k<0?0:dn*40),s:u});
-    box(rb[i],mx-msz/2,my-msz/2,msz,msz); rb[i].style.borderColor=col; rb[i].style.background=mixc(C.paper,fo>0?C.o:C.ink,Math.max(solid,fo));
-    rb[i].style.borderWidth=lerp(4,0,solid).toFixed(2)+'px';
-    st(rb[i],{o:k<0?0:fade(t,ts+.08,.16)*(1-gone)*(1-end),y:(1-up)*-40});
-  }
-}
-
-/* c03: 73,49 % no odômetro */
-function planC03(s){
-  const f=F('c03',1), d=f.fim-f.ini;
-  s.cnt=g(f.ini+.45,2);
-  ev(s.cnt,'roll',1);
-}
-function runC03(t,s){
-  const out=s.end-.22;
-  io($('#c03k'),t,s.ini-.12,out,16); E.o3.set(7349*spr(t-s.cnt,'count'));
-  const n=$('#c03n').parentElement; st(n,{o:fade(t,s.cnt-.15,.2)*(1-fade(t,out,.22)),y:(1-spr(t-s.cnt+.15,'ui'))*30-fade(t,out,.22)*14,blur:fade(t,out,.22)*8});
-  io($('#c03s'),t,s.cnt+1.0,out,20);
-}
-
-/* c04: 9 em 10 */
-function planC04(s){
-  const f=F('c04',1), d=f.fim-f.ini;
-  s.fill0=g(f.ini+.25,4);
-  D(s.ini+.05,{x:960+(0-4.5)*120,y:650,w:72,h:72,r:36},'move');
-  for(let i=1;i<9;i++) ev(s.fill0+(i-1)*P/4,'tick',.6);
-  key('cnt9',-9,1); for(let i=1;i<9;i++) key('cnt9',s.fill0+(i-1)*P/4,i+1,'ui');
-  s.sub=f.ini+.42*d;
-  D(S.c05.ini-.36,{x:960,y:600,w:28,h:28,r:14},'move'); ev(S.c05.ini-.1,'swish',.7);
-}
-function runC04(t,s){
-  const out=s.end-.2;
-  E.o4.set(val('cnt9',t)); io($('#c04n'),t,s.ini-.05,out,30); io($('#c04s'),t,s.sub,out,20);
-}
-
-/* c05: quem precisa liga a quem quer trabalhar; o ponto leva a vaga e vira o telefone */
-function planC05(s){
-  const f=F('c05',1), d=f.fim-f.ini;
-  D(s.ini+.1,{x:960,y:460,w:26,h:26,r:13},'move');
-  s.l0=s.ini+.02; s.r0=g(f.ini+.5*d,2); s.go=g(f.ini+.6*d,2); s.hit=s.go+.62;
-  D(s.go,{x:1120},'soft'); ev(s.go,'swish',.4); ev(s.hit,'pop',.7);
-  D(s.end-.5,{x:660,y:480},'move'); D(s.end-.46,{c:C.ink},'snap'); D(s.end-.38,{w:380,h:780,r:64},'move'); ev(s.end-.38,'swish',.6);
-}
-function runC05(t,s){
-  const out=s.end-.4, cs=$$('.c05c',s.root);
-  [s.l0,s.r0].forEach((a,i)=>{ const q=fade(t,out,.22), u=spr(t-a,'move');
-    st(cs[i],{o:fade(t,a,.2)*(1-q),y:(1-u)*40,x:q*(i?40:-40)}); });
-  cs[1].style.borderColor=mixc(C.line,C.o,spr(t-s.hit,'ui')*(1-fade(t,out,.2)));
-  const u=spr(t-s.l0-.2,'soft'), lo=1-fade(t,out,.2), b=780+360*u, px=val('dx',t), pr=val('dw',t)/2+12;   // a linha abre um vão em volta do ponto
-  const seg=(el,a,z)=>{ el.setAttribute('x1',a); el.setAttribute('x2',Math.max(a,z)); el.style.opacity=z-a>2?lo:0; };
-  if(px+pr<=780||px-pr>=b){ seg($('#c05l'),780,b); seg($('#c05l2'),0,0); } else { seg($('#c05l'),780,px-pr); seg($('#c05l2'),px+pr,b); }
-  const ch=$('#chip'), dx=val('dx',t), cw=ch.offsetWidth; ch.style.left=Math.max(796,Math.min(dx-cw/2,1124-cw))+'px'; ch.style.top='376px';   // a etiqueta fica no vão entre os cartões
-  st(ch,{o:fade(t,s.l0+.25,.2)*(1-fade(t,s.hit-.12,.16)),y:(1-spr(t-s.l0-.25,'ui'))*16});
-}
-
-/* c06 + c07: o telefone, a lista e o cursor */
-function planFluxo(s){
-  const a=S.c06, b=S.c07, f1=F('c06',1), f2=F('c06',2), f3=F('c06',3), g1=F('c07',1), g2=F('c07',2);
-  s.list=g(f1.ini+.05,2);
-  s.st=[f2.ini-.1,f3.ini-.1,g1.ini-.1,g2.ini-.1].map(x=>g(x,4));
-  key('it',-9,262); key('ib',-9,372);
-  s.st.forEach((x,i)=>{ const y=262+i*130; if(i===0){ key('it',x,y,'ui'); key('ib',x,y+110,'ui'); } else { key('ib',x,y+110,'ui'); key('it',x+.04,y,'soft'); } ev(x,'tick',.5); });
-  // tela A: formulário
-  const A=f2.ini; const O={x:484,y:104};
-  key('ko',-9,0); key('kp',-9,1); CUR(-9,1100,980);
-  key('ko',A-.8,1,'ui'); CUR(A-.8,O.x+212,O.y+222);
-  s.fun=A-.32; click(s.fun);
-  CUR(A-.18,528,O.y+302+73); key('kp',A+.1,.84,'ui'); ev(A+.1,'clique',.6);
-  s.drag0=A+.16; CUR(s.drag0,792,O.y+302+73,'soft'); s.drag1=A+.82; key('kp',s.drag1,1,'ui');
-  CUR(s.drag1+.05,O.x+176,O.y+691); s.pub=s.drag1+.38; click(s.pub);
-  s.load=s.pub+.12; s.done=s.pub+.52; ev(s.done,'ok',1);
-  CUR(s.done+.15,O.x+420,O.y+760); key('ko',s.done+.15,0,'ui');
-  s.B=Math.max(f3.ini-.28,s.done+.25); s.isl=s.B+.42; ev(s.isl,'aviso',1);
-  // as horas do controle deslizante
-  s.hrs=[]; let last=0; for(let tt=s.drag0;tt<s.drag1+.3;tt+=1/240){ const u=hourU(tt,s); const h=Math.round(u*3); if(h!==last){ s.hrs.push(tt); ev(tt,'tick',.35); last=h; } }
-  // tela C: candidatos
-  s.C=b.ini-.05; key('ko',g1.ini+.15,1,'ui'); CUR(g1.ini+.15,O.x+176,O.y+160+213);
-  s.esc=g1.ini+.62*(g1.fim-g1.ini)+.1; click(s.esc); ev(s.esc+.06,'ok',.7);
-  CUR(s.esc+.3,O.x+430,O.y+520); key('ko',s.esc+.3,0,'ui');
-  // tela D: check-in e avaliação
-  s.D=g2.ini-.3; s.walk=s.D+.35; s.okk=s.walk+.55; ev(s.okk,'ok',.8);
-  key('ko',g2.ini+.55,1,'ui'); CUR(g2.ini+.55,O.x+96,O.y+612);
-  s.sim=Math.min(g2.ini+1.2,b.end-1.0); click(s.sim);
-  CUR(s.sim+.32,O.x+430,O.y+700); key('ko',s.sim+.32,0,'ui');
-  s.out=b.end-.7;
-  D(b.end-.62,{w:28,h:28,r:14},'move'); D(b.end-.42,{c:C.o},'snap'); D(b.end-.4,{x:948,y:575,w:26,h:26,r:13},'move'); ev(b.end-.62,'swish',.6);
-}
-function hourU(t,s){ const kx=val('kx',t); return cl((kx-528)/264); }
-function runFluxo(t,s){
-  const a=S.c06,b=S.c07, out=s.out;
-  // lista de passos
-  io($('#pss'),t,s.list,out,24);
-  $$('.stp',s.root).forEach((r,i)=>{ const a0=s.list+.1+i*P/4; io(r,t,a0,out+.03*i,28);
-    const on=i===0?spr(t-s.st[0],'ui')*(1-spr(t-s.st[1],'ui')):spr(t-s.st[i],'ui')*(i<3?(1-spr(t-s.st[i+1],'ui')):1);
-    const nm=$('.num',r); nm.style.background=mixc(C.soft,C.o,on); nm.style.color=mixc(C.ink,C.white,on);
-    $('.tt',r).style.opacity=(t>s.st[0]?lerp(.42,1,Math.max(on,t>s.st[i]?.55:0)):1).toFixed(3); });
-  const it=val('it',t), ib=val('ib',t), ind=$('#ind'); ind.style.top=it+'px'; ind.style.height=(ib-it)+'px';
-  ind.style.opacity=fade(t,s.st[0]-.02,.15)*(1-fade(t,out,.2));
-  // tela
-  const scr=$('#scr'); scr.style.opacity=fade(t,a.ini-.1,.12)*(1-fade(t,b.end-.75,.15));
-  const ent=(x0,x1)=>{ const i=spr(t-x0,'ui'), q=x1==null?0:spr(t-x1,'ui'); return {o:fade(t,x0,.15)*(1-fade(t,x1??1e9,.15)),y:(1-i)*30-q*30}; };
-  st($('.scA'),ent(a.ini+.12,s.B)); st($('.scB'),ent(s.B,s.C)); st($('.scC'),ent(s.C,s.D)); st($('.scD'),ent(s.D,null));
-  // formulário
-  const fu=fade(t,s.fun+.05,.14); $('#fFp').style.opacity=1-fu; st($('#fFv'),{o:fu,y:(1-spr(t-s.fun-.05,'ui'))*8}); st($('#fFk'),{o:fu,s:spr(t-s.fun-.1,'pop')});
-  $('#fF').style.borderColor=mixc(C.line,C.ink,fade(t,s.fun,.1)*(1-fade(t,s.drag0,.2)));
-  const u=t<s.drag0?0:(t<s.drag1?hourU(t,s):hourU(s.drag1,s)); const hx=20+264*u;
-  $('#hnd').style.left=(hx-13)+'px'; $('#trk').style.width=(264*u)+'px'; st($('#hnd'),{s:t>s.drag0-.08&&t<s.drag1?1.15:1});
-  const h=20+Math.round(u*3); $('#hora').textContent=L==='en'?String(h-12):String(h);
-  const pb=$('#pub'), pr=t>s.pub&&t<s.pub+.14?.96:1; st(pb,{s:lerp(1,.96,spr(t-s.pub,'ui')*(1-spr(t-s.pub-.1,'ui')))});
-  pb.style.background=mixc(C.ink,C.o,spr(t-s.done,'ui'));
-  $('#pubA').style.opacity=1-fade(t,s.load,.1); const ld=fade(t,s.load,.1)*(1-fade(t,s.done,.1));
-  const sp=$('#pubS'); sp.style.opacity=ld; sp.style.transform=`rotate(${(t-s.load)*720}deg)`; sp.style.transformOrigin='16px 16px';
-  st($('#pubB'),{o:fade(t,s.done,.14),y:(1-spr(t-s.done,'ui'))*14}); $('#pubA').style.top=$('#pubB').style.top='0px';
-  $('#pubA').style.lineHeight=$('#pubB').style.height='66px'; $('#pubB').style.top='0';
-  // ilha e aviso
-  const ie=spr(t-s.isl,'ui'), ih=spr(t-s.isl,'move'), ix=1-spr(t-s.C+.15,'ui');
-  const iw=lerp(110,324,ie*ix), ihh=lerp(32,128,ih*ix), il=$('#isl');
-  box(il,176-iw/2,14,iw,ihh); il.style.borderRadius=lerp(16,34,ie*ix)+'px';
-  $('#nt').style.opacity=fade(t,s.isl+.14,.16)*ix; $('#nt').style.transform=`scale(${lerp(.9,1,ie)})`; $('#nt').style.transformOrigin='162px 0';
-  // candidatos
-  const ec=spr(t-s.esc,'ui'); $('#esc').style.background=mixc(C.ink,C.o,ec); st($('#esc'),{s:lerp(1,.96,ec*(1-spr(t-s.esc-.1,'ui')))});
-  $('#escA').style.lineHeight='58px'; $('#escA').style.opacity=1-fade(t,s.esc,.1); $('#escB').style.height='58px'; st($('#escB'),{o:fade(t,s.esc+.04,.14),y:(1-spr(t-s.esc,'ui'))*12});
-  $('#carla').style.opacity=lerp(1,.4,fade(t,s.esc+.1,.3));
-  // check-in
-  const wk=spr(t-s.walk,'soft'), px=lerp(292,192,wk), py=lerp(236,174,wk), ckp=$('#ckp');
-  box(ckp,px-15,py-15,30,30); ckp.style.background=mixc(C.ink,C.o,spr(t-s.okk,'ui')); $('#ckpk').style.opacity=fade(t,s.okk,.12);
-  const rg=spr(t-s.D-.1,'move'); $('#ck200').setAttribute('r',Math.max(0,96*rg)); $('#ck200t').style.opacity=fade(t,s.D+.3,.2);
-  io($('#ckok'),t,s.okk,null,12); io($('#ckd'),t,s.okk+.08,null,12);
-  const th=$('#thumb'), cxp=484+96, tp=t-s.sim; const L0=lerp(96,20,spr(tp,'ui')), R0=lerp(96,172,spr(tp-.05,'soft'));
-  th.style.left=L0+'px'; th.style.width=Math.max(0,R0-L0)+'px'; th.style.opacity=t>s.sim?1:0;
-  $('#sim').style.color=mixc(C.ink,C.white,fade(t,s.sim+.04,.12));
-}
-
-/* c08: mapa, 15 km, zoom até 200 m */
-function planC08(s){
-  const f1=F('c08',1), f2=F('c08',2);
-  s.r15=g(f1.ini+.15,2); ev(s.r15,'swish',.5);
-  s.zoom=g(f2.ini-.25,2); CAM(s.zoom,{x:948,y:575,s:2.6},'cam'); D(s.zoom,{w:12,h:12,r:6},'cam');
-  s.r200=s.zoom+.55; ev(s.r200,'pop',.6); s.walk=s.r200+.6;
-  // pessoas espalhadas dentro do DF
-  const poly=[[70,6],[930,6],[915,80],[940,160],[918,240],[950,320],[925,400],[955,480],[935,546],[40,546],[30,470],[55,390],[18,300],[48,220],[10,140],[55,70]];
-  const inside=(x,y)=>{ let c=false; for(let i=0,j=poly.length-1;i<poly.length;j=i++){ const [xi,yi]=poly[i],[xj,yj]=poly[j]; if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi)) c=!c; } return c; };
-  let seed=7; const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647; const pts=[];
-  // nenhuma pessoa encosta em texto, nos anéis, no caminho de quem anda ou (no zoom) embaixo do painel
-  const livre=[...$$('#reg text')].map(e=>{ const n=e.textContent.length*11.5; return [+e.getAttribute('x')-n/2-10,+e.getAttribute('y')-22,+e.getAttribute('x')+n/2+10,+e.getAttribute('y')+10]; });
-  livre.push([388+104-12,311-108-36,388+104+112,311-108+14],[388+26-8,311-28-16,388+26+48,311-28+8]);
-  const tela=(x,y)=>[(560+x-948)*2.6+960,(264+y-575)*2.6+540];
-  const ok=(x,y,d)=>{ if(Math.abs(d-136)<16||Math.abs(d-32)<12||d<22) return false;
-    if(livre.some(([l,t,r,b])=>x>l&&x<r&&y>t&&y<b)) return false;
-    const u=Math.max(0,Math.min(1,((x-446)*-42+(y-351)*-29)/(42*42+29*29))); if(Math.hypot(x-446+42*u,y-351+29*u)<16) return false;
-    const [X,Y]=tela(x,y); if(X<526+30&&Y>330-30&&Y<630+30) return false; if(Y>930) return false;   // nem embaixo da legenda
-    return true; };
-  while(pts.length<46){ const x=40+rnd()*890, y=30+rnd()*500; const d=Math.hypot(x-388,y-311); if(inside(x,y)&&ok(x,y,d)&&!pts.some(p=>Math.hypot(p[0]-x,p[1]-y)<38)) pts.push([x,y,d]); }
-  $('#gente').innerHTML=pts.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="5" data-d="${p[2].toFixed(1)}"/>`).join('');
-  CAM(S.c09.ini+.75,{x:960,y:540,s:1},'cam');
-}
-function runC08(t,s){
-  const out=S.c08.end-.3, m=S.c08m.root;
-  const dr=eio(ramp(t,s.ini-.55,.9)); $('#df').style.strokeDashoffset=(1-dr).toFixed(4); $('#df').style.fillOpacity=fade(t,s.ini-.1,.4);
-  $('#reg').style.opacity=fade(t,s.ini+.1,.3)*(1-fade(t,s.zoom,.25));
-  $$('#gente circle').forEach((c,i)=>{ const d=+c.dataset.d, a=s.ini+.02+i*.012, lit=d<136?spr(t-s.r15-d/600,'ui'):0;
-    c.setAttribute('r',(5*spr(t-a,'pop')+1.5*lit).toFixed(2)); c.style.fill=mixc(C.mut,C.o,lit); c.style.opacity=lerp(.55,1,lit); });
-  const r=spr(t-s.r15,'move'); $('#r15').setAttribute('r',Math.max(0,136*r)); $('#r15t').style.opacity=fade(t,s.r15+.3,.2);
-  const r2=spr(t-s.r200,'move'); $('#r200').setAttribute('r',Math.max(0,32*r2)); $('#r200t').style.opacity=fade(t,s.r200+.3,.2);
-  const wk=spr(t-s.walk,'soft'); $('#anda').setAttribute('transform',`translate(${lerp(388+58,388+16,wk)},${lerp(311+40,311+11,wk)})`);
-  $('#anda').style.opacity=fade(t,s.walk-.3,.2); $('#anda circle').style.fill=mixc(C.ink,C.o,fade(t,s.walk+.55,.15)); if(t>s.walk+.55&&t<s.walk+.56) {}
-  // painel
-  const p=$('#pan'); st(p,{o:fade(t,s.ini-.1,.25)*(1-fade(t,out,.2)),y:(1-spr(t-s.ini+.1,'move'))*30});
-  const sw=spr(t-s.zoom,'ui');
-  $$('.pA',p).forEach((e,i)=>st(e,{o:1-fade(t,s.zoom+i*.03,.14),y:-sw*14}));
-  $$('.pB',p).forEach((e,i)=>{ const a=s.zoom+.12+i*.04; st(e,{o:fade(t,a,.16),y:(1-spr(t-a,'ui'))*18}); });
-}
-
-/* c09: o ponto engole a tela */
-function planC09(s){
-  const f=F('c09',1);
-  D(s.ini-.12,{c:C.ink},'snap'); D(s.ini-.04,{w:3000,h:3000,r:1500},'soft'); ev(s.ini-.04,'grave',1);
-  key('th',-9,0); key('th',s.ini+.06,1,'ui');
-  D(s.ini+.75,{x:960,y:540},'cam');
-}
-function runC09(t,s){
-  const f=F('c09',1), ws=E.c09w, n=ws.length, stg=Math.min(.24,(f.fim-f.ini)*.75/n);
-  wio(ws,t,f.ini-.04,stg,s.end-.3,50);
-}
-
-/* c10: os números do site */
-function planC10(s){
-  const f=F('c10',1), d=f.fim-f.ini;
-  s.n1=g(f.ini+.12*d,2); s.n2=g(f.ini+.52*d,2); ev(s.n1,'roll',1); ev(s.n2,'roll',.7);
-}
-function runC10(t,s){
-  const out=s.end-.25, a=s.ini-.15, b=$('#brw');
-  st(b,{o:fade(t,a,.25)*(1-fade(t,out,.22)),y:(1-spr(t-a,'move'))*60,s:lerp(.96,1,spr(t-a,'move'))-.04*fade(t,out,.22)});
-  io($('#c10k'),t,a+.2,null,14);
-  [[s.n1,'#n1',E.o10a],[s.n2,'#n2',E.o10b]].forEach(([n,id,o],i)=>{ o.set(t,n-.05);
-    st($(id).parentElement,{o:fade(t,n-.12,.18),y:(1-spr(t-n+.12,'ui'))*24}); io($$('.c10l',s.root)[i],t,n+.35,null,14); });
-  $('#c10d').style.opacity=fade(t,s.n2-.25,.25);
-}
-
-/* c11: meio-tom; poucos pontos laranja aparecem */
-function planC11(s){
-  const f=F('c11',1);
-  D(S.c12.ini-.3,{w:820,h:400,r:36,sh:1},'move'); D(S.c12.ini-.3,{y:440},'move'); D(S.c12.ini+.02,{c:C.white},'snap');
-  key('th',S.c12.ini-.05,0,'ui'); ev(S.c12.ini-.3,'grave',.8);
-  s.b=f.ini+.48*(f.fim-f.ini);
-}
-function runC11(t,s){
-  const f=F('c11',1), out=s.end-.28; io($('#c11a'),t,f.ini,out,34); io($('#c11b'),t,s.b,out,34);
-  const cv=$('#ht'), x=cv.getContext('2d'); x.clearRect(0,0,1920,1080);
-  const op=fade(t,s.ini+.05,.3)*(1-fade(t,out,.2)); if(op<=0) return; x.globalAlpha=op;
-  const lt=t-s.ini;
-  for(let j=0;j<24;j++) for(let i=0;i<41;i++){ const X0=24+i*47, Y0=24+j*45; const d=Math.hypot(X0-960,Y0-540);
-    const h=((i*73856093)^(j*19349663))>>>0, hot=(h%37)===0;
-    const w=cl((lt*900-d)/300); let r=1.6+2.2*w; if(hot){ r=lerp(r,9,spr(lt-1.0-(h%7)*.06,'ui')); }
-    x.fillStyle=hot&&lt>1.0?C.o:'#3A3B40'; x.beginPath(); x.arc(X0,Y0,r,0,7); x.fill(); }
-}
-
-/* c12: o cartão do Bruno */
-function planC12(s){
-  const f=F('c12',1), d=f.fim-f.ini;
-  s.d0=g(f.ini+.25*d,4); s.s0=g(f.ini+.6*d,4);
-  for(let i=0;i<18;i++) if(i%3===0) ev(s.d0+i*P/8,'tick',.3); for(let i=0;i<10;i++) ev(s.s0+i*P/8,'tick',.35);
-  key('ko',s.s0-.1,1,'ui'); CUR(s.s0-.1,1236,326);
-  s.esc=Math.min(s.s0+1.15,s.end-.75); click(s.esc); ev(s.esc+.06,'ok',.8);
-  CUR(s.esc+.3,1420,560); key('ko',s.esc+.3,0,'ui');
-  D(s.end-.42,{w:28,h:28,r:14,sh:0},'move'); D(s.end-.16,{c:C.o},'snap'); D(s.end-.2,{x:420,y:560},'move');
-}
-function runC12(t,s){
-  const out=s.end-.45; io($('#c12k'),t,s.ini-.05,out,18);
-  $$('.c12i',s.root).forEach((e,i)=>io(e,t,s.ini+.02+i*.035,out,22));
-  $$('.c12d',s.root).forEach((e,i)=>{ const on=i<18?spr(t-s.d0-i*P/8,'ui'):0; e.style.background=mixc(C.line,C.o,on); st(e,{s:1+.25*on*(1-spr(t-s.d0-i*P/8-.08,'ui')),o:fade(t,s.ini+.3,.2)*(1-fade(t,out,.2))}); });
-  $$('.c12s',s.root).forEach((e,i)=>{ const on=i<10?spr(t-s.s0-i*P/8,'ui'):0; e.style.background=mixc(C.line,C.ink,on); st(e,{o:fade(t,s.ini+.36,.2)*(1-fade(t,out,.2))}); });
-  const ec=spr(t-s.esc,'ui'); $('#c12b').style.background=mixc(C.ink,C.o,ec);
-  $('#c12bA').style.lineHeight='64px'; $('#c12bA').style.opacity=1-fade(t,s.esc,.1); $('#c12bB').style.height='64px'; st($('#c12bB'),{o:fade(t,s.esc+.04,.14),y:(1-spr(t-s.esc,'ui'))*12});
-}
-
-/* c13: linha do tempo */
-function planC13(s){
-  const f=F('c13',1), d=f.fim-f.ini;
-  s.A=g(f.ini+.22*d,2); s.B=g(f.ini+.62*d,2);
-  // o ponto chega ao check e some dentro dele; renasce à direita do check e segue até o anel
-  D(s.A-.3,{x:700},'move'); D(s.A-.02,{w:0,h:0,r:0},'snap'); D(s.A+.2,{x:700+48},'snap');
-  D(s.B-.55,{w:28,h:28,r:14},'ui'); D(s.B-.4,{x:1220},'soft'); D(s.B-.1,{w:30,h:30,r:15},'ui');
-  ev(s.A,'ok',.6); ev(s.B,'pop',.6);
-}
-function runC13(t,s){
-  const out=s.end-.42; io($('#c13h'),t,s.ini-.12,out,24);
-  // as linhas param a 12 px do ponto, do check e do anel: nada passa por cima de nada
-  const dx=val('dx',t), dr=val('dw',t)/2+12, lo=1-fade(t,out,.2);
-  const seg=(el,a,b)=>{ el.setAttribute('x1',a); el.setAttribute('x2',Math.max(a,b)); el.style.opacity=b-a>2?lo:0; };
-  const corta=(ids,a,b)=>{ const [p,q]=ids.map(i=>$('#c13'+i)); if(dx+dr<=a||dx-dr>=b){ seg(p,a,b); seg(q,0,0); } else { seg(p,a,dx-dr); seg(q,dx+dr,b); } };
-  const u=spr(t-s.ini+.15,'move'), v=fade(t,s.A,.5);
-  corta(['a','a2'],420,lerp(420,700-34,u)); corta(['b','b2'],700+34,lerp(700+34,1220-38,v));
-  st($('#c13A'),{s:spr(t-s.A,'pop'),o:1-fade(t,out,.2)});
-  st($('#c13B'),{o:fade(t,s.A+.2,.2)*(1-fade(t,out,.2))});
-  $$('.c13l1').forEach((e,i)=>io(e,t,s.A+.05+i*.06,out,16)); $$('.c13l2').forEach((e,i)=>io(e,t,s.B+.05+i*.06,out,16));
-}
-
-/* c14: moeda R$ 0 que gira */
-function planC14(s){
-  const f=F('c14',1);
-  D(s.ini-.3,{x:960,y:450},'move'); D(s.ini-.12,{w:300,h:300,r:150},'move');
-  s.flip=s.ini+.2; ev(s.flip,'swish',.5); s.lab=g(f.ini+.45*(f.fim-f.ini),2);
-  D(S.c16.ini-.3,{w:66,h:66,r:33},'ui');
-}
-function runC14(t,s){
-  const out=s.end-.2, th=Math.PI*2*spr(t-s.flip,'soft'), fx=Math.abs(Math.cos(th));
-  E.flip=t<s.end+.2?lerp(1,fx,1-fade(t,s.end-.4,.1)):1;
-  st($('#coin'),{o:fade(t,s.ini+.05,.15)*(1-fade(t,out,.15)),sx:fx});
-  io($('.c14a'),t,s.lab,out,20); io($('.c14b'),t,s.lab+.08,out,20);
-  const l=$('#c14l'), r=$('#c14r'); l.style.opacity=r.style.opacity=fade(t,s.lab,.2)*(1-fade(t,out,.2));
-  io($('#c14h'),t,s.ini+.15,out,20);
-}
-
-/* c16: logo se desenha; o ponto pousa no i; volta ao quadro 1 */
-function planC16(s){
-  const f1=F('c16',1);
-  s.land=f1.ini+.05; D(s.land-.34,{x:E.idot.x,y:E.idot.y},'move'); ev(s.land,'pouso',1);
-  // saída: as letras saem inteiras e, por último, o ponto encolhe até sumir. O filme acaba no papel limpo.
-  s.loop=T.total-1.7;
-  D(s.loop+.75,{w:0,h:0,r:0},'soft');
-}
-function runC16(t,s){
-  const f2=F('c16',2), lo=s.loop;
-  // entrada: cada letra (fr juntos, porque o traço do f entra no r) desenha todos os seus traços ao mesmo tempo, enquanto aparece e assenta;
-  // as letras vêm em sequência, da esquerda para a direita. Saída: o contrário, cada letra sai inteira (sobe, desfoca e some).
-  // Opacidade no grupo da letra, não no traço: nada fica mais escuro onde dois traços se cruzam, e nenhum traço é desmontado.
-  $$('.lgl',s.root).forEach((g,k)=>{ const a=s.ini-.16+k*.13, dr=eio(ramp(t,a,.62)), ap=eio(ramp(t,a,.3)), un=eio(ramp(t,lo+k*.08,.5));
-    $$('.lg',g).forEach(p=>{ p.style.strokeDashoffset=(1-dr).toFixed(4); });
-    const o=ap*(1-un), y=(1-spr(t-a,'ui'))*14-10*un;
-    g.style.opacity=o<.002?0:o.toFixed(3); g.style.transform=`translateY(${y.toFixed(2)}px)`; g.style.filter=un>0?`blur(${(3*un).toFixed(2)}px)`:''; });
-  const ws=E.c16w, stg=Math.min(.2,(f2.fim-f2.ini)*.75/ws.length); wio(ws,t,f2.ini-.04,stg,lo-.25,30);
-  io($('#c16r'),t,f2.ini+.4,lo-.25,10);
-}
-
-/* ---------- HUD, legenda, ponto, câmera ---------- */
-function runHUD(t){
-  const th=val('th',t), ink=mixc(C.ink,C.paper,th), mut=mixc(C.mut,'#8A8F96',th);
-  // fonte
-  const sr=$('#src'); let fs=null, fa=0, fb=0;
-  for(const [id,txt] of [['c03',X.c03f],['c04',X.c04f],['c10',X.c10.f]]){ const s=S[id]; if(t>=s.ini-.1&&t<s.end+.1){ fs=txt; fa=s.ini+.3; fb=s.end-.35; } }
-  if(fs){ if(sr.textContent!==fs) sr.textContent=fs; sr.style.color=mut; st(sr,{o:fade(t,fa,.25)*(1-fade(t,fb,.2))}); } else sr.style.opacity=0;
-  // legenda
-  const cp=$('#cap'); const fl=T.falas.find(f=>t>=f.leg_ini-.01&&t<f.leg_fim+.01);
-  if(fl&&!NOCAP.has(fl.cena.slice(0,3))){ if(cp.textContent!==fl.legenda) cp.textContent=fl.legenda; const i=fade(t,fl.leg_ini,.14), q=fade(t,fl.leg_fim-.14,.14);
-    cp.style.color=ink; st(cp,{o:i*(1-q),y:(1-spr(t-fl.leg_ini,'ui'))*10,blur:(1-i)*6+q*4}); } else cp.style.opacity=0;
-}
-const NOCAP=new Set(['c01','c09','c16']);
-
-function runDot(t){
-  const x=val('dx',t), y=val('dy',t), w=val('dw',t)*(E.flip??1), h=val('dh',t), r=val('dr_',t);
-  const d=E.dot.style; d.left=(x-w/2).toFixed(2)+'px'; d.top=(y-h/2).toFixed(2)+'px'; d.width=Math.max(0,w).toFixed(2)+'px'; d.height=Math.max(0,h).toFixed(2)+'px';
-  d.borderRadius=Math.max(0,Math.min(r,w/2,h/2)).toFixed(2)+'px';
-  d.background=`rgb(${cl(val('dr',t),0,255)|0},${cl(val('dg',t),0,255)|0},${cl(val('db',t),0,255)|0})`;
-  const sh=cl(val('dsh',t)); d.boxShadow=sh>.01?`0 ${24*sh}px ${60*sh}px rgba(24,25,28,${.09*sh})`:'none';
-}
-function runCam(t){ const cx=val('cx',t), cy=val('cy',t), s=val('cs',t);
-  W.style.transform=`translate(960px,540px) scale(${s.toFixed(5)}) translate(${(-cx).toFixed(3)}px,${(-cy).toFixed(3)}px)`; }
-function runCursor(t){ const c=E.cur; c.style.left=val('kx',t).toFixed(2)+'px'; c.style.top=val('ky',t).toFixed(2)+'px'; st(c,{o:val('ko',t),s:val('kp',t)}); }
-
-/* ---------- boot e seek ---------- */
-window.boot=async function(tempos,lang){
-  T=tempos; L=lang; X=TX[lang]; P=T.P;
-  document.documentElement.lang=lang==='en'?'en':'pt-BR';
-  build();
-  await document.fonts.load('800 100px PJS'); await document.fonts.load('700 100px PJS'); await document.fonts.load('700 40px AHN'); await document.fonts.load('400 40px AHN'); await document.fonts.ready;
-  // régua das cenas
-  for(const c of T.cenas){ const id=c.id.slice(0,3); S[id]={id,ini:c.ini,dur:c.dur,end:c.ini+c.dur,f:T.falas.filter(f=>f.cena===c.id)}; ORD.push(S[id]); }
-  S.c08m={ini:S.c08.ini,end:S.c09.ini+.2}; S.row={ini:S.c03.ini,end:S.c05.ini+.3}; S.fluxo={ini:S.c06.ini,end:S.c07.end}; S.c08p=S.c08;
-  // medidas (sem transformações ainda)
-  $$('.sc').forEach(e=>e.style.display='block');
-  E.c01w=[...words($('#c01a')),...words($('#c01bw'))];
-  const q=$('#q').getBoundingClientRect(); E.q={x:q.left+q.width*29/56,y:q.top+q.height*86/112,d:21};
-  const k=$('#c03ks').getBoundingClientRect(); E.c03b={x:k.left-24,y:k.top+k.height/2};
-  E.c02av=$$('.c02av'); E.c09w=[...words($('#c09a')),...words($('#c09b'))]; E.c16w=words($('#c16t'));
-  E.c09w.slice(-X.c09hi).forEach(w=>w.style.color=C.o);
-  E.o3=mkOdo($('#c03n'),X.c03n,3); E.o4=mkOdo($('#c04d'),'#',1); E.o10a=mkSlot($('#n1'),X.c10.n1); E.o10b=mkSlot($('#n2'),X.c10.n2);
+function projetar(x,y,f=1){const cx=val('cx',E.t),cy=val('cy',E.t),z=val('cs',E.t);return {x:(x-cx+cl((cx-960)*(1-f),-30,30))*z+960,y:(y-cy+cl((cy-540)*(1-f),-30,30))*z+540,z};}
+function runDot(t){const p=projetar(val('dx',t),val('dy',t),1.1),w=val('dw',t)*p.z,h=val('dh',t)*p.z,d=E.dot.style;box(E.dot,p.x-w/2,p.y-h/2,w,h);d.borderRadius=val('dr_',t)*p.z+'px';d.background=C.o;if(t<S.v10.ini||t>=S.v10.end)E.checkDado.style.opacity=0;}
+function runCam(t){const cx=val('cx',t),cy=val('cy',t),z=val('cs',t);W.style.transform=`translate(960px,540px) scale(${z.toFixed(5)}) translate(${-cx}px,${-cy}px)`;}
+function runCursor(t){const p=projetar(val('kx',t),val('ky',t),1.1);E.cur.style.left=p.x+'px';E.cur.style.top=p.y+'px';st(E.cur,{o:val('ko',t),s:val('kp',t)*p.z});}
+window.boot=async function(tempos,lang='pt'){
+  // É seguro montar de novo na mesma página (QA de diferentes réguas).
+  T=tempos;L=lang;X=TX[L];if(!X)throw new Error('A v5 tem roteiro somente em português.');P=T.P;S={};ORD=[];SC.length=0;EV.length=0;for(const k of Object.keys(K))delete K[k];W.innerHTML=OV.innerHTML=HUD.innerHTML='';W.style.transform='none';
+  const ids=T.cenas.map(c=>c.id.slice(0,3));if(ids.join(',')!==Array.from({length:14},(_,i)=>`v${String(i+1).padStart(2,'0')}`).join(','))throw new Error('A v5 exige uma régua com v01–v14. Para ensaio sem voz: scripts/tempos-provisorios.py.');
+  for(const c of T.cenas){const id=c.id.slice(0,3),f=T.falas.filter(f=>f.cena===c.id);S[id]={id,ini:c.ini,dur:c.dur,end:c.ini+c.dur,f};ORD.push(S[id]);}
+  build();await document.fonts.load('800 100px PJS');await document.fonts.load('700 100px PJS');await document.fonts.load('600 40px AHN');await document.fonts.load('700 40px AHN');await document.fonts.load('400 40px AHN');await document.fonts.ready;
+  SC.forEach(sc=>{sc.root.style.display='block';S[sc.id].root=sc.root;});
+  const q=$('#q').getBoundingClientRect();E.q={x:q.left+q.width*29/56,y:q.top+q.height*86/112};
+  E.ganchoA=words(Q(S.v01,'.h'));E.ganchoB=words(Q(S.v01,'.gancho-b')); // q não é texto: preservado abaixo.
+  E.o2=mkOdo(Q(S.v02,'.contador'),'#');E.o3a=mkSlot(Q(S.v03,'.n1'),X.v03.n1);E.o3b=mkSlot(Q(S.v03,'.n2'),X.v03.n2);E.o4=mkOdo(Q(S.v04,'.contador'),X.v04.n,3);E.metas=QA(S.v11,'.numero').map((el,i)=>mkOdo(el,X.v11.numeros[i]));
   E.idot={x:610+(117.5+4)*700/245,y:291+(10.49+6)*700/245};
-  $$('.sc').forEach(e=>e.style.display='none');
-  // trilhas iniciais
-  D(-9,{x:960,y:540,w:28,h:28,r:14,c:C.o,sh:0},'ui'); key('th',-9,0);
-  CAM(-9,{x:960,y:540,s:1});
-  // dr_ (raio) separado de dr (vermelho)
-  const origD=D;
-  for(const sc of SC){ const s=S[sc.id]; s.root=sc.root; }
-  window.__D=D;
-  for(const sc of [...SC.filter(c=>c.id!=='row'),SC.find(c=>c.id==='row')]){ if(sc.plan) sc.plan(S[sc.id]); }
-  for(const n in K) K[n].sort((a,b)=>a[0]-b[0]);
-  EV.sort((a,b)=>a.t-b.t); window.eventos=EV;
-  return {total:T.total, eventos:EV.length};
+  D(-9,{x:1760,y:815,w:28,h:28,r:14,c:C.o,sh:0});CAM(-9,{x:960,y:540,s:1});key('th',-9,0);CUR(-9,1100,980);key('ko',-9,0);key('kp',-9,1);
+  for(const sc of SC)sc.plan(S[sc.id]);for(const n in K)K[n].sort((a,b)=>a[0]-b[0]);EV.sort((a,b)=>a.t-b.t);window.eventos=EV;window.seek(0);
+  return {total:T.total,cenas:SC.length,eventos:EV.length,provisorio:!!T._provisorio};
 };
-window.seek=function(t){
-  E.flip=1;
-  for(const sc of SC){ const s=S[sc.id]; const on=t>=s.ini-1.0&&t<s.end+.9; sc.root.style.display=on?'block':'none'; if(on&&sc.run) sc.run(t,s); }
-  runDot(t); runCam(t); runCursor(t); runHUD(t);
-};
+window.seek=function(t){E.t=t;for(const sc of SC){const s=S[sc.id],on=t>=s.ini&&t<s.end;sc.root.style.display=on?'block':'none';if(on)sc.run(t,s);}runCam(t);runDot(t);runCursor(t);runHUD(t);};
 </script></body></html>

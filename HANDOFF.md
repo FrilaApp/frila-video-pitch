@@ -9,7 +9,7 @@
 ## 0. Em 1 minuto
 
 - **O que é:** um vídeo de ~100 s, 1920×1080, 60 fps, narração em PT-BR por voz sintética, que mostra três dores de quem contrata turno avulso, como o Frila resolve cada uma (mockups), e fecha com potencial, meta de prospecção e estratégia para quem acompanha como investidor. O fim **não vende**: é tempo e foco ("deixa que o Frila cuida").
-- **Onde estamos:** a **narrativa** está escrita (14 momentos), o **design da v4** está documentado, o **plano de áudio** está aprovado com ajustes e o **motor** (HTML calculado quadro a quadro + FFmpeg) roda. **Nada da v5 foi renderizado.** O `roteiro.json` ainda é o texto da v4; o texto novo está em `roteiro-v5-100s.json` (rascunho).
+- **Onde estamos:** a **narrativa** está escrita (14 momentos), o **design da v4** está documentado, o **plano de áudio** está aprovado com ajustes e o **motor** (HTML calculado quadro a quadro + FFmpeg) roda. **Não há render final da v5.** As 14 cenas visuais já têm quadros de ensaio com régua provisória; ver `docs/QA-CENAS-v5.md`. O `roteiro.json` ainda é o texto da v4; o texto novo está em `roteiro-v5-100s.json` (rascunho).
 - **O que falta (em ordem):** Cauê aprova o texto → gerar a voz → adaptar a régua de tempos → montar as cenas novas no `filme.html` (com zoom + parallax nos mockups) → implementar o plano de áudio → renderizar → mixar → conferir → Cauê ouve e aprova → entregar.
 - **Quem decide:** o **Cauê** (produto, texto, ouvido final). Dúvida de conteúdo ou número: pergunte a ele; não decida sozinho.
 
@@ -39,12 +39,13 @@
 | Narrativa de 100 s (14 momentos, 204 palavras faladas) | **Escrita. Falta aprovação final do Cauê** (a crítica de investidor do revisor Astra ainda não chegou) | `NARRATIVA-v5-100s.md`, `roteiro-v5-100s.json` |
 | Design do vídeo (v4 documentada, mapa v4→v5, diretriz D1) | Pronto | `DESIGN.md` |
 | Plano de áudio (trilhas separadas, ducking, cortes de fala, QA) | T4 implementada e conferida offline com sinais sintéticos no branch `feat/audio-infra`; voz/mix v5 e escuta pendentes | `PLANO-AUDIO.md` §H, `motor/mixagem.json`, `motor/conferir_audio.py` |
-| Motor (`motor/`) | Roda. Caminhos ajustados para este repositório. **Ainda com as cenas da v4** | `motor/` |
+| Motor (`motor/`) | Roda. Caminhos ajustados para este repositório. **Imagem com cenas v01–v14; `tempos2.py` ainda aguarda T5** | `motor/` |
 | `preparar` (preparação da voz) | Preserva bruto por padrão, sem fades; corte/padding auditáveis testados offline. Régua/IDs da T5 preservados | `motor/tempos2.py`, `PLANO-AUDIO.md` §H |
 | Voz ElevenLabs (script de geração e conferência) | Pronto e testado (2 frases + 20 frases de teste) | `vozes/eleven.py` |
 | Roteiro da v5 aplicado no `roteiro.json` | **Não** (rascunho em `roteiro-v5-100s.json`) | — |
 | Voz da v5 gerada | **Não** | — |
-| Cenas novas (v01–v14) no `filme.html` | **Não** | — |
+| Cenas novas (v01–v14) no `filme.html` | **Montadas e conferidas em ensaio T6**, sem voz; régua provisória separada | `motor/filme.html`, `scripts/tempos-provisorios.py`, `docs/QA-CENAS-v5.md` |
+| D1 em v06, v07 e v09 (T7) | **Implementado para revisão visual**, escala 1,10 após medir invasão da faixa em 1,20; falta aprovação do Cauê | `DESIGN.md` §19 e capturas em `motor/cache/qa-v5/` |
 | Render, mix, QA, entrega | **Não** | — |
 
 **Pendências do Cauê** (o vídeo não pode ficar final sem elas):
@@ -138,6 +139,8 @@ Esforço: **P** pequeno (≤ 2 h), **M** médio (meio dia), **G** grande (1 a 2 
 | T10 | **Mux, legenda, metadados** | `scripts/pipeline.sh mux` | MP4 e `.srt` conforme a §1 | P | T9 |
 | T11 | **QA completo** e **escuta do Cauê** (voz isolada, mix, celular, notebook, fones, mono; o vídeo inteiro sem ler legenda) | relatório de QA | Critérios 1–10 da §1 | M | T10 |
 | T12 | **Entrega:** arquivos finais no Drive, PR com atualização deste `HANDOFF.md` (estado) e do `DESIGN.md` | — | PR aprovado pelo Cauê | P | T11 |
+
+**Atualização T6 (26/10/2026):** montagem visual v01–v14 concluída para ensaio. `scripts/tempos-provisorios.py` gera uma régua marcada PROVISÓRIA, sem áudio, a 2,3 palavras/s (107,4196 s). `tempos2.py`, `aparar`, ducking e roteiros não foram alterados. D1 aplicado com redução documentada para 1,10, aguardando revisão das capturas pelo Cauê. Os 42 quadros, a varredura de sobreposições e a conferência de determinismo estão registrados em `docs/QA-CENAS-v5.md`. Após T2/T3/T5, repetir quadros, varredura e validação visual antes do render final.
 
 **Ordem sugerida:** T1 → (T2 em paralelo com T4 e T6) → T3 → T5 → T7 → T8 → T9 → T10 → T11 → T12. T4 e T6 não dependem do texto final; os ajustes de áudio e as cenas visuais podem andar antes da voz.
 
