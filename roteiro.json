@@ -1,5 +1,41 @@
 {
  "_nota": "Texto enxuto da v5 aprovado pelo Fabrício em 26/10/2026: 13 cenas (a v08-teaser foi removida), 154 palavras faladas, alvo ~80 s. Os ids v01–v14 NÃO foram renumerados (a v08 não existe). 'bloco' agrupa a produção em A, B, C e D (PLAYBOOK §2). 'fala' vai para a voz (números por extenso); 'legenda' é o texto na tela e no .srt. Frases se separam em . ? ! e fala e legenda precisam ter o mesmo número de frases por cena. 'janela_s' é planejamento, não medida (valores da versão de ~100 s: revisar com a voz). Campos extras (bloco, tela, dado_e_fonte, janela_s, legenda_queimada) são documentação; o motor lê só id, pt.fala e pt.legenda.",
+ "audio_blocos_aprovados": true,
+ "blocos": [
+  {
+   "id": "A",
+   "cenas": [
+    "v01-gancho",
+    "v02-dor1",
+    "v03-dor2",
+    "v04-dor3"
+   ]
+  },
+  {
+   "id": "B",
+   "cenas": [
+    "v05-virada",
+    "v06-solucao1",
+    "v07-solucao2",
+    "v09-solucao3"
+   ]
+  },
+  {
+   "id": "C",
+   "cenas": [
+    "v10-dado",
+    "v11-meta",
+    "v12-estrategia"
+   ]
+  },
+  {
+   "id": "D",
+   "cenas": [
+    "v13-fecho",
+    "v14-assinatura"
+   ]
+  }
+ ],
  "cenas": [
   {
    "id": "v01-gancho",
@@ -88,7 +124,7 @@
   {
    "id": "v09-solucao3",
    "pt": {
-    "fala": "Depois do turno, os dois lados avaliam: chamaria de novo?",
+    "fala": "Depois do turno, os dois lados avaliam, chamaria de novo?",
     "legenda": "Depois do turno, os dois lados avaliam: chamaria de novo?"
    },
    "janela_s": 7.5,
@@ -112,7 +148,7 @@
   {
    "id": "v11-meta",
    "pt": {
-    "fala": "Meta do piloto: oito semanas, cinquenta vagas por semana e nove em cada dez profissionais presentes.",
+    "fala": "Meta do piloto, oito semanas, cinquenta vagas por semana e nove em cada dez profissionais presentes.",
     "legenda": "Meta do piloto: 8 semanas, 50 vagas por semana e 9 em cada 10 profissionais presentes."
    },
    "janela_s": 7.5,
