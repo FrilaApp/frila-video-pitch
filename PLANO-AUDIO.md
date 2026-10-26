@@ -208,11 +208,9 @@ Os tetos de borda usam a referência da frase e não garantem SNR de cada consoa
 
 ### D1. Geração
 
-- Manter Fernanda, modelo `eleven_multilingual_v2`, idioma e parâmetros públicos atuais como baseline. Gravar no manifesto o texto exato, configurações efetivamente usadas, tomada e hash. Nenhuma credencial entra em manifesto ou relatório.
+- **Baseline v5 (aprovado pelo Fabrício em 26/10/2026, A/B "C"):** Fernanda, `eleven_multilingual_v2`, estabilidade 0,35, similaridade 0,75, estilo 0,35, velocidade 1,0, seed 1, com `previous_text` (as 2 falas anteriores do roteiro) e `next_text` (a fala seguinte). No A/B, frases isoladas com estabilidade 0,5 e estilo 0 soaram robóticas; o modelo `eleven_v3` sem contexto foi preterido. Gravar no manifesto o texto exato, configurações efetivamente usadas, tomada e hash. Nenhuma credencial entra em manifesto ou relatório.
 - Manter uma frase por arquivo como unidade de edição. Na implementação, permitir selecionar **uma frase**, pois o filtro atual seleciona cena e pode regravar todas as frases dela. Preservar tomadas aprovadas e suas alternativas.
-- O corpo de geração lido envia `text`, `model_id`, `language_code`, `voice_settings` e seed opcional; **não envia contexto anterior/seguinte**. Suporte, nomes exatos, limites e compatibilidade de parâmetros como `previous_text` e `next_text`: **a confirmar na documentação**. Não habilitar por suposição, nem incluir a frase anterior dentro de `text` e arriscar narrá-la de novo.
-- Após aprovação para consultar documentação, confirmar o mecanismo de contexto e testar duas frases adjacentes. Se houver suporte, usar texto anterior/seguinte como dependência explícita de cache. Mudou esse contexto, revisar as tomadas afetadas. Contexto não é garantia de continuidade de prosódia.
-- Enquanto o suporte não estiver confirmado: consistência de voz/configuração, escuta sequencial e seleção de tomada. Se a segmentação continuar artificial, propor geração de uma unidade de sentido maior; isso exige confirmar limites e qualidade do serviço e reduz a independência de edição. Não é a primeira opção nem capacidade assumida como validada.
+- O corpo de geração envia `text`, `model_id`, `language_code`, `voice_settings`, `seed`, `previous_text` e `next_text`. O contexto vai em campos próprios, nunca dentro de `text` (risco de narrá-lo de novo), e fica gravado na tomada (`contexto`). Mudou o texto vizinho, regerar as frases afetadas. Contexto não é garantia de continuidade de prosódia: a escuta sequencial continua obrigatória.
 - Duas tentativas com o mesmo defeito: registrar e levar ao Orquestrador, sem loop de regeneração e consumo indefinido. Não alterar a narrativa para satisfazer o ASR.
 
 ### D2. Preparação e `aparar`

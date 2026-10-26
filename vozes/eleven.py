@@ -6,7 +6,8 @@
   python3 eleven.py saldo                caracteres usados no mês
 
 Chave: lida de ELEVENLABS_API_KEY ou de ~/.config/elevenlabs/chave. Nunca é impressa nem gravada aqui.
-Ajustes por variável de ambiente: VOZ (padrão: Fernanda), MODELO, VEL (0.7 a 1.2), ESTAB, SIM, ESTILO, SEED
+Ajustes por variável de ambiente: VOZ (padrão: Fernanda), MODELO, VEL (0.7 a 1.2), ESTAB (0.35), SIM, ESTILO (0.35), SEED (1).
+Cada frase vai com as 2 falas anteriores e a seguinte como contexto (previous_text/next_text), para não soar como frase solta.
 (SEED muda a tomada: frase que o Scribe aponta como diferente se regrava com `SEED=3 python3 eleven.py gerar <cena>` até passar).
 Uma frase por arquivo, como na v4: a legenda fica presa ao início de cada frase.
 """
@@ -24,9 +25,9 @@ API = "https://api.elevenlabs.io"
 VOZ = os.environ.get("VOZ", "7iqXtOF3wl3pomwXFY7G")  # Fernanda (aprovada pelo Cauê em 26/10/2026)
 MODELO = os.environ.get("MODELO", "eleven_multilingual_v2")
 CONFIG = {
-    "stability": float(os.environ.get("ESTAB", 0.5)),
+    "stability": float(os.environ.get("ESTAB", 0.35)),
     "similarity_boost": float(os.environ.get("SIM", 0.75)),
-    "style": float(os.environ.get("ESTILO", 0.0)),
+    "style": float(os.environ.get("ESTILO", 0.35)),
     "use_speaker_boost": True,
     "speed": float(os.environ.get("VEL", 1.0)),
 }
@@ -70,22 +71,27 @@ def gerar(filtro):
     if not VOZ:
         sys.exit("defina VOZ=<id da voz>")
     SAIDA.mkdir(parents=True, exist_ok=True)
+    todas = lista_frases(None)
+    posicao = {f['id']: i for i, f in enumerate(todas)}
     for item in lista_frases(filtro):
+        i = posicao[item['id']]
+        contexto = {"previous_text": " ".join(f['fala'] for f in todas[max(0, i - 2):i]),
+                    "next_text": " ".join(f['fala'] for f in todas[i + 1:i + 2])}
         destino = SAIDA / f"{item['id']}.wav"
         # Arquivar inclusive uma seleção anterior criada antes desta infraestrutura.
         if destino.exists():
             guardar_tomada(destino, AQUI / 'tomadas/pt', {'origem': 'seleção anterior'})
         publicos = {"voice_id": VOZ, "model_id": MODELO, "language_code": "pt", "voice_settings": CONFIG,
-                    **({"seed": int(os.environ["SEED"])} if "SEED" in os.environ else {})}
+                    "seed": int(os.environ.get("SEED", 1))}
         pcm = chamar(f"/v1/text-to-speech/{VOZ}?output_format=pcm_24000",
-                     {"text": item['fala'], **{k: v for k, v in publicos.items() if k != 'voice_id'}})
+                     {"text": item['fala'], **contexto, **{k: v for k, v in publicos.items() if k != 'voice_id'}})
         # A seleção convencional continua compatível com tempos2; a tomada é imutável.
         temporario = destino.with_suffix('.novo.wav')
         pcm_para_wav(pcm, temporario)
         temporario.replace(destino)
-        tomada = guardar_tomada(destino, AQUI / 'tomadas/pt', {**item, 'geracao': publicos, 'contexto': None})
+        tomada = guardar_tomada(destino, AQUI / 'tomadas/pt', {**item, 'geracao': publicos, 'contexto': contexto})
         destino.with_suffix('.json').write_text(json.dumps(
-            {**item, 'tomada': str(tomada.relative_to(AQUI)), 'geracao': publicos, 'aprovada': False},
+            {**item, 'tomada': str(tomada.relative_to(AQUI)), 'geracao': publicos, 'contexto': contexto, 'aprovada': False},
             ensure_ascii=False, indent=2) + '\n')
         print(f"{item['id']}  {len(pcm) / 48000:.2f}s  {item['fala'][:60]}")
 
@@ -123,8 +129,9 @@ def extenso(n):
 
 
 def normal(t):
-    """Põe fala e transcrição na mesma forma: sem acento, números por extenso, 'Freela'=Frila, 'pra'=para."""
+    """Põe fala e transcrição na mesma forma: sem acento, números por extenso, "19h" = dezenove horas, 'Freela'=Frila, 'pra'=para."""
     t = re.sub(r"(\d+)\s*%", lambda m: m.group(1) + " por cento", t.lower())
+    t = re.sub(r"(\d+)\s*h\b", r"\1 horas", t)
     t = re.sub(r"\d+", lambda m: extenso(int(m.group())), t)
     t = t.replace("km", "quilômetros").replace(" m ", " metros ")
     t = unicodedata.normalize("NFD", t)
