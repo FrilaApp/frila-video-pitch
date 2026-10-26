@@ -1,6 +1,6 @@
 # Plano de áudio — Frila v5, PT-BR
 
-**Estado: plano aprovado conforme HANDOFF.md. T4 autorizada pelo maestro em 26/10/2026: §F passos 1–3 e 5–7; sem API, voz v5 ou adaptação de cenas (T5).**
+**Estado atual (26/10/2026): v5 de 108 s reprovada. Base: v4 de 76,7 s, nota 8/10 do Fabrício. Roteiro novo de ~80 s pendente; nenhuma geração real autorizada. PLAYBOOK A1–A7 e §I abaixo substituem as orientações históricas de geração/edição por frase em D1–D3. As seções anteriores permanecem como histórico da T4.**
 
 Prioridade: preservar a frase inteira, manter a voz inteligível e permitir ajustes independentes de voz, música e efeitos. A narrativa de referência é `docs/historico/NARRATIVA-v5-aprovada.md`; este plano não altera texto, imagem, voz escolhida ou trilha.
 
@@ -493,3 +493,168 @@ de stem e atraso artificial de 25 ms. O Cauê ainda precisa ouvir a voz e o mix.
 Ambiente medido nesta execução: Python 3.13.11 (venv compartilhado) e FFmpeg
 8.1.1. Isso registra o ambiente efetivo do ensaio, sem alterar os requisitos
 ou instalar dependências no checkout principal.
+
+## I. Áudio por bloco e auditoria de emendas — desenho antes do código
+
+Escopo autorizado pelo Maestro: `motor/analisar_emendas.py` e
+`vozes/eleven.py gerar-bloco A|B|C|D`; calibração somente de leitura sobre os
+MP4 v4 (`~/Downloads/frila-pitch-pt.mp4`) e v5 (`../fvp-tempos/pt/frila-pitch-pt.mp4`).
+Sem API nesta missão, sem editar `roteiro.json`, cenas ou música. Testes do
+serviço usam mock. Brutos e trechos ficam ignorados pelo Git.
+
+### I1. Método e limites de evidência
+
+1. Decodificar o áudio a 48 kHz; detectar candidatos sem consultar a régua de
+   montagem: pausas entre palavras do Scribe, quedas curtas de energia dentro
+   de palavra, saltos de nível/espectro e descontinuidades locais. No estéreo,
+   a diferença L−R é uma pista do fundo quando a voz está centralizada; não é
+   isolamento perfeito. Sons musicais/percussivos também produzem candidatos.
+2. Aceitar `--scribe` local: resposta `words` com tempos absolutos e hash do
+   arquivo, ou relatório do pipeline com palavras relativas a trechos e
+   `ini_amostra`. Validar hash do arquivo e de cada trecho antes de converter
+   offsets; nunca chamar o serviço. Ausência de Scribe bloqueia aprovação,
+   mas não impede detecção acústica. Pontuação ausente no ASR não prova frase
+   partida. Hash comprova proveniência, não exatidão dos timestamps.
+3. Aceitar `--manifesto`: `emendas` com `tempo`, `frases` com `id`, `ini`,
+   `fim`, `tomada`, e `cortes_cena` absolutos. A1 se prova quando a mesma frase
+   tem segmentos em tomadas diferentes ou uma troca de tomada cai dentro
+   de seu intervalo. Emendas declaradas são todas analisadas, mesmo sem
+   sinal acústico. No modo sem manifesto, nunca afirmar proveniência de
+   tomada a partir só do sinal misturado.
+4. A2/A5: janela protegida ±120 ms, pausa entre palavras 0,2–1,2 s,
+   diferença de fundo >3 dB, clique/descontinuidade e palavra atravessando o
+   corte bloqueiam. Entre blocos: pausa ≥500 ms e coincidência com corte de
+   cena. Falta de evidência suficiente também bloqueia liberação automática;
+   não transformar ausência de detecção em aprovação.
+5. Cada candidato gera WAV ±2 s, com offset e hash, palavras vizinhas,
+   medidas, motivos, decisão técnica e confiança heurística (não probabilidade).
+   `emendas.json` e `resumo.txt` ordenam a fila de escuta por confiança.
+   Pausa uniforme curta (0,21–0,29 s) é pista de remendo, não prova isolada.
+   Registrar separadamente pausa Scribe, pausa acústica e intervalo entre
+   arquivos da régua; não ajustar os números para fazê-los coincidir.
+
+### I2. Geração contínua, futura e protegida
+
+Contrato futuro no roteiro: `audio_blocos_aprovados: true` e `blocos` em ordem,
+cada um com `id` A/B/C/D e `cenas` (IDs existentes). Cada cena pertence a um
+único bloco; texto vem integralmente de `pt.fala`. Antes da aprovação/metadata,
+`gerar-bloco` falha antes de ler chave ou chamar a rede. Sem preencher esse
+contrato no roteiro atual. Uma requisição TTS por bloco, todas as frases no
+mesmo `text`, `previous_text`/`next_text` dos blocos adjacentes. Sem corte,
+fade, padding ou alinhamento interno à música. Scribe recebe o WAV inteiro;
+resposta, palavras e pausas naturais são preservadas com hashes. Cada execução
+grava diretório exclusivo em `vozes/tomadas/blocos/pt/<bloco>/<uuid>/`, inclusive
+se falhar o Scribe; nunca altera tomada anterior. Nenhuma aprovação automática
+de texto, escuta ou produção. Defeito de frase pede nova tomada do bloco.
+
+### I3. Sequência e verificações
+
+Documentar → testes vermelhos (frase dividida, palavra no corte, silêncio
+natural, fundo >3 dB, clique, falta de Scribe, offsets/hash incorretos,
+detecção sem manifesto; serviço mockado e tomadas imutáveis) → implementar →
+testes verdes → calibrar v5/v4 sem manifesto → confrontar com régua e fontes
+existentes como evidência independente → registrar tempos e limitações aqui →
+commit local, sem push → `maestri ask "Claude Code"` com resultados e caminhos.
+Sem acesso perceptivo ao áudio no runtime, não registrar escuta como feita;
+entregar os trechos para escuta do Maestro/Fabrício. Calibração acústica não
+substitui a revisão audiovisual de cada bloco quando houver voz aprovada.
+
+### I4. Calibração realizada — resultado insuficiente para encerrar a validação
+
+**Medido aqui, sem API, sem escuta perceptiva:** v5 decodificada com 108,224 s
+(inclui padding do codec); v4 com 76,736 s. SHA-256 dos MP4:
+
+- v5: `3470ff03f57aaf0fa55939dd10463df9e0125fc96f1310ad55af1cc77fcd5889`.
+- v4: `6a32a3bbd4bd6ec3ae458b3886c5ac41cf7a612c7270b0ff09af1acb2f280565`.
+
+O Scribe da v5 é `../fvp-tempos/motor/cache/audio/pt/scribe-aac-final.json`:
+hash do MP4 e de todos os trechos conferidos, offsets `ini_amostra/48000`.
+Uma palavra `1` tem duração zero em 15,236458 s; preservada, gera pendência,
+não um intervalo inventado. Nenhum Scribe correspondente ao MP4 v4 foi
+localizado; palavras da régua não foram apresentadas como reconhecimento.
+
+Detecção cega (sem manifesto): **69 candidatos na v5 e 48 na v4**. São filas
+de suspeitas, não contagens de emendas reais. Todas têm WAV ±2 s, hash,
+offset, medidas e decisão; palavras Scribe ao redor somente onde disponíveis.
+Todas permanecem bloqueadas para aprovação automática. Confiança é ordinal
+de evidência acústica/temporal, não probabilidade de frase cortada.
+
+| Prioridade v5 | Tempo (s) | Pista e limite |
+|---|---:|---|
+| Transiente, confiança 0,85 | 27,314000 | Clique/descontinuidade; pausa Scribe de 3,346 s. Sem palavra no ponto; não comprova A1. |
+| Transiente, confiança 0,85 | 95,674750 | Clique entre “gente” e “Mais”; pausa Scribe 0,600 s. Não comprova A1. |
+| Continuação, confiança 0,74 | 54,020833 | “pública:” [53,331–53,711] → “quantas” [54,331–54,751]; pausa 0,620 s dentro do mesmo segmento Scribe. |
+| Continuação, confiança 0,74 | 62,090208 | “avaliam:” [61,340–61,840] → “chamaria” [62,340–62,760]; pausa 0,500 s. |
+| Continuação, confiança 0,74 | 77,751833 | “piloto:” [76,832–77,292] → “oito” [78,212–78,412]; pausa 0,920 s. |
+| Continuação, confiança 0,74 | 79,541833 | “semanas,” [78,512–79,112] → “50” [79,972–80,212]; pausa 0,860 s. |
+| Faixa curta, confiança 0,60 | 8,710000; 60,400208; 72,929208 | Pausas Scribe 0,220; 0,280; 0,220 s. Pausa curta isolada não prova remendo. |
+| Queda dentro de palavra, confiança 0,50 | 8,030; 13,025; 16,355; 25,480; 30,045; 32,855; 44,460; 64,500; 65,775; 77,150; 90,385 | Também pode ser oclusiva/sílaba natural ou erro de timestamp. Ouvir antes de diagnosticar corte. |
+
+O confronto posterior com os 28 registros `frases` do manifesto existente da
+v5 deu **zero frases comprovadamente divididas entre tomadas**. Isso não
+refuta o Fabrício: os IDs do pipeline não são validação semântica independente.
+As pausas prioritárias acima podem ser naturais; **os 3–5 casos relatados ainda
+não foram confirmados**. O Maestro aprovou explicitamente entregar candidatos
+ordenados e distingui-los de A1 comprovada; não forneceu marcações de escuta.
+
+Na v4, confronto posterior com `docs/v4/tempos-pt.json`:
+
+| Centro do trecho (s) | Fim anterior → início seguinte | Intervalo entre arquivos (s) | Cena |
+|---:|---|---:|---|
+| 24,487000 | 24,382 → 24,592 | 0,210 | c06-passos-a |
+| 26,695500 | 26,586 → 26,805 | 0,219 | c06-passos-a |
+| 32,356500 | 32,252 → 32,461 | 0,209 | c07-passos-b |
+| 37,972500 | 37,828 → 38,117 | 0,289 | c08-mapa |
+| 70,897500 | 70,725 → 71,070 | 0,345 | c16-logo — exceção do fecho |
+
+São intervalos da régua, **não silêncio acústico medido entre fonemas**. O
+0,209 s explica o arredondamento informado de 0,21 s. Os centros detectados
+cegamente mais próximos dos quatro primeiros foram 24,315; 26,750; 32,105;
+36,855 s: desvios −172; +54,5; −251,5; −1117,5 ms. Só **1/4** fica a ±120 ms;
+esse confronto mede proximidade, não precisão/recall validada por ouvido.
+Portanto, **a recuperação cega dos remendos da v4 não está validada**. Os cinco
+trechos exatos da régua foram extraídos em uma saída separada, identificada
+como referência assistida, sem fingir que o detector os descobriu sozinho.
+
+Primeira varredura gerou 287/235 candidatos (v5/v4): confundiu muitas sílabas
+e ataques musicais com emendas. Ajuste registrado: seleção de valas passou
+de −37 para −55 dBFS, duração mínima 40 ms e contraste ≥25 dB; saltos
+espectrais só em janelas com nível <−40 dBFS; pausas do Scribe foram mantidas.
+Isso **restringe candidatos** e reduz confiança de valas fonéticas; não afrouxa
+os gates A1–A5 (±120 ms; 3 dB; 0,2–1,2 s; ≥500 ms entre blocos). Um ensaio
+descartável de cancelamento estéreo adaptativo não separou de modo confiável
+o fundo da v4 e não foi incorporado. O mix final sozinho não identifica com
+certeza a proveniência de uma tomada; faltam Scribe da v4 e rótulos auditivos.
+
+### I5. Reprodução, artefatos e pendências
+
+```sh
+.venv/bin/python -m unittest motor.test_emendas vozes.test_blocos
+.venv/bin/python -m unittest discover -s tests
+.venv/bin/python motor/analisar_emendas.py ../fvp-tempos/pt/frila-pitch-pt.mp4 \
+  --scribe ../fvp-tempos/motor/cache/audio/pt/scribe-aac-final.json \
+  --saida motor/cache/emendas/v5
+.venv/bin/python motor/analisar_emendas.py ~/Downloads/frila-pitch-pt.mp4 \
+  --saida motor/cache/emendas/v4
+```
+
+Código de saída **2** nessas calibrações é esperado: bloqueio, sem aprovação.
+Saídas locais ignoradas: `motor/cache/emendas/RELATORIO.md` (fila inteira com
+links), `{v5,v4,v4-referencia}/emendas.json`, `resumo.txt` e `trechos/*.wav`;
+`v4-referencia-manifesto.json`; `v5-confronto-proveniencia.json`.
+O auxiliar local `motor/cache/emendas/reproduzir.py` repete as duas varreduras
+e os confrontos, sem rede. Não é fonte de produção nem arquivo versionado.
+
+Exportação conferida: os 122 WAVs (69 + 48 + 5) são idênticos, amostra por
+amostra, às fatias dos MP4 decodificados; hashes dos trechos e dos originais
+conferidos novamente (`verificacao-exportacao.json`). Nenhum corte/fade/ganho
+foi aplicado aos trechos de auditoria.
+
+Validação offline: 17 testes novos e 13 regressões existentes; nenhum serviço
+real chamado. PCM do bloco preservado amostra por amostra, uma única requisição
+TTS mockada por execução, contextos dos vizinhos, timestamps/pausas e segunda
+tomada sem alterar a primeira. Roteiro pendente impede rede antes de ler chave.
+Pendências: confirmar/refutar candidatos de v5 de ouvido; obter Scribe/rótulos
+da v4 para calibrar recuperação cega; revisão audiovisual quando existir bloco
+aprovado. Não há geração real, mix novo, render, aprovação de som ou aprovação
+do roteiro nesta entrega.

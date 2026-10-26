@@ -2,14 +2,16 @@
 
   python3 eleven.py gerar [cena|id-frase ...]     gera frases/pt/<cena>-<n>.wav (24 kHz, mono) a partir de ../../roteiro.json
   python3 eleven.py conferir [cena|id-frase ...]  transcreve cada frase no Scribe e confere se saiu inteira → conferencia.json
+  python3 eleven.py gerar-bloco <A|B|C|D>       tomada contínua; exige metadados aprovados no roteiro
   python3 eleven.py vozes                lista as vozes PT-BR da conta
   python3 eleven.py saldo                caracteres usados no mês
 
 Chave: lida de ELEVENLABS_API_KEY ou de ~/.config/elevenlabs/chave. Nunca é impressa nem gravada aqui.
 Ajustes por variável de ambiente: VOZ (padrão: Fernanda), MODELO, VEL (0.7 a 1.2), ESTAB (0.35), SIM, ESTILO (0.35), SEED (1).
-Cada frase vai com as 2 falas anteriores e a seguinte como contexto (previous_text/next_text), para não soar como frase solta.
-(SEED muda a tomada: frase que o Scribe aponta como diferente se regrava com `SEED=3 python3 eleven.py gerar <cena>` até passar).
-Uma frase por arquivo, como na v4: a legenda fica presa ao início de cada frase.
+No fluxo legado, cada frase leva as 2 falas anteriores e a seguinte como contexto.
+Scribe é pista: divergência exige revisão; não regenerar em loop para satisfazer o ASR.
+Os comandos por frase são legados. Para a nova produção, PLAYBOOK A1–A7:
+uma tomada por bloco; legenda usa timestamps sem cortar a voz.
 """
 import hashlib, json, os, re, subprocess, sys, unicodedata, urllib.request, urllib.error, wave
 try:
@@ -107,6 +109,72 @@ def multipart(campos, arquivo):
     return corpo, f"multipart/form-data; boundary={b}"
 
 
+def gerar_bloco(bloco):
+    """Uma requisição TTS, sem edição; cada execução preserva um diretório próprio."""
+    import uuid
+    roteiro_bytes = ROTEIRO.read_bytes()
+    roteiro = json.loads(roteiro_bytes)
+    if roteiro.get('audio_blocos_aprovados') is not True:
+        raise ValueError('Roteiro/blocos ainda não aprovados; geração bloqueada')
+    blocos = roteiro.get('blocos', [])
+    ids = [b['id'] for b in blocos]
+    if not ids or len(set(ids)) != len(ids) or any(b not in 'ABCD' or len(b) != 1 for b in ids):
+        raise ValueError('Metadados de blocos inválidos')
+    if ids != sorted(ids):
+        raise ValueError('Blocos fora de ordem')
+    if bloco not in ids:
+        raise ValueError('Bloco ausente dos metadados aprovados')
+    cenas = {c['id']: c['pt']['fala'].strip() for c in roteiro['cenas']}
+    usados = [c for b in blocos for c in b['cenas']]
+    if len(usados) != len(set(usados)) or set(usados) != set(cenas):
+        raise ValueError('Cada cena deve pertencer a exatamente um bloco')
+    if usados != list(cenas):
+        raise ValueError('Cenas fora da ordem do roteiro')
+    textos = [' '.join(cenas[c] for c in b['cenas']) for b in blocos]
+    if any(not t for t in textos):
+        raise ValueError('Bloco sem fala')
+    i = ids.index(bloco)
+    contexto = {'previous_text': textos[i - 1] if i else '',
+                'next_text': textos[i + 1] if i + 1 < len(textos) else ''}
+    params = {'model_id': MODELO, 'language_code': 'pt', 'voice_settings': CONFIG,
+              'seed': int(os.environ.get('SEED', 1))}
+    pcm = chamar(f'/v1/text-to-speech/{VOZ}?output_format=pcm_24000',
+                 {'text': textos[i], **contexto, **params})
+    if not pcm or len(pcm) % 2:
+        raise ValueError('PCM vazio ou incompleto')
+    raiz = AQUI / 'tomadas/blocos/pt' / bloco / uuid.uuid4().hex
+    raiz.mkdir(parents=True, exist_ok=False)
+    wav = raiz / 'bruto.wav'
+    pcm_para_wav(pcm, wav)
+    meta = {'bloco': bloco, 'fala': textos[i], 'cenas': blocos[i]['cenas'],
+            'contexto': contexto, 'geracao': {'voice_id': VOZ, **params},
+            'sha256': hashlib.sha256(wav.read_bytes()).hexdigest(),
+            'roteiro_sha256': hashlib.sha256(roteiro_bytes).hexdigest(),
+            'duracao': len(pcm) / 48000, 'aprovada': False,
+            'aprovacao_ouvido': None, 'estado': 'scribe_pendente'}
+    def gravar():
+        wav.with_suffix('.json').write_text(json.dumps(meta, ensure_ascii=False, indent=2) + '\n')
+    gravar()
+    # Se o serviço falhar, bruto e receita já estão preservados, sem seleção automática.
+    resposta = json.loads(chamar('/v1/speech-to-text', multipart=multipart(
+        {'model_id': 'scribe_v2', 'language_code': 'por', 'timestamps_granularity': 'word'}, wav)))
+    (raiz / 'scribe.json').write_text(json.dumps(resposta, ensure_ascii=False, indent=2) + '\n')
+    palavras = [w for w in resposta.get('words', []) if w.get('type') == 'word']
+    validas = bool(palavras) and all(0 <= w['start'] < w['end'] <= meta['duracao']
+                                   for w in palavras)
+    validas = validas and all(a['end'] <= b['start'] for a, b in zip(palavras, palavras[1:]))
+    meta.update(palavras=palavras, pausas=[{'ini': a['end'], 'fim': b['start'],
+                'duracao': b['start'] - a['end']} for a, b in zip(palavras, palavras[1:])],
+                texto_scribe=resposta.get('text', ''),
+                texto_confere=normal(textos[i]) == normal(resposta.get('text', '')),
+                timestamps_validos=validas, estado='aguarda_escuta' if validas else 'bloqueado')
+    gravar()
+    if not validas:
+        raise ValueError('Scribe sem tempos válidos; tomada preservada e bloqueada')
+    print(f'Bloco {bloco}: {meta["duracao"]:.3f} s; aguardando escuta; {wav}')
+    return wav
+
+
 UNID = "zero um dois três quatro cinco seis sete oito nove dez onze doze treze quatorze quinze dezesseis dezessete dezoito dezenove".split()
 DEZ = "_ _ vinte trinta quarenta cinquenta sessenta setenta oitenta noventa".split()
 CENT = "_ cento duzentos trezentos quatrocentos quinhentos seiscentos setecentos oitocentos novecentos".split()
@@ -196,5 +264,7 @@ if __name__ == "__main__":
         {"gerar": gerar, "conferir": conferir}[cmd](resto)
     elif cmd in ("vozes", "saldo"):
         {"vozes": listar_vozes, "saldo": saldo}[cmd]()
+    elif cmd == 'gerar-bloco' and len(resto) == 1 and resto[0] in ('A', 'B', 'C', 'D'):
+        gerar_bloco(resto[0])
     else:
         sys.exit(__doc__)
