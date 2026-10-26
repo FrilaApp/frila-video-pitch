@@ -1,5 +1,7 @@
 # áudio, vídeo e música: pesados e/ou com licença própria (a trilha Mixkit não pode ser redistribuída como arquivo)
 *.mp3
+*.m4a
+*.aac
 *.wav
 *.mp4
 *.srt
@@ -19,3 +21,7 @@ motor/eventos-pt.json
 vozes/conferencia.json
 vozes/frases/
 vozes/amostras/
+
+# Tomadas imutáveis e respostas brutas do serviço (geradas localmente)
+vozes/tomadas/
+vozes/cache/

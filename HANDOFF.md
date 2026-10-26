@@ -38,9 +38,9 @@
 |---|---|---|
 | Narrativa de 100 s (14 momentos, 204 palavras faladas) | **Escrita. Falta aprovação final do Cauê** (a crítica de investidor do revisor Astra ainda não chegou) | `NARRATIVA-v5-100s.md`, `roteiro-v5-100s.json` |
 | Design do vídeo (v4 documentada, mapa v4→v5, diretriz D1) | Pronto | `DESIGN.md` |
-| Plano de áudio (trilhas separadas, ducking, cortes de fala, QA) | Aprovado com ajustes; **nada implementado** | `PLANO-AUDIO.md` |
+| Plano de áudio (trilhas separadas, ducking, cortes de fala, QA) | T4 implementada e conferida offline com sinais sintéticos no branch `feat/audio-infra`; voz/mix v5 e escuta pendentes | `PLANO-AUDIO.md` §H, `motor/mixagem.json`, `motor/conferir_audio.py` |
 | Motor (`motor/`) | Roda. Caminhos ajustados para este repositório. **Ainda com as cenas da v4** | `motor/` |
-| `aparar` (corte de silêncio da voz) | Editado, **não validado**: o plano manda trocar por "preservar o bruto" | `motor/tempos2.py` |
+| `preparar` (preparação da voz) | Preserva bruto por padrão, sem fades; corte/padding auditáveis testados offline. Régua/IDs da T5 preservados | `motor/tempos2.py`, `PLANO-AUDIO.md` §H |
 | Voz ElevenLabs (script de geração e conferência) | Pronto e testado (2 frases + 20 frases de teste) | `vozes/eleven.py` |
 | Roteiro da v5 aplicado no `roteiro.json` | **Não** (rascunho em `roteiro-v5-100s.json`) | — |
 | Voz da v5 gerada | **Não** | — |
@@ -129,7 +129,7 @@ Esforço: **P** pequeno (≤ 2 h), **M** médio (meio dia), **G** grande (1 a 2 
 | T1 | **Ambiente + teste de fumaça** (§4) | — | `setup.sh` e `trilha.sh` sem erro; `conferir c01 c02` com 2/2 ok. O teste de render só é possível depois de T3 (o `tempos2.py` precisa de todas as frases) | P | — |
 | T2 | **Aprovação do texto** e aplicar no `roteiro.json` | `git mv roteiro.json docs/v4/roteiro-v4.json`; `git mv roteiro-v5-100s.json roteiro.json` | Cauê aprova; contagem de frases fala=legenda ok | P | Cauê |
 | T3 | **Gerar a voz** (28 frases) e conferir | `vozes/eleven.py` | `conferir` sem divergência não resolvida; Cauê ouve cada frase. Frase com defeito: outra tomada com `SEED=n`; **dois defeitos iguais: pare e leve ao Cauê** | M | T2 |
-| T4 | **Infra de áudio** do `PLANO-AUDIO.md` §F passos 1–3, 5–7: trilhas separadas, `mixagem.json`, `aparar` que preserva o bruto, ducking novo, QA por estágio, master em 2 passagens | `motor/tempos2.py`, `motor/audio2.py`, `vozes/eleven.py`, novo `motor/conferir_audio.py`, `mixagem.json` | Null test da soma dos stems; margens por frase medidas; `grave` não mascara palavra; LUFS/TP no alvo | G | pode começar já, em paralelo |
+| T4 | **Infra de áudio** do `PLANO-AUDIO.md` §F passos 1–3, 5–7: trilhas separadas, `mixagem.json`, `preparar` que preserva o bruto, ducking novo, QA por estágio, master em 2 passagens | `motor/tempos2.py`, `motor/audio2.py`, `vozes/eleven.py`, novo `motor/conferir_audio.py`, `mixagem.json` | Null test da soma dos stems; margens por frase medidas; `grave` não mascara palavra; LUFS/TP no alvo | G | pode começar já, em paralelo |
 | T5 | **Adaptar `tempos2.py` aos ids v01–v14**: `ENTRADA`, `NO_COMPASSO`, `DURACAO_MIN`, `secoes()` (seções da música). Pausas pela fala, não pela grade de cada frase (plano §D3) | `motor/tempos2.py` | `tempos-pt.json` com 14 cenas, total 95–105 s, termina em fim de compasso | M | T3 |
 | T6 | **Cenas novas no `filme.html`** (v01–v14), reaproveitando componentes da v4 conforme `DESIGN.md` §14: textos em `TX`, uma `planX/runX` por cena, sons com `ev(...)` | `motor/filme.html` | Cada cena confere nos quadros de teste; fonte e margens do `DESIGN.md` §3–5 | G | pode começar já |
 | T7 | **D1: zoom + parallax** nos mockups das cenas v06, v07, v09 | `motor/filme.html` (câmera `CAM`, camadas) | Aparelho ~90% da altura; lista de passos nunca cobre a tela; legenda livre; valores iniciais em `DESIGN.md` §14, **validar por captura com o Cauê** | M | T6 |
@@ -162,7 +162,7 @@ Esforço: **P** pequeno (≤ 2 h), **M** médio (meio dia), **G** grande (1 a 2 
 
 ## 9. Armadilhas conhecidas
 
-1. **Cortes de fala.** Na v4 entregue, "Cadastro" saiu "Castro" no MP4 embora o arquivo bruto estivesse certo: o efeito `grave` começa ~285 ms antes da voz e os efeitos **não** sofrem ducking. Hipótese a provar com A/B (`PLANO-AUDIO.md` §A2). A voz do ElevenLabs entra **quase sem silêncio** (10 a 100 ms), e o corte antigo (−45 dBFS, 30 ms) comia o início: "Turno" virou "termo". O `aparar` atual é uma correção provisória.
+1. **Cortes de fala.** Na v4 entregue, "Cadastro" saiu "Castro" no MP4 embora o arquivo bruto estivesse certo: o efeito `grave` começa ~285 ms antes da voz e os efeitos **não** sofrem ducking. Hipótese a provar com A/B (`PLANO-AUDIO.md` §A2). A voz do ElevenLabs entra **quase sem silêncio** (10 a 100 ms), e o corte antigo (−45 dBFS, 30 ms) comia o início: "Turno" virou "termo". Na v5, `preparar()` conserva o bruto e só corta com limites confirmados e aprovação (`PLANO-AUDIO.md` §H).
 2. **O Scribe é pista, não juiz.** Ele escreve "Frila" como "Freela" e números como algarismos; o `normal()` do `eleven.py` já trata isso. Divergência pode ser erro dele: confirme de ouvido.
 3. **Frases a vigiar na voz nova:** "Meta do piloto" (na v4 "meta" virou "o meta" e "método" em outras vozes), "check-in", "Abrasel", "Frila".
 4. **A voz muda a cada geração**, mesmo com o mesmo `SEED`. **Guarde as tomadas aprovadas** (pasta compartilhada), porque regerar pode mudar a voz de uma frase aprovada.
@@ -184,3 +184,24 @@ Esforço: **P** pequeno (≤ 2 h), **M** médio (meio dia), **G** grande (1 a 2 
 - Decisões e aprovação: **Cauê** (representante do projeto). Contato público do Frila: frila.org@gmail.com.
 - `DESIGN.md` (tudo sobre o visual e o som), `PLANO-AUDIO.md` (tudo sobre áudio), `NARRATIVA-v5-100s.md` (texto e lastro dos dados), `docs/v4/STORYBOARD.md` e `docs/v4/LEIA-ME.md` (como era a v4 e como refazer).
 - `docs/historico/`: como chegamos aqui (propostas, revisões e o diário de preparação, com caminhos do Mac do Cauê que **não** existem neste repositório).
+
+
+## 12. Retorno T4 — infraestrutura de áudio (26/10/2026)
+
+Implementada no branch `feat/audio-infra`, sem API, voz v5, alteração do
+`filme.html` ou dos IDs/`ENTRADA`/`NO_COMPASSO`/`secoes()` da régua. O plano e
+os desvios estão em `PLANO-AUDIO.md` §H. Reproduzir com:
+
+```sh
+.venv/bin/python -m unittest discover -s tests -v
+.venv/bin/python scripts/testar_audio.py
+```
+
+Ensaio sintético: null 0,0; voz/música mínima 17,57 dB; voz/efeitos mínima
+16,20 dB na coexistência (override do clique documentado); voz/fundo local
+mínima 14,60 dB; AAC −16,44 LUFS / −5,48 dBTP; atraso inicial medido 0 ms.
+O `grave` iniciado 285,5 ms antes recebe ducking na cauda; ataque dentro da
+borda é silenciado. Permanecem pendentes T3/T5, limites acústicos da voz real,
+QA do MP4 após mux e escuta do Cauê. A aprovação de palavras não é provada
+por seno/ruído. Não há ajuste automático de ducking para fazer números passarem:
+QA bloqueia e pede override explícito até o teto musical de 22 dB.

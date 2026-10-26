@@ -1,6 +1,6 @@
 # Plano de áudio — Frila v5, PT-BR
 
-**Estado: proposta para revisão do Orquestrador e aprovação do Cauê. Nenhuma implementação autorizada por este documento.**
+**Estado: plano aprovado conforme HANDOFF.md. T4 autorizada pelo maestro em 26/10/2026: §F passos 1–3 e 5–7; sem API, voz v5 ou adaptação de cenas (T5).**
 
 Prioridade: preservar a frase inteira, manter a voz inteligível e permitir ajustes independentes de voz, música e efeitos. A narrativa de referência é `docs/historico/NARRATIVA-v5-aprovada.md`; este plano não altera texto, imagem, voz escolhida ou trilha.
 
@@ -54,7 +54,7 @@ Medições locais somente de leitura: `ffprobe`; FFmpeg com `loudnorm=I=-16:TP=-
 
 ## B. Arquitetura de trilhas e atualização incremental
 
-### B1. Arquivos propostos — ainda não criados
+### B1. Arquivos previstos — estado da infraestrutura T4 em §H
 
 Todos os caminhos abaixo pertencem à v5. Fontes brutas preservadas; derivados descartáveis, identificados por hash. Um manifesto aponta para as versões aprovadas. O fato de um derivado existir não o torna aprovado.
 
@@ -268,7 +268,7 @@ O aceite automático produz `apto para escuta`, `divergência` ou `inconclusivo`
 
 ## E. Verificação final e critérios de aceite
 
-Todos os limites abaixo são **propostas de aceite**, não resultados medidos da v5.
+Os limites de aceite foram aprovados conforme HANDOFF.md; não são resultados medidos da voz v5. O ensaio sintético está em §H.
 
 | Item | Critério |
 |---|---|
@@ -292,7 +292,7 @@ Usar “Cadastro”, “hoje”, “não” e “Turno combinado” dos testes a
 
 ## F. Implementação proposta, em ordem
 
-P/M/G indicam esforço relativo, não horas garantidas. Nenhum dos passos foi implementado.
+P/M/G indicam esforço relativo, não horas garantidas. O estado de implementação da T4 está em §H; os passos 4 e 8–10 continuam futuros.
 
 | Ordem | Arquivo / alteração futura | Esforço | Validação sem renderizar imagem |
 |---|---|---|---|
@@ -321,7 +321,7 @@ Mesmo com cache, master/loudness devem ser reavaliados no programa completo. Evi
 
 - `docs/v4/` e `motor2/`: somente referências de leitura; não editar, reprocessar por cima, apagar ou substituir entregas.
 - Nenhum texto da narrativa aprovada, fato, função do app, identidade da voz Fernanda, música escolhida ou evento visual muda por decisão deste plano.
-- Nenhuma chave, configuração de credenciais ou autorização de API é lida ou registrada. Nesta missão, somente este documento foi criado.
+- Nenhuma chave, configuração de credenciais ou autorização de API é lida ou registrada. Na missão original de planejamento, somente este documento foi criado.
 - Não adicionar compressor, equalizador, de-esser ou nova trilha por hábito. Primeiro preservar a voz e corrigir níveis/colisões; qualquer tratamento adicional exige defeito identificado e A/B.
 - Não mascarar falha com aceleração da voz, deslocamento silencioso de legenda ou corte do final para caber na duração da imagem.
 
@@ -347,4 +347,151 @@ Mesmo com cache, master/loudness devem ser reavaliados no programa completo. Evi
 4. **Confirmar o contexto de exibição e a sensação de trilha desejada.** Os alvos −16 LUFS e os parâmetros deste plano são ponto de partida para a entrega atual; o ouvido do Cauê decide presença de música, efeitos e respiros.
 5. **Autorizar em etapa futura a confirmação documental e o uso de contexto no ElevenLabs**, se suportado, e a geração/Scribe necessários para a narrativa aprovada. Sem essa confirmação, o plano funciona com tomadas separadas e revisão de continuidade.
 
-As pendências editoriais de estágio, histórico e assinatura continuam com o Orquestrador; fechar o texto antes de produzir as tomadas finais. Este plano está completo para revisão, mas não declara o áudio validado nem autoriza iniciar código, geração ou render.
+As pendências editoriais de estágio, histórico e assinatura continuam com o Orquestrador; fechar o texto antes de produzir as tomadas finais. O planejamento original não autorizava implementação. A autorização posterior da T4 consta no estado e em §H; voz, geração, render e escuta final continuam pendentes.
+
+
+## H. Execução T4 — decisões e desvios registrados antes do código (26/10/2026)
+
+A solicitação do maestro autoriza a infraestrutura no branch `feat/audio-infra`,
+sem push/PR. O baseline é o commit `6f6792b`; as evidências da v4 em A são
+históricas e não foram repetidas com voz v5 (ainda inexistente).
+
+1. **Régua preservada:** não alterar IDs, `ENTRADA`, `NO_COMPASSO`, `DURACAO_MIN`,
+   `secoes()` nem quantização. O manifesto compartilhado valida fala/legenda por
+   posição; ganhos/preparação ganham metadados em amostras. A T5 ligará as cenas
+   finais, pausas e overrides de fecho. `cenas` inicia vazio, sem copiar os IDs
+   obsoletos 09/10 do exemplo B3.
+2. **Preservação padrão:** `preparar()` (em `motor/tempos2.py`; substituiu `aparar()`) conserva todas as amostras e não aplica
+   fade. Padding e corte são explícitos; corte só com limites confirmados e
+   aprovação, mantendo 80/160 ms quando disponíveis. Silêncio, vazio e NaN
+   bloqueiam preparação. Limites desconhecidos protegem o arquivo inteiro e
+   produzem estado inconclusivo para escuta, nunca aprovação textual.
+3. **Infra local:** utilitários de áudio em `motor/audio_util.py` e manifesto
+   compartilhado em `vozes/manifesto.py`; nenhum acesso a credencial. Tomadas
+   imutáveis por hash, seleção de frase e cache Scribe com resposta completa
+   ficam prontos para uso futuro, sem enviar requisições nesta tarefa.
+4. **Cache incremental:** WAVs float por hash de conteúdo/receita; stems com N
+   amostras e automações salvas. Hash da música/evento independe da voz; ruído
+   tem seed local por identidade do evento. Alterar ducking reutiliza bases.
+   Voz usa ganho fixo por frase (override público), sem renormalização global.
+5. **Proteção conservadora:** música/efeitos recebem rampas em tempo absoluto,
+   com intervalos próximos mesclados. Overrides substituem a referência geral.
+   O `grave` mantém o ataque visual; a cauda recebe ducking. Evento com ataque
+   dentro da borda protegida é silenciado (decisão conservadora autorizada em
+   C2). QA mede coexistência, janelas locais e bordas; falha bloqueia master.
+6. **Master:** duas passagens `loudnorm`, sem limiter adicional e sem fade no
+   bus de voz. Master PCM com alvo −2 dBTP, encode AAC de verificação 256 kbit/s,
+   medição do AAC decodificado; teto PCM reduzido em tentativas limitadas se
+   necessário. Falhar em LUFS/TP impede aceitar a entrega. Registrar modo real,
+   receita, N amostras e alinhamento por correlação (limite 10 ms).
+7. **Limite do teste offline:** régua sintética mínima e eventos incluem a
+   antecedência de 285,5 ms do `grave` e ataque dentro da borda. Não se declara
+   palavra inteligível sem voz real: prova-se margem/atenuação física e ausência
+   de perda de amostras. O relatório por estágio deixa Scribe/escuta pendentes;
+   QA de MP4 final é comando separado após mux (passo 8 fora de T4).
+
+### Sequência de implementação e reprodução
+
+- [x] Testes de preservação/manifesto; implementar preparação e seleção offline.
+- [x] Testes de stems/ducking/cache; implementar sessão e exportações.
+- [x] Testes de QA/master; implementar relatório por estágio e régua sintética.
+- [x] Rodar `.venv/bin/python -m unittest discover -s tests -v` e
+  `.venv/bin/python scripts/testar_audio.py`; registrar medidas, atualizar HANDOFF
+  e commitar apenas fontes/docs no branch. Nenhum áudio entra no git.
+
+### Ajustes do ensaio antes da revisão final
+
+- **Medido no ensaio:** converter mono para estéreo com `-ac 2` aplicava ganho
+  0,707 por canal. A leitura passou a duplicar a voz explicitamente, sem lei de
+  pan implícita (B1); teste de soma reproduziu a falha e passou após a correção.
+- **Medição de coexistência:** usar apenas as amostras em que há efeito dentro
+  de cada janela de 100 ms, evitando diluição de um clique curto por silêncio.
+  A varredura usa janelas completas (ou a frase inteira quando menor que 100 ms),
+  incluindo uma janela ancorada no fim; não troca o tamanho para 10 ms na cauda.
+- **Medido no teste sintético:** clique no meio da fala ficou com mínimo local
+  de 12,20 dB de margem, abaixo de 15. O ensaio terá override desse evento em
+  −10 dB sobre referência legada (4 dB abaixo do baseline −6). A configuração
+  de produção mantém o baseline proposto e bloqueia se não passar no QA.
+- **Desvio conservador:** nesta T4 a profundidade musical é configurável até o
+  teto de 22 dB, com bloqueio por QA; não há correção automática que aumente o
+  ducking para satisfazer o medidor. Isso deixa qualquer mudança de intensidade
+  explícita em `mixagem.json`, sujeita a A/B. Efeitos sintetizados permanecem no
+  cache; silenciamento de ataque é decisão da montagem dependente da voz.
+
+
+### Operação da infraestrutura T4
+
+Da raiz do repositório (links locais do ambiente já montados):
+
+```sh
+.venv/bin/python -m unittest discover -s tests -v
+.venv/bin/python scripts/testar_audio.py
+.venv/bin/python motor/conferir_audio.py motor/cache/teste-audio/sessao \
+  --final motor/cache/teste-audio/sessao/verificacao.m4a --trechos
+```
+
+O ensaio cria régua, fontes sintéticas, stems, relatório por frase/estágio,
+`master.json`, AAC e trechos A/B **somente** em `motor/cache/teste-audio/`.
+Os A/B usam ganho adicional zero, contexto de 250 ms e offset registrado;
+comparações com master/AAC incluem o processamento global conhecido, sem
+renormalizar cada variante. `resultado.json` traz as medidas resumidas.
+
+Depois de T3/T5 e do render com eventos aprovados:
+
+```sh
+scripts/pipeline.sh audio
+.venv/bin/python motor/conferir_audio.py motor/cache/audio/pt --trechos
+# Após o mux da T10: medir o arquivo realmente entregue, não só o AAC de teste.
+.venv/bin/python motor/conferir_audio.py motor/cache/audio/pt \
+  --final pt/frila-pitch-pt.mp4 --trechos
+```
+
+`audio2.py` também aceita `--regua`, `--eventos`, `--config`, `--trilha`,
+`--voz-dir` e `--saida` para sessões isoladas. Sem `--saida`, copia o master
+validado para `motor/cache/mix-pt.wav`, preservando a interface com `mux.sh`.
+Falha técnica produz saída diferente de zero. `inconclusivo` com limites
+acústicos pendentes permite prévia conservadora, sem aprovar texto/escuta.
+
+A sessão guarda stems float32 a 48 kHz, origem zero e N amostras, hashes de
+fontes/receitas, parâmetros/seed por evento e configuração pública. Somar
+**somente** voz + música-duck + efeitos-duck. A voz mono é duplicada em L/R
+sem perda de 3 dB. O cache por receita tem versão explícita no motor: alteração
+de síntese deve aumentar essa versão para invalidar objetos antigos.
+
+Overrides em `voz.frases.<id>`: `ganho_db` fixa ganho independente por tomada;
+`limites_amostras: [início, fim_exclusivo]` usa amostras a 48 kHz da referência
+reamostrada; `limites_confirmados: true` permite separar fala de padding.
+`aparar: true` requer também `corte_aprovado: true`. Limites não confirmados
+são ignorados para proteção: preserva-se o arquivo inteiro. A T5 deve recalcular
+a régua após qualquer alteração de preparação/padding. Não há fades de fala.
+Overrides de efeito usam `eventos.<id>.ajuste_sobre_referencia_legada_db`;
+sem ID explícito no render, o manifesto identifica o evento por hash de tipo/t.
+
+**Medido no ensaio de 12 s (não é voz v5):**
+
+| Verificação | Resultado |
+|---|---|
+| Stems / null test | 576.000 amostras por stem; erro máximo 0,0 |
+| Bruto reamostrado → preparado → bus | Erro máximo 0,0 nas comparações compensadas pelo ganho registrado |
+| Voz / música por frase | 17,57 / 17,94 / 18,56 dB |
+| Voz / efeitos, pior janela em coexistência | 25,12 dB (grave), não se aplica (silenciado), 16,20 dB (clique com override) |
+| Voz / fundo, pior janela local | 14,60 / 14,84 / 15,82 dB |
+| Fundo nas bordas | Máximo −39,37 dBFS (teto aproximado −38 dBFS); todas passaram |
+| `grave` 285,5 ms antes | Cauda coincide por 414,5 ms; pico residual −39,48 dBFS; margem no intervalo 29,30 dB |
+| `grave` com ataque na borda | Silenciado integralmente, sem deslocar o evento |
+| AAC final de teste | −16,44 LUFS; −5,48 dBTP; LRA 14,60 LU; 48 kHz estéreo AAC 256 kbit/s |
+| Master / AAC alinhados | 0 amostras de atraso medidas por correlação do trecho inicial; master com N amostras |
+| Codec | Stream com 12,000 s, origem 0; 576.512 amostras decodificadas incluem 512 de padding AAC; não há corte do PCM |
+| Normalização | Duas passagens; modo efetivo `dynamic`; sem limiter extra |
+
+Correlação usa até os primeiros 8 s e busca ±50 ms; não é prova de sincronismo
+visual nem de ausência de deriva no vídeo inteiro. Esses itens e o ASR por
+frase/estágio continuam pendentes da voz e da imagem aprovadas. Não houve
+chamada a ElevenLabs; teste de timestamps usa resposta simulada em diretório
+temporário. As 13 regressões cobrem também silêncio/NaN/vazio, consoante fraca,
+corte auditável, evento independente de ordem, cache sem ressíntese, adulteração
+de stem e atraso artificial de 25 ms. O Cauê ainda precisa ouvir a voz e o mix.
+
+Ambiente medido nesta execução: Python 3.13.11 (venv compartilhado) e FFmpeg
+8.1.1. Isso registra o ambiente efetivo do ensaio, sem alterar os requisitos
+ou instalar dependências no checkout principal.

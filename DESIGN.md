@@ -211,6 +211,16 @@ Fonte dos gatilhos: chamadas `ev(...)` no `filme.html`. Os sons são sintetizado
 
 **Voz (v5):** ElevenLabs, voz Fernanda, `eleven_multilingual_v2`, 24 kHz mono por frase; conferência pelo Scribe. Aviso "Narração com voz sintética (IA)" na cena final e nos metadados.
 
+### Infraestrutura v5 autorizada (T4, 26/10/2026)
+
+A implementação segue `PLANO-AUDIO.md` §H e `motor/mixagem.json`: preservar o
+bruto por padrão, sem fades em fala; stems independentes de voz, música e efeitos;
+ducking dos dois fundos antes do primeiro som; `grave` subordinado à palavra.
+Premix é a soma exata dos stems ducked. Master em duas passagens, sem limiter
+fixo adicional, alvo −16 LUFS ±0,5 e pico real ≤−1,5 dBTP no AAC decodificado.
+A configuração e o QA acompanham cada sessão. A montagem musical/cenas ainda
+é a v4 até T5; esta infraestrutura não aprova voz, sincronismo ou escuta da v5.
+
 ## 13. Inventário de cenas da v4 (15 cenas, 76,7 s no PT)
 
 | # | Id | Função na narrativa | Imagem | Duração PT |
@@ -318,7 +328,7 @@ Levantadas lendo o código e os slides exportados; **nenhuma foi corrigida**.
 7. **Os PNGs de `frila-apresentação/Apresentação 2/slides/img-pt/` parecem quadros deste vídeo.** Inferência: têm a legenda queimada e a mesma composição de telefone e lista de passos. Se for isso, o slide 9 (candidatos/check-in sobrepostos) é um quadro de transição, não um erro de desenho do vídeo. Não confirmei a origem dos PNGs.
 8. **Corte de fala no MP4 entregue.** O Scribe transcreveu "Castro não é turno" (cena 9, 43,53 s), embora o arquivo bruto da frase diga "Cadastro" (conferido). O efeito `grave` (peso 0,7) começa 285 ms antes da voz e, pela duração no código, sobrepõe ~415 ms dela; os efeitos não sofrem ducking. É **hipótese** de mascaramento: falta comparar com e sem o efeito.
 9. **Frases brutas da v4 estão limpas** (110 a 205 ms de silêncio no fim, começo a −55 dBFS): a geração por frase não cortou a voz da v4. O problema é de mixagem.
-10. **Voz do ElevenLabs entra quase sem silêncio** (10 a 100 ms antes; começo a −37..−53 dBFS). O corte automático da v4 (−45 dBFS, 30 ms antes) descartava 40 a 60 ms de voz fraca em 12 de 20 frases; prova: "Turno combinado" virou "termo combinado" depois de aparar, e estava certo no bruto. A cópia da v5 já usa corte mais gentil (−60 dBFS, 60/120 ms, fades 8/40 ms), **ainda não validado**.
+10. **Voz do ElevenLabs entra quase sem silêncio** (10 a 100 ms antes; começo a −37..−53 dBFS). O corte automático da v4 (−45 dBFS, 30 ms antes) descartava 40 a 60 ms de voz fraca em 12 de 20 frases; prova: "Turno combinado" virou "termo combinado" depois de aparar, e estava certo no bruto. Na v5 não há corte automático: `preparar()` (`motor/tempos2.py`) conserva o bruto, sem fades; corte só com limites confirmados e aprovação (`PLANO-AUDIO.md` §H).
 11. **Pausas entre frases** na v4: 0,21 a 0,34 s na mesma cena (quantizadas a meio tempo da grade de música) e 0,55 a 2,42 s entre cenas. Conferir se alguma pausa soa artificial.
 12. **Tempo de leitura:** cenas de dado têm 2,9 a 5,4 s; conferir se os números têm tempo de pousar antes de a voz seguir.
 
