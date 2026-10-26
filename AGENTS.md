@@ -9,4 +9,7 @@
 - **Nenhuma frase falada cruza uma emenda de áudio** (PLAYBOOK A1): cortar uma frase e continuá-la depois é defeito bloqueante. Toda emenda é analisada, em ±2 s.
 - **A v4 é o piso de qualidade visual** (PLAYBOOK D1). Revisão de motion é feita em vídeo, nunca só em quadro parado.
 - **Trabalho sai por PR** para `main`; não faça push direto nem `--force`.
+- **Validação obrigatória:** antes de qualquer commit ou entrega, execute `./scripts/verificar.sh`. Ele valida dependências (AST check), linters de cópia e roteiro, ausência de binários/chaves e testes unitários no `.venv`.
+- **Paridade de worktrees:** crie novos worktrees sempre via `./scripts/worktree.sh <caminho> <branch>` para evitar divergência de interpretador e dependências.
+- **Whitelist estrita de texto:** nenhuma string pode ser renderizada na tela ou em propostas de mockup sem constar no `roteiro.json` ou nas telas de `docs/v4/`. Anotações de revisão ficam fora da imagem.
 - Não commitar áudio, vídeo, trilha musical nem `motor/cache/` (ver `.gitignore`).

@@ -83,3 +83,17 @@ Detector automático só **bloqueia** quando a regra é objetiva e calibrada (ma
 | Render por bloco em `motor/render.py` | Diretor de Motion | `render.py pt --bloco A` gera o clipe do bloco com margens |
 
 Antes do código, cada mudança entra no doc do seu dono (`PLANO-AUDIO.md` ou `DESIGN.md`).
+
+## 6b. Tooling e Scripts Canônicos de Orquestração (SI-LS)
+
+Criados e supervisionados por Antigravity com base em observações empíricas dos modelos:
+
+| Script / Ferramenta | Finalidade | Regra Coberta |
+|---|---|---|
+| `scripts/verificar.sh` | Comando único de validação pré-commit/PR no `.venv` do projeto | Nível 1 (Bloqueia) |
+| `scripts/check_dependencies.py` | Varredura AST de imports contra `requirements.txt` | F1 (Paridade de Ambiente) |
+| `scripts/lint_roteiro.py` | Checagem de integridade de blocos e proibição de `:` na locução | Regra A8 |
+| `scripts/lint_copy.py` | **Lista de bloqueio**: acusa frases já vistas como inventadas (ex.: "A confirmação encerra a ação") em `filme.html`, `DESIGN.md` e propostas. **Não** confere texto novo contra o `roteiro.json`; isso continua sendo revisão do Maestro | D6 (parcial) |
+| `scripts/worktree.sh` | Provisionamento determinístico de worktrees com link para o `.venv` | F1 (Worktree Drift) |
+
+Histórico de observações, fricções e decisões de orquestração documentados em `docs/orquestracao/`.

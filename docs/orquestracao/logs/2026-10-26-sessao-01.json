@@ -1,0 +1,70 @@
+{
+  "session_id": "2026-10-26-s01",
+  "timestamp": "2026-10-26T20:35:00-03:00",
+  "evaluator": "Antigravity (Gestor de Playbook e Otimização de Orquestração)",
+  "context": {
+    "repository": "FrilaApp/frila-video-pitch",
+    "milestone": "Refatoração v4 (base 8/10) -> v5 (rejeitada por emendas audíveis e queda de motion aos 42.5s)",
+    "active_agents": [
+      { "name": "Claude Code", "model": "claude-sonnet-5-5", "role": "Maestro / Auditor Independente" },
+      { "name": "Codex", "model": "gpt-6.1-sol-high", "role": "Diretor de Motion" },
+      { "name": "Codex #2", "model": "gpt-6.1-sol-high", "role": "Engenheiro de Áudio" }
+    ],
+    "worktrees": ["fvp-motion", "fvp-audio-blocos", "fvp-cenas", "fvp-tempos", "frila-video-pitch"]
+  },
+  "raw_agent_feedback": {
+    "claude_code": {
+      "gargalo_integracao_ambiente": "Diretor de Motion rodou com Python do sistema (miniconda já com cv2 e pillow) e não com .venv do projeto. requirements.txt não foi atualizado e no ambiente limpo o detector e os 16 testes falhavam. Worktrees divergiam por montagem com ln -s manual sem comando único de verificação. motor/tests/ sem __init__.py impedia unittest discover.",
+      "alerta_automatico_vs_aprovacao_humana": "Playbook deve ter 3 níveis: 1) Bloqueia: só violação objetiva/calibrada (volume, chave, deps); 2) Informa: pista ordenada por confiança com declaração explícita de recall contra casos conhecidos (áudio recuperou 1 de 4 remendos da v4, então só informa); 3) Aprova: só o olhar e a escuta do Fabrício. Causa real do corte da v5 veio de cruzar candidatos com frases do roteiro (dois-pontos com pausa de 0,5-0,9s intra-frase).",
+      "texto_inventado_mockup": "AGENTS.md dizia apenas 'não invente' em termos gerais. Faltou regra determinística: toda string visível em tela deve vir do roteiro.json ou de tela real do app (docs/v4/). O pedido de propor tratamento não limitava texto.",
+      "hooks_scripts_sugeridos": [
+        "scripts/verificar.sh: comando único rodando no .venv todos os testes e importando todos os módulos",
+        "Conferência de dependências: imports de .py contra requirements.txt",
+        "Pré-PR de segurança: rejeita chaves sk_..., .wav, .mp4, .mp3 e motor/cache/",
+        "Conferência de texto em tela: extrai strings de filme.html e compara com lista permitida",
+        "Lint do roteiro: dois-pontos proibido na fala e pausas estimadas excessivas",
+        "scripts/worktree.sh: cria worktree com links e verifica ambiente automaticamente",
+        "Docs primeiro: exige mudança de DESIGN.md ou PLANO-AUDIO.md no mesmo PR que altera motor/"
+      ]
+    },
+    "codex_motion": {
+      "ambiente_dependencias": "Instalou pacotes em motor/cache/qa-venv e não registrou no requirements.txt do repo raiz. Tratou setup de laboratório como entrega. Necessidade de setup-motion reproduzível e hook de verificação de manifesto ao surgir import externo.",
+      "deteccao_defeitos_d2": "Dificuldade em distinguir intenção editorial de defeito técnico (pixels estáticos podem ser tempo de leitura; texto presente geometricamente pode estar encoberto). Queda aos 42.5s exigiu contrato de continuidade. Falsos positivos em cortes deliberados; falsos negativos possíveis em cintilações locais e oclusões parciais.",
+      "especificacao_ui_mockups": "Ponto cego: misturou anotação explicativa de revisão ('A confirmação encerra a ação') dentro da imagem da proposta e interpretou busca por legibilidade como licença para recortar o chassi do aparelho. DESIGN.md deve definir enquadramentos permitidos; AGENTS.md deve proibir texto novo e anotações internas no quadro.",
+      "handoff_maestro": "Houve trabalho manual excessivo reunindo caminhos, métricas, ressalvas e links. Sugere scripts/entregar-motion.py para gerar índice HTML e manifesto estruturado separando suspeitas automáticas, achados conferidos e aprovação pendente."
+    },
+    "codex_audio": {
+      "calibracao_deteccao_cega_a5": "Mix musical/acústico confundiu oclusivas naturais, ataques musicais e pausas retóricas com emendas de corte. Fundo lateral L-R contém música e não apenas ruído. Falta de Scribe da v4 no momento da calibração cega gerou apenas 1/4 de recall de proximidade. 69 candidatos na v5 são pistas para escuta, não violações comprovadas.",
+      "cache_hashes_eficiencia": "Cache com hashes e offsets em amostras (ini_amostra/48000) funcionou, mas palavras com duração zero geraram ruído inicial. Caminhos absolutos acoplam cache ao worktree original. Oportunidade de paralelização/otimização na exportação de WAVs.",
+      "aderencia_a1_a4": "Dificuldade em garantir proveniência contínua até a montagem final. Uma requisição por bloco evita fragmentação na geração, mas etapas posteriores ainda podem fatiar áudio. Necessário registrar tomada, hash, intervalos e limites de frase.",
+      "hooks_scripts_sugeridos": "Comando único de pré-entrega executando testes, conferindo hashes/offsets e empacotando pacote portátil de revisão (JSON, resumo, página com vídeo e WAVs ±2s sincronizados), separando violação comprovada de suspeita acústica."
+    }
+  },
+  "actionable_taxonomy": {
+    "F1_ENVIRONMENT_PARITY": {
+      "severity": "ALTA",
+      "symptom": "Módulos ausentes (cv2, pillow) quebraram build no ambiente raiz; uso de Python global/miniconda em vez de .venv.",
+      "resolution": "scripts/verificar.sh + scripts/check_dependencies.py + motor/tests/__init__.py + scripts/worktree.sh"
+    },
+    "F2_COPY_HALLUCINATION": {
+      "severity": "ALTA",
+      "symptom": "Invenção de texto de UI ('A confirmação encerra a ação') e recorte indevido de mockup.",
+      "resolution": "scripts/lint_copy.py + Regras D6/D7 no PLAYBOOK + AGENTS.md restritivo"
+    },
+    "F3_METRIC_VERSUS_PERCEPTUAL_CONFUSION": {
+      "severity": "CRÍTICA",
+      "symptom": "Modelos tratavam alertas automáticos (69 candidatos no áudio, 9 no vídeo) como aprovação/reprovação definitiva ou ficavam bloqueados sem aprovar.",
+      "resolution": "Política formal de Gates em 3 Níveis (Bloqueia vs Informa vs Aprova) com recall mínimo declarado"
+    },
+    "F4_SCRIPT_COMMUNICATION_BREAKDOWN": {
+      "severity": "MÉDIA",
+      "symptom": "Scripts de edição do Maestro falhando na metade e gerando commits parciais despadronizados.",
+      "resolution": "Pre-commit / Pre-PR hook com checagem de integridade atômica"
+    },
+    "F5_HANDOFF_FRICTION": {
+      "severity": "MÉDIA",
+      "symptom": "Reunião manual de dezenas de caminhos e WAVs; links quebrados entre worktrees.",
+      "resolution": "Manifesto portátil de entrega padronizado (JSON + Markdown)"
+    }
+  }
+}
