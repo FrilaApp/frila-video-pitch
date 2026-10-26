@@ -1,0 +1,350 @@
+# Plano de áudio — Frila v5, PT-BR
+
+**Estado: proposta para revisão do Orquestrador e aprovação do Cauê. Nenhuma implementação autorizada por este documento.**
+
+Prioridade: preservar a frase inteira, manter a voz inteligível e permitir ajustes independentes de voz, música e efeitos. A narrativa de referência é `NARRATIVA-v5-aprovada.md`; este plano não altera texto, imagem, voz escolhida ou trilha.
+
+Convenções: **Código** = comportamento lido nos arquivos autorizados; **Medido aqui** = leitura/medição local desta missão; **Informado** = medição fornecida pelo Orquestrador, não repetida aqui; **Hipótese** = causa a investigar; **Proposta** = parâmetro ou critério ainda sem validação auditiva. Os valores de processamento e aceite propostos não são resultados já alcançados.
+
+## A. Diagnóstico e evidências
+
+### A1. O que foi conferido
+
+| Evidência | Resultado | Origem e limite |
+|---|---|---|
+| Formato entregue da v4 | H.264; áudio AAC, 48 kHz, estéreo; início dos dois streams em 0 s | **Medido aqui:** `ffprobe` no MP4 autorizado. Não prova alinhamento de cada palavra. |
+| Durações da v4 | Imagem: 76,733333 s; áudio: 76,726292 s; régua: 76,7263 s | **Medido aqui:** MP4 e `motor2/tempos-pt.json` da cópia entregue. A diferença final de aproximadamente 7 ms não explica, por si, problemas em palavras no meio do vídeo. |
+| Loudness do MP4 da v4 | −16,14 LUFS integrado; −1,96 dBTP; LRA 2,80 LU | **Medido aqui:** primeira análise `loudnorm`, saída descartada em `null`. Foram usados os campos `input_*`, que descrevem o arquivo entregue; `output_*` não é uma nova entrega. Próximo do informado: −16,0 LUFS / −2,0 dBTP. |
+| Régua e eventos da v4 | 15 cenas, 20 frases, 69 eventos; pausas entre arquivos na mesma cena: 0,209–0,345 s; entre cenas: 0,549–2,419 s | **Medido aqui:** JSONs autorizados. São intervalos entre `fim` e `ini`, não silêncio acústico medido entre fonemas. |
+| “Cadastro” na v4 | Frase começa em 43,527 s; `grave` em 43,2415 s: antecedência de 285,5 ms | **Medido aqui:** JSONs. A função `grave()` lida no motor da v5 dura 0,7 s; usando essa duração, a sobreposição prevista com a frase é 414,5 ms. Essa conta não mede a intensidade residual do efeito no MP4. |
+| Limiter atual | `limit=0.74`, equivalente a aproximadamente −2,615 dBFS de amplitude; attack 1 ms, release 60 ms; sem `latency=true` | **Código e cálculo local:** não equivale diretamente ao teto anunciado de −1,5 dBTP. A ajuda local do FFmpeg confirma `latency=false` por padrão. Atraso efetivo da cadeia ainda não medido. |
+| Segmentação da narrativa aprovada | 26 frases nas dez cenas: 2, 1, 3, 3, 2, 3, 3, 3, 4 e 2 | **Medido aqui:** aplicação da expressão de segmentação atual ao texto aprovado. As vinte frases antigas são material de diagnóstico, não a lista final da v5. |
+
+Medições locais somente de leitura: `ffprobe`; FFmpeg com `loudnorm=I=-16:TP=-1.5:LRA=11:print_format=json`, saída `-f null -`; ajuda local de `alimiter`; Python isolado para ler os JSONs e contar frases. Não houve chamada à API, leitura de credenciais, importação dos motores, geração de áudio, escuta executada nesta missão ou gravação intermediária.
+
+### A2. Separar três classes de problema
+
+| Camada | Evidência / diagnóstico | Como provar ou refutar na implementação |
+|---|---|---|
+| **Geração** | **Informado:** brutos da v5 com 10–100 ms antes e 255–375 ms depois; c04-1 e c08-1 terminam com energia de −52/−53 dBFS. **Hipótese:** final truncado na origem. Energia na borda também pode ser respiração, ruído ou cauda; não prova palavra incompleta. | Ouvir o bruto isolado e conferir texto e palavras de borda. Comparar outra tomada da mesma frase, sem mudar o texto. Se o bruto já perdeu o fonema, nenhum padding ou mixagem o recupera. Não regravar apenas porque o ASR divergiu uma vez. |
+| **Corte — `aparar`** | **Informado como demonstrado:** a política antiga, −45 dBFS / 30 ms / 70 ms, retirou 40–60 ms de início fraco em 12/20 frases; “Turno” virou “termo” após o corte, embora o bruto estivesse correto. Não repetido nesta missão. **Código:** o detector usa média de valor absoluto em janela de 5 ms, não RMS; as grandezas não devem ser confundidas. | Comparar, no mesmo sample rate e sem música, bruto → intervalo escolhido → arquivo preparado, compensando apenas ganho conhecido e padding. Registrar amostras removidas e trecho afetado pelo fade. Scribe e ouvido nas três versões. A perda deve aparecer pela primeira vez no processamento, com o bruto preservado. |
+| **Mixagem — mascaramento** | **Informado:** “Cadastro” correto no bruto e reconhecido como “Castro” no MP4. **Código:** efeitos não recebem ducking. **Medido aqui:** evento grave temporalmente próximo. **Hipótese principal:** início mascarado pelo efeito e/ou pela música. Isso é diferente de apagar amostras da voz. | Comparação A/B do mesmo trecho: voz; voz+música; voz+efeitos; soma; master; AAC decodificado. Congelar ganho da voz e ganho mestre entre variantes, para o normalizador não compensar a retirada de uma camada. O estágio em que se perde inteligibilidade localiza a causa. |
+| **Mixagem — processamento final** | **Código:** soma, redução global de pico, `loudnorm` em duas passagens, resample a 192 kHz, limiter 0,74 e retorno a 48 kHz. **Hipóteses:** redução de transientes, mudança de loudness ou atraso adicional. Não há evidência de que o limiter tenha apagado “Ca”. | A/B com e sem cada estágio, no mesmo nível percebido; medir alinhamento e envelope de redução. Conferir novamente o AAC final. Registrar o modo efetivo de normalização da segunda passagem; `linear=true` solicitado não basta para provar processamento linear. |
+| **Régua / alinhamento** | **Informado:** “hoje” de c05 e “não” de c07-2 aparecem tarde no Scribe; correlação por envelope inconclusiva. **Código:** `voz()` coloca o vetor inteiro em `ini`; não corta em `fim`. `soma()` só limita pelo início/fim do buffer total. | Conferir o áudio preparado realmente usado, seu hash, número de amostras e posição. Comparar alinhamento por amostras entre versões equivalentes antes do master; depois investigar atraso do master/codec. ASR no mix não é régua exata. Não corrigir `fim` para caber na transcrição sem essa prova. |
+
+**Conclusão diagnóstica:** o defeito de corte na preparação da v5 é evidência fornecida e deve ser tratado como regressão conhecida. A divergência na entrega da v4 aponta para a cadeia posterior ao bruto, mas não prova sozinha corte físico nem identifica qual componente é culpado. O mascaramento pelo `grave` é a primeira hipótese a testar.
+
+### A3. Achados específicos do código
+
+- `ducking()` detecta atividade a −45 dBFS em blocos de 10 ms **antes** de `main()` ajustar a voz para −20 dB RMS. Portanto, o corte novo a −60 dBFS não resolveu a detecção do ducking: uma consoante preservada pode continuar fora do detector.
+- A antecipação de quinze blocos, retenção de 25 e média móvel centrada de quarenta blocos não representam uma envoltória com ataque/retenção/retorno explicitamente separados. **Inferência:** “começa 150 ms antes” não garante atenuação completa no primeiro fonema; a suavização distribui a transição nos dois sentidos.
+- `sfx = efeitos(...) * 10**((-24+3)/20) / .1` é um fator de escala, **não uma normalização de cada efeito a −21 dB RMS**. RMS, pico, duração, peso e sobreposição dos sons variam. A hipótese de competição com a voz é plausível; a diferença real precisa ser medida por evento.
+- A referência da música usa `mus[~falando]`. Trocar a voz pode mudar a máscara e alterar o nível de toda a música, mesmo sem mudança de trilha. A voz também recebe ganho global: trocar uma frase pode alterar as demais. Ambas as dependências prejudicam a edição independente.
+- Há um gerador aleatório global com seed 7. Alterar eventos anteriores pode mudar o ruído sintetizado dos seguintes. Para cache estável, é preciso áudio do evento imutável ou seed individual estável, sem depender da ordem de execução.
+- `aparar()` usa `vivo[0]`/`vivo[-1]` sem tratar atividade vazia. Seus fades atingem as bordas do arquivo escolhido mesmo quando faltou silêncio original. O fade-out de 40 ms pode reduzir um fonema final; o fade-in de 8 ms pode tocar o início já próximo da borda.
+- `tempos2.py` termina com `main()` incondicional. Importá-lo agora produziria arquivos. A segmentação da geração usa `fala`, mas a régua enumera `legenda`: diferenças de pontuação podem associar a legenda ao WAV errado. O plano exige um manifesto único de frases.
+- `secoes()`, `NO_COMPASSO`, entradas e mínimos ainda usam IDs e estrutura da v4. A v5 tem dez cenas e outra virada. Não reutilizar a régua antiga por posição ou substituir somente o texto.
+
+### A4. Decisão proposta sobre as duas edições já feitas
+
+| Edição | Decisão proposta | Motivo |
+|---|---|---|
+| Guarda `if __name__ == "__main__"` em `audio2.py` | **Manter.** | Permite análise/importação sem executar o mix. Acrescentar guarda equivalente em `tempos2.py` durante a implementação. |
+| `aparar`: −60 dBFS, 60/120 ms, fades 8/40 ms | **Ajustar; não voltar a −45 dBFS. Não declarar a edição validada.** | Preservar bruto deve ser o padrão inicial. Manter −60 dBFS como referência conservadora de diagnóstico, não como prova de ausência de fala. Substituir fades obrigatórios por fades opcionais apenas em silêncio confirmado; propor proteção de 80/160 ms quando houver corte aprovado. Ver política D. |
+
+## B. Arquitetura de trilhas e atualização incremental
+
+### B1. Arquivos propostos — ainda não criados
+
+Todos os caminhos abaixo pertencem à v5. Fontes brutas preservadas; derivados descartáveis, identificados por hash. Um manifesto aponta para as versões aprovadas. O fato de um derivado existir não o torna aprovado.
+
+| Artefato | Formato proposto | Conteúdo / localização |
+|---|---|---|
+| Tomada bruta por frase | WAV PCM 16 bits, 24 kHz, mono | Manter o formato confirmado em `eleven.py`. Novas tomadas versionadas em `vozes/tomadas/pt/<id-frase>/<hash>.wav`; não sobrescrever os brutos de diagnóstico existentes. |
+| Frase preparada | WAV IEEE float 32 bits, 48 kHz, mono | `motor/cache/audio/pt/frases/`; resample único, padding/corte aprovados, ganho conhecido. Guardar offsets e transformação, sem música ou efeitos. |
+| Voz por cena | WAV float 32 bits, 48 kHz, mono, opcional | Cache reutilizável das frases da cena. Origem local e deslocamento na régua explícitos no manifesto. Não obrigatório para a entrega. |
+| `voz.wav` | WAV float 32 bits, 48 kHz, mono | Stem alinhado a t=0, com duração total N. Voz preparada, sem limiter de master. |
+| `musica-base.wav` | WAV float 32 bits, 48 kHz, estéreo | Trilha remontada, emendas e fade musical final; ganho de referência estável, **sem ducking**. Medir a referência sobre a própria música, excluindo silêncio, sem depender da voz. |
+| `musica-duck.wav` | WAV float 32 bits, 48 kHz, estéreo | Derivado de música-base × automação. Salvar ambos; assim mudar ducking não exige remontar/decodificar a música. |
+| Efeito por evento | WAV float 32 bits, 48 kHz, mono no desenho atual | `motor/cache/audio/pt/eventos/`; áudio sintetizado e seed identificados. Hora de entrada, peso e ajuste de ganho são metadados independentes. |
+| `efeitos-base.wav` | WAV float 32 bits, 48 kHz, estéreo | Eventos posicionados e ganhos aprovados, sem ducking de voz. Fonte mono duplicada ao centro, conforme o mix atual; não criar espacialização nova. |
+| `efeitos-duck.wav` | WAV float 32 bits, 48 kHz, estéreo | Derivado com proteção de fala; o ajuste individual acontece antes da soma, e o controle do conjunto acontece no bus. |
+| `premix.wav` / `master.wav` | Premix float 32 bits; master PCM 24 bits; ambos 48 kHz estéreo | Premix = voz central + música-duck + efeitos-duck. Master recebe apenas processamento final aprovado. |
+| MP4 de entrega | Vídeo copiado; AAC 256 kbit/s, 48 kHz estéreo | Mesmo formato de áudio previsto em DESIGN §2. Remux sem recodificar a imagem quando a régua visual estiver válida. |
+| Manifestos e automações | JSON; envoltórias em cache numérico | `motor/mixagem.json`, `motor/cache/audio/pt/manifesto.json` e relatórios de QA futuros. Sem credenciais. |
+
+Stems de sessão ficam em `motor/cache/audio/pt/stems/`, com versões por dependências. Os cinco stems completos compartilham t=0, sample rate e **exatamente N amostras**. Voz mono entra igualmente em L/R, sem aplicar implicitamente outra lei de pan. Float permite processamento intermediário sem clipar o arquivo; não autoriza clipping no master.
+
+**Regra de soma:** usar somente `voz + musica-duck + efeitos-duck`. Nunca somar base e versão ducked juntas. A soma deve reproduzir o premix antes do master; não se promete reproduzir o master pela soma de stems, porque normalização dinâmica/limiter podem ser não lineares. Guardar a receita do master e seus ganhos.
+
+Cada frase deve ter ID estável, texto de fala, legenda associada, hash do bruto, tomada, configurações públicas de geração, contexto usado, cortes em amostras, padding, ganho, limites acústicos confirmados e intervalos de colocação. Separar `arquivo_ini/fim`, `fala_ini/fim`, `leg_ini/fim` e limites de cena. Arredondar para apresentação só na exportação; cálculo de áudio em amostras inteiras.
+
+### B2. O que invalida o quê
+
+| Mudança | Refazer | Reutilizar / condição |
+|---|---|---|
+| Trocar uma frase | Tomada selecionada → preparação e QA da frase → voz da cena/bus → envoltórias afetadas → premix/master/AAC | Música-base e eventos sintetizados. Se o contexto textual de frases vizinhas fizer parte da requisição, essas dependências também devem ser revistas; não prometer independência absoluta nesse caso. |
+| Baixar um efeito | Ganho daquele evento → bus de efeitos → premix/master/AAC | Voz, música, régua, imagem e amostra sintetizada do evento. Não ressintetizar os demais efeitos. |
+| Alterar ducking | Envoltórias → stems ducked → premix/master/AAC | Tomadas, preparação, música-base, efeitos-base e imagem. |
+| Mudar alvo LUFS/TP | Master → AAC → QA final | Premix e todos os stems. Reanalisar o master completo; o ganho de loudness é global. |
+| Frase nova cabe no intervalo aprovado, sem mudar texto visível | Reposicionar apenas dentro do intervalo permitido e repetir QA de sincronismo | Imagem pode ser reutilizada se início da legenda e momentos visuais continuarem corretos. Não esticar/acelerar fala para fazê-la caber. |
+| Mudar duração de cena, legenda queimada, texto ou evento visual | Régua/legendas/eventos, derivados afetados e imagem | Remux sozinho não resolve. Primeiro aprovar voz e tempos; renderizar a imagem depois. |
+
+O cache usa conteúdo e parâmetros, não apenas data do arquivo. Ganhos por frase são fixados após aprovação, para a troca de uma tomada não renormalizar silenciosamente as outras. A seed local de cada efeito não depende de sua posição na lista. Manter apenas o seed de geração de voz não garante tomada idêntica no serviço: o WAV aprovado é a referência reproduzível.
+
+### B3. Esboço de `mixagem.json`
+
+Exemplo de **estrutura proposta**, não configuração já lida ou aplicada. Overrides por cena/evento substituem a chave correspondente; não somam atenuações duas vezes. Os IDs de cena abaixo representam a numeração aprovada e deverão ser ligados aos IDs definitivos do roteiro.
+
+```json
+{
+  "versao": 1,
+  "idioma": "pt",
+  "sessao": {"sample_rate": 48000, "interno": "float32", "regua_travada": false},
+  "voz": {
+    "rms_ativo_alvo_dbfs": -20,
+    "tolerancia_db": 2,
+    "ajuste_automatico_max_db": 6,
+    "ganho_bus_db": 0,
+    "aparar": false,
+    "diagnostico_pontas_dbfs": -60,
+    "protecao_inicio_ms": 80,
+    "protecao_fim_ms": 160,
+    "fade_em_fala": false
+  },
+  "musica": {
+    "rms_referencia_dbfs": -24,
+    "referencia_independe_da_voz": true,
+    "ganho_bus_db": 0,
+    "duck": {
+      "profundidade_db": 14,
+      "inicio_rampa_antes_ms": 200,
+      "atenuacao_completa_antes_ms": 50,
+      "segura_ms": 250,
+      "volta_ms": 450,
+      "extra_nas_bordas_db": 3,
+      "maximo_db": 22
+    }
+  },
+  "efeitos": {
+    "ajuste_sobre_referencia_legada_db": -6,
+    "duck_db": 10,
+    "duck_nas_bordas_db": 16,
+    "inicio_rampa_antes_ms": 200,
+    "atenuacao_completa_antes_ms": 50,
+    "segura_ms": 200,
+    "volta_ms": 250,
+    "por_tipo": {"grave": {"ajuste_sobre_referencia_legada_db": -9}}
+  },
+  "protecao": {
+    "inicio_frase_ms": 200,
+    "fim_frase_ms": 150,
+    "mesclar_pausas_ate_ms": 600,
+    "margem_voz_musica_min_db": 12,
+    "margem_voz_efeitos_min_db": 15,
+    "margem_voz_fundo_min_db": 10,
+    "fundo_nas_bordas_abaixo_ref_voz_db": 18,
+    "pico_efeito_nas_bordas_abaixo_ref_voz_db": 6
+  },
+  "master": {
+    "integrado_lufs": -16,
+    "true_peak_pcm_alvo_dbtp": -2,
+    "true_peak_aac_max_dbtp": -1.5,
+    "lra_parametro_lu": 11,
+    "limitador_extra": false
+  },
+  "cenas": {
+    "09": {"musica_ganho_adicional_db": -2},
+    "10": {"musica_ganho_adicional_db": -2}
+  },
+  "eventos": {},
+  "qa": {"lufs_tolerancia_lu": 0.5, "janela_ms": 100, "passo_ms": 10}
+}
+```
+
+Os ajustes de efeitos referem-se à escala legada calculada com a referência fixa original, não à música atual depois do ducking. Assim, baixar música não baixa automaticamente os efeitos. O valor `duck_nas_bordas_db=16` é a profundidade total nas bordas, não mais dezesseis sobre dez. O acréscimo de música nas bordas leva o ducking nominal a 17 dB; o teto de 22 dB limita a correção automática. Falhar no teto pede revisão, não liberação silenciosa.
+
+## C. Ducking e proteção da voz
+
+### C1. Projeto proposto
+
+**A voz aprovada comanda a automação; o texto e a régua protegem suas bordas.** Usar os intervalos acústicos confirmados da preparação, acrescidos de margem, para garantir cobertura integral. O detector de energia pode refinar esses intervalos, mas não pode abrir a música dentro de uma palavra só porque a consoante é fraca. Se a borda estiver incerta, proteger conservadoramente o arquivo inteiro até revisão.
+
+| Controle | Valor inicial proposto | Justificativa e comportamento |
+|---|---|---|
+| Voz | Referência −20 dB RMS ativo; tolerância ±2 dB por frase | Preserva a referência existente. Ajuste estático limitado inicialmente a ±6 dB; fora disso, revisar tomada/ganho. Não comprimir tudo para forçar igualdade nem amplificar respirações separadamente. |
+| Música sem voz | Referência −24 dB RMS sobre a própria trilha | Manter o desenho atual como ponto de partida, sem a dependência da máscara de voz. Não é garantia de nível local em cada compasso. |
+| Música sob voz | Ducking inicial de 14 dB; mais 3 dB nas bordas | **Conta nominal:** −24 −14 = −38 dB RMS, dezoito abaixo da referência de voz. A margem real depende do trecho musical e deve ser medida. Aumentar até 22 dB se necessário; se não bastar, revisar o trecho/ganho. |
+| Antecipação | Rampa de 150 ms: começa 200 ms antes e termina 50 ms antes do primeiro som protegido | Garantir o patamar antes do fonema inicial. Curva suave de ganho em dB, sem degraus. Não detectar primeiro para só depois reagir. |
+| Fim da frase | Segurar música 250 ms após o fim acústico protegido; retornar em 450 ms | Protege caudas e evita recuperação brusca. Os números são proposta, não equivalentes exatos à média móvel atual. |
+| Pausas próximas | Manter patamar em pausas de até 600 ms; combinar envelopes pela maior atenuação | Não subir e descer entre frases de uma mesma ideia. Se duas rampas se sobrepuserem, prevalece a mais protetora. |
+| Efeitos sob fala | Ajuste base −6 dB sobre a escala legada; ducking de 10 dB, chegando a 16 dB nas bordas | Separar identidade do som de sua competição com a voz. Ajustes são ponto de partida; picos e margem do conjunto decidem. |
+| Retorno dos efeitos | Retenção 200 ms, retorno 250 ms | Evitar que a cauda de um sino volte de repente no fim de uma palavra. Um transiente sobre a fala deve nascer atenuado. |
+| Fecho e assinatura | Música adicional −2 dB nas cenas 9–10; manter fade final musical | Proposta de calma coerente com o fecho aprovado. Não inventar nova trilha ou efeito. O fade total não pode alcançar “clara”. |
+
+A automação é contínua no tempo absoluto do vídeo. Corte de cena não zera o ducking. Se a fala atravessar uma transição autorizada, mantém-se a proteção até o fim real. Não reiniciar os envelopes no começo de cada stem de cena.
+
+### C2. Cortes escuros e `grave`
+
+- Preservar a sincronização do ataque com o evento visual. Não deslocar o efeito arbitrariamente para fugir da palavra nem atrasar a fala sem atualizar a régua aprovada.
+- Começar com ajuste do `grave` em −9 dB sobre a escala legada, substituindo o ajuste geral de −6. Aplicar também a envoltória de fala à sua cauda. A duração atual de 700 ms não significa 700 ms de intensidade constante.
+- Se o ataque cair na janela protegida, abaixar o evento inteiro ou silenciá-lo naquele corte. Prioridade para a palavra. Encurtar/reprojetar o timbre fica como alternativa posterior, submetida à escuta, não como primeiro remédio.
+- No caso de referência da v4, o ataque antecede a voz em 285,5 ms: o teste prioritário é reduzir a cauda já em andamento antes de “Ca”, além de comparar a versão sem `grave`.
+- Na v5, o contraste escuro pertence à cena 3 aprovada; não copiar cegamente os tempos/IDs de c09 e c12 da v4. Eventos definitivos virão da imagem aprovada.
+
+### C3. Como medir margem por frase
+
+Medir nos stems **depois dos ganhos e ducking, antes do master**. Usar as mesmas janelas temporais em todas as trilhas, nunca comparar RMS da voz numa janela e música em outra. Para estéreo, usar energia média dos dois canais; voz central usa a mesma convenção. Além disso, conferir a redução para mono.
+
+1. Construir uma máscara de fala confirmada que exclua padding/silêncio e preserve sons fracos. Guardar os limites e a regra usada. Não usar novamente −45 dBFS como verdade sobre presença de fala.
+2. Em cada frase, calcular `ΔVM = RMS_dB(voz) − RMS_dB(música-duck)` e a margem para o fundo real `música-duck + efeitos-duck`. Para efeitos, medir também apenas janelas em que voz e efeito coexistem; não diluir um impacto curto com vários segundos de silêncio.
+3. **Aceite proposto por frase:** ΔVM ≥12 dB; voz sobre efeitos ≥15 dB nas janelas de coexistência; voz sobre o fundo somado ≥10 dB. Sem efeito, registrar “não se aplica”, não inventar uma margem infinita.
+4. Medir janelas de 100 ms, passo de 10 ms, para localizar a pior passagem. Nas janelas em que a voz estiver até 20 dB abaixo de sua referência ativa, aplicar também mínimo local de 10 dB sobre o fundo. Janelas de voz ainda mais fraca não recebem aprovação por essa regra: entram na lista de bordas/trechos a ouvir, com proteção conservadora.
+5. Nos primeiros 200 ms e últimos 150 ms de cada frase: fundo RMS no máximo `referência ativa da frase −18 dB`; pico do efeito no máximo `referência ativa da frase −6 dB`, medido em dBFS. Se a referência da voz for −20, os tetos iniciais serão −38 dB RMS e −26 dBFS, respectivamente. São limites de projeto, não medidas da v4.
+
+Os tetos de borda usam a referência da frase e não garantem SNR de cada consoante fraca. Listar todas as colisões nessa região, mesmo as que passaram nos números. Reduzir efeitos antes de elevar voz, para não usar loudness como substituto de inteligibilidade. A/B e ouvido continuam obrigatórios.
+
+## D. Frases inteiras: geração, preparação e continuidade
+
+### D1. Geração
+
+- Manter Fernanda, modelo `eleven_multilingual_v2`, idioma e parâmetros públicos atuais como baseline. Gravar no manifesto o texto exato, configurações efetivamente usadas, tomada e hash. Nenhuma credencial entra em manifesto ou relatório.
+- Manter uma frase por arquivo como unidade de edição. Na implementação, permitir selecionar **uma frase**, pois o filtro atual seleciona cena e pode regravar todas as frases dela. Preservar tomadas aprovadas e suas alternativas.
+- O corpo de geração lido envia `text`, `model_id`, `language_code`, `voice_settings` e seed opcional; **não envia contexto anterior/seguinte**. Suporte, nomes exatos, limites e compatibilidade de parâmetros como `previous_text` e `next_text`: **a confirmar na documentação**. Não habilitar por suposição, nem incluir a frase anterior dentro de `text` e arriscar narrá-la de novo.
+- Após aprovação para consultar documentação, confirmar o mecanismo de contexto e testar duas frases adjacentes. Se houver suporte, usar texto anterior/seguinte como dependência explícita de cache. Mudou esse contexto, revisar as tomadas afetadas. Contexto não é garantia de continuidade de prosódia.
+- Enquanto o suporte não estiver confirmado: consistência de voz/configuração, escuta sequencial e seleção de tomada. Se a segmentação continuar artificial, propor geração de uma unidade de sentido maior; isso exige confirmar limites e qualidade do serviço e reduz a independência de edição. Não é a primeira opção nem capacidade assumida como validada.
+- Duas tentativas com o mesmo defeito: registrar e levar ao Orquestrador, sem loop de regeneração e consumo indefinido. Não alterar a narrativa para satisfazer o ASR.
+
+### D2. Preparação e `aparar`
+
+**Padrão inicial: não remover amostras do bruto.** Fazer o resample para 48 kHz uma única vez, preservar uma referência antes de qualquer corte e registrar cada transformação. Padding protege montagem; não restaura fonema ausente.
+
+Depois da primeira validação, permitir corte conservador apenas de silêncio confirmado, por frase:
+
+1. Avaliar pontas em janelas RMS de 10 ms e também no envelope de 5 ms equivalente ao atual. Registrar a diferença entre as métricas. −60 dBFS é referência conservadora proposta, não detector infalível de fonemas.
+2. Não remover nada quando houver dúvida, atividade vazia, valor não finito ou borda suspeita. Atividade vazia deve retornar diagnóstico explícito e impedir aprovação; nunca indexar vetor vazio, descartar a frase ou aceitar silêncio como fala correta.
+3. Preservar pelo menos 80 ms antes do primeiro som confirmado e 160 ms após o último, quando esse silêncio existir. Se faltar espaço, adicionar apenas o padding necessário, sem apagar o início/fim original. Se a borda do bruto contiver voz, marcar para revisão da geração, mesmo após adicionar padding.
+4. Fades obrigatórios de 8/40 ms: desabilitar. Se houver necessidade demonstrada de evitar clique, usar rampa proposta de 3–5 ms **somente dentro de silêncio/padding confirmado**, sem tocar respiração ou fonema. O padrão pode permanecer sem fade.
+5. Guardar corte inicial/final em amostras, duração original/preparada, padding e qualquer intervalo modificado por fade. A região de fala aprovada deve conservar as amostras da referência reamostrada, compensado apenas o ganho estático conhecido. Tolerância numérica proposta de `1e-6` nessa comparação em float32; comparar no mesmo sample rate e alinhamento.
+6. Qualquer trecho removido com janela de energia acima de −60 dBFS bloqueia o corte automático. Abaixo disso também não há garantia de ausência de fala: aprovação depende das demais verificações e, em dúvida, conserva-se o bruto.
+
+### D3. Pausas e grade
+
+**Código:** `ini = sobe(ini + duração_do_arquivo + 0,10, P/2)`. Com P/2 = 245,9175 ms, o arredondamento pode adicionar quase outro meio tempo além dos 100 ms. O intervalo percebido inclui também silêncio final do arquivo anterior e inicial do próximo. Aumentar folgas sem rever isso pode tornar a locução ainda mais espaçada.
+
+**Proposta:** falas seguem a respiração e a pontuação; cortes de cena e viradas musicais podem seguir a grade. Retirar a quantização obrigatória de cada frase, mantendo a grade como opção de direção, não como requisito técnico.
+
+Pontos de partida, medidos entre último e primeiro som de fala confirmado:
+
+- Continuação de ideia na mesma cena: 180–300 ms; referência inicial 250 ms.
+- Punch, pergunta ou fechamento de raciocínio: 350–500 ms, por decisão editorial.
+- Entre cenas: 400–700 ms; pausas maiores somente com justificativa visual/semântica. Não preencher automaticamente 2,4 s porque a grade exige.
+
+Sobrepor somente padding/silêncio confirmado quando necessário para atingir esses intervalos, nunca fonemas ou respirações. A soma dos arquivos deve preservar suas partes úteis; o alinhamento não pode depender só do tamanho total do WAV. Se os limites não estiverem confiáveis, manter montagem conservadora e pedir escuta, em vez de forçar o intervalo.
+
+Travar a régua final após aprovar voz e pausas. Manter o fim musical em compasso quando couber na duração aprovada; não acelerar fala para alcançar um compasso. Mudança que altere cena ou legenda queimada passa a exigir nova imagem.
+
+### D4. Teste automático de “frase inteira”
+
+Um único `ok` por igualdade de texto é insuficiente. O código atual solicita timestamps de palavra ao Scribe, mas salva apenas comparação normalizada e sobra final; essa sobra é diferença para o timestamp estimado, não silêncio acústico medido.
+
+**Proposta de relatório por frase e estágio:** `geração → preparação → bus de voz → premix → master → AAC decodificado`. Comparar primeiro o estágio novo com o anterior aprovado, para localizar onde a divergência começou. Chamadas ao Scribe são futuras, após aprovação, com cache por hash do áudio e parâmetros; esta missão não chamou o serviço.
+
+| Verificação | Limiar inicial / ação proposta |
+|---|---|
+| Arquivo válido | Duração positiva, áudio finito e atividade presente. Falha bloqueia montagem. Sequência de três amostras junto ao teto digital (módulo ≥0,999) gera alerta de clipping a investigar. |
+| Texto Scribe | Alinhar palavras esperadas e reconhecidas; exigir zero omissões/substituições/inserções **não resolvidas**. Toda divergência nas primeiras/últimas duas palavras é prioritária. Preservar resposta e tempos palavra a palavra. |
+| Normalização textual | Permitir apenas equivalências explícitas e revisáveis: algarismos/extenso e aliases já aceitos. Nunca normalizar “Castro” para “Cadastro”, “termo” para “Turno” ou apagar “não”. Conferir números, nomes e negações mesmo quando o texto normalizado passa. |
+| Energia na borda do bruto | RMS no primeiro/último bloco de 10 ms acima de −55 dBFS gera alerta, não diagnóstico automático de corte. Início/fim estimado pelo ASR a menos de 30 ms da borda também gera alerta. Os casos informados de −52/−53 dBFS entram nessa fila. |
+| Padding preparado | Proteção proposta de 80/160 ms em relação aos limites confirmados. Padding não encerra alerta de bruto suspeito. |
+| Fidelidade da preparação | Nenhuma região de fala excluída ou atingida por fade; comparação de amostras dentro da tolerância indicada. Sem limite confirmado, conservar o bruto. |
+| Fidelidade da montagem | Duração do trecho inserido igual à do preparado; zero amostras úteis cortadas por `soma`; não sobrepor atividade vocal de frases distintas. Recalcular `fim` a partir da colocação real. |
+| Tempos do reconhecimento | Palavra fora do intervalo preparado por mais de 50 ms gera inspeção de alinhamento; não mover a régua automaticamente. Timestamp não mede com precisão a borda física do fonema. |
+| Diferença bruto/processado/mix | Se bruto passa e preparado diverge, inspecionar corte/fade; se voz isolada passa e mix diverge, inspecionar margem/efeitos/master. Um erro de Scribe continua hipótese até escuta. |
+
+Transcrição de trechos do mix deve incluir contexto de aproximadamente 250 ms dos dois lados, registrando o offset absoluto. Palavras vizinhas não contam como inserção da frase-alvo; precisam ser alinhadas ao seu próprio intervalo. Não cortar o trecho de conferência exatamente na borda que está sendo investigada.
+
+O aceite automático produz `apto para escuta`, `divergência` ou `inconclusivo`. Se o ouvido do Cauê confirmar que uma divergência é erro do ASR, registrar a exceção com frase/estágio/motivo. Nunca trocar a fala correta só para obter transcrição idêntica.
+
+## E. Verificação final e critérios de aceite
+
+Todos os limites abaixo são **propostas de aceite**, não resultados medidos da v5.
+
+| Item | Critério |
+|---|---|
+| Integridade das falas | Todas as frases previstas no manifesto presentes; nenhuma perda de amostra útil, fonema ou palavra confirmada; zero divergências de texto/tempo sem resolução documentada. |
+| Voz isolada | Referência RMS ativo −20 ±2 dB por frase, salvo ajuste justificado e aprovado; sem estalos ou saltos perceptíveis entre tomadas. |
+| Margens | ΔVM ≥12 dB por frase; voz/efeitos ≥15 dB na coexistência; voz/fundo ≥10 dB; varredura local e proteção das bordas conforme C3. Nenhuma colisão crítica pendente. |
+| Colisões de efeitos | Listagem de evento, tipo, horário, pico, duração de sobreposição, margem e palavras afetadas. Zero ataque/cauda que mascare palavra na escuta; tetos de borda respeitados ou efeito retirado. |
+| Loudness final | AAC decodificado entre −16,5 e −15,5 LUFS integrado. Medir novamente depois de qualquer limiter ou codificação; não aceitar apenas a meta passada a `loudnorm`. |
+| Pico real | Master PCM com alvo inicial ≤−2,0 dBTP; AAC final ≤−1,5 dBTP. Se o codec ultrapassar, reduzir o teto do master e reencodar apenas o áudio. |
+| Processamento final | Preferir uma normalização final em duas passagens. Desabilitar o limiter fixo 0,74 após A/B, salvo necessidade demonstrada. Se mantido um limiter adicional: teto explicitado, compensação de latência habilitada, nova medição e revisão de redução acima de 1 dB. Não afirmar que ele preserva LUFS. |
+| LRA | Registrar; não forçar a entrega a 11 LU nem à medida da v4. O `LRA=11` é parâmetro do filtro, não um resultado obrigatório. Ouvido decide se há bombeamento ou excesso de compressão. |
+| Alinhamento | Stems com N amostras e origem comum; deriva acumulada zero na sessão. Após master/codec, investigar deslocamento >10 ms em relação à referência alinhada, compensar atraso conhecido e repetir conferência visual. |
+| Final do vídeo | Nenhuma amostra útil além do intervalo de entrega; “clara” e sua cauda preservadas. Não usar `-shortest` para esconder incompatibilidade de duração. Fade final somente depois da última fala protegida. |
+| Entrega | Áudio AAC 48 kHz estéreo, idioma `por`, aviso de voz sintética mantido; vídeo sem recodificação quando a imagem for reutilizada. |
+
+**Escuta obrigatória pelo Cauê:** voz isolada, mix normal, volume baixo em alto-falante de celular/notebook, fones e redução a mono. Ouvir o vídeo inteiro uma vez sem ler legenda, depois conferir pontualmente as bordas. Não foi executado nesta missão.
+
+Focos de escuta da narrativa aprovada: entrada de “Hoje”; início de “Cadastro não é turno” após o trecho de dados; “Em bares e restaurantes”; passagem dos dados para “Mapeamos”; “quinze quilômetros”; “check-in”; a pergunta “Chamaria de novo?”; cadência das quatro frases do fecho; “Frila. Turno combinado, regra clara”. São prioridades de teste, não alterações de texto.
+
+Usar “Cadastro”, “hoje”, “não” e “Turno combinado” dos testes antigos como casos de regressão quando os arquivos correspondentes estiverem disponíveis na implementação. Não confundir esses IDs antigos com a numeração das dez cenas novas.
+
+## F. Implementação proposta, em ordem
+
+P/M/G indicam esforço relativo, não horas garantidas. Nenhum dos passos foi implementado.
+
+| Ordem | Arquivo / alteração futura | Esforço | Validação sem renderizar imagem |
+|---|---|---|---|
+| 1 | Registrar baseline e criar `motor/mixagem.json` e manifesto de áudio; documentar a mudança aprovada em DESIGN §12 | M | Esquema, hashes, caminhos isolados e inventário; nenhuma geração/API necessária. |
+| 2 | `motor/tempos2.py`: guarda de main; separar leitura/preparação de gravação; modo preservar bruto; cortes/padding auditáveis, sem fades sobre fala | M | Comparação de amostras e casos de borda; silêncio/arquivo vazio; nenhuma imagem. |
+| 3 | `vozes/eleven.py`: seleção por frase, tomadas imutáveis, manifesto compartilhado de fala/legenda, persistência de timestamps e QA por estágio | M | Parte estrutural e respostas gravadas podem ser verificadas offline. Geração/Scribe reais dependem de aprovação e serviço; contexto só após documentação confirmada. |
+| 4 | Aprovar tomadas, continuidade e pausas; adaptar `motor/tempos2.py` à narrativa de dez cenas e remover IDs/quantização de frase herdados | G | Voz montada isolada, régua, duração e rascunho de legendas; sem render de imagem. Falas congeladas antes de produzir o vídeo definitivo. |
+| 5 | `motor/audio2.py`: exportar/cachear stems, separar ganhos, referência musical independente, seeds/cache por evento, automação música+efeitos | G | Null test da soma dos stems contra premix, margem por frase, determinismo do cache e A/B de colisões; sem imagem nova se eventos/tempos estiverem disponíveis. |
+| 6 | Novo `motor/conferir_audio.py` proposto: energia, integridade, margem, colisões, alinhamento, relatório de aprovação e medições FFmpeg | M | Medir brutos/derivados/MP4 existente sem render. ASR usa cache; chamadas novas só quando aprovadas. |
+| 7 | `motor/audio2.py`: master em duas passagens, relatório de loudness/pico, revisar limiter e medir latência | M | Master e AAC de teste; nenhuma renderização de imagem. |
+| 8 | `motor/mux.sh`: modo de trocar somente áudio, copiar stream de vídeo, preservar metadados e verificar duração; `legendas2.py` só se a régua exigir | P/M | Remux e inspeção de sincronismo. Esses arquivos não foram lidos nesta missão; confirmar a implementação real antes de editá-los. |
+| 9 | Gerar uma vez a imagem com a régua v5 aprovada e seus eventos definitivos; repetir apenas mix/QA/remux nos ajustes sonoros | M | O render inicial continua necessário para a nova narrativa. Depois, ganhos e ducking não dependem de outro render. |
+| 10 | Escuta final do Cauê; exportar master, stems, configuração e relatório da versão aprovada | P | Conferência do MP4 final e pacote de áudio; sem regenerar voz ou imagem se nada mudou. |
+
+**Independência do render:** hoje os eventos são registrados pelo render, conforme DESIGN §12 e `audio2.py`. Depois de congelados `tempos-pt.json` e `eventos-pt.json`, uma mudança de ganho/ducking usa esses arquivos e os stems já existentes. Não executar `render.py` por conveniência em todo ajuste de áudio.
+
+Para a v5 ainda sem imagem final, pode-se validar voz, música e critérios de mix antes do render. A sincronização dos efeitos permanece provisória até haver eventos aprovados. Um exportador de eventos sem codificar quadros seria melhoria possível, mas sua viabilidade depende da leitura futura de `render.py`/`filme.html`; não é capacidade confirmada nem requisito para os ajustes de volume.
+
+**Meta de fluxo:** ajustes locais de ganho/ducking/master em segundos ou poucos minutos, seguidos de remux, sem o render de aproximadamente quatro minutos citado no briefing. Não é benchmark já alcançado. A medição local de loudness da v4 terminou normalmente, mas não mede geração de stems, master completo nem remux. APIs e regeneração de voz não entram nessa promessa de tempo.
+
+Mesmo com cache, master/loudness devem ser reavaliados no programa completo. Evitar refazer música-base ou sintetizar efeitos estáticos economiza trabalho; não sacrificar QA global para tentar atualizar somente alguns segundos do arquivo final.
+
+## G. Riscos, preservação e decisões
+
+### Não mudar
+
+- `../v4-final-26-10/` e `motor2/`: somente referências de leitura; não editar, reprocessar por cima, apagar ou substituir entregas.
+- Nenhum texto da narrativa aprovada, fato, função do app, identidade da voz Fernanda, música escolhida ou evento visual muda por decisão deste plano.
+- Nenhuma chave, configuração de credenciais ou autorização de API é lida ou registrada. Nesta missão, somente este documento foi criado.
+- Não adicionar compressor, equalizador, de-esser ou nova trilha por hábito. Primeiro preservar a voz e corrigir níveis/colisões; qualquer tratamento adicional exige defeito identificado e A/B.
+- Não mascarar falha com aceleração da voz, deslocamento silencioso de legenda ou corte do final para caber na duração da imagem.
+
+### Riscos que permanecem
+
+| Risco | Contenção |
+|---|---|
+| ASR confundir pronúncia correta ou timestamp | Evidência por estágio, comparação auditiva e exceção documentada; sem aprovação automática por texto apenas. |
+| Limiares absolutos perderem consoante fraca | Preservar bruto por padrão, proteção de bordas, corte auditável e análise de amostras; −60 dBFS não vira garantia. |
+| Padding aumentar pausas artificialmente | Separar duração do arquivo e limites acústicos; planejar pausas pela fala, sem quantizar cada frase. |
+| Ducking profundo soar artificial ou apagar efeitos úteis | Mesclar pausas, ajustar curvas, A/B na cena inteira e ouvir em baixo volume. Ganho estético não supera palavra inteligível. |
+| Margem média esconder transiente | Janelas curtas, medição de pico e coexistência por evento; lista de bordas obrigatória. |
+| Master/AAC desfazer equilíbrio ou introduzir atraso | Medir novamente a entrega, conferir PTS/alinhamento e não confiar só em stems ou parâmetros pedidos ao filtro. |
+| Troca de frase invalidar imagem | Régua travada e verificação explícita de duração, texto visível e sincronismo; se invalidar, render correto uma vez. |
+| Contexto de API não suportado / custo de regeneração | Documentação a confirmar; cache por tomada; selecionar apenas dependências afetadas, sem chamadas nesta fase. |
+| Cache reaproveitar eventos ou voz antigos | Hashes de fonte/receita/régua, IDs estáveis, detecção de divergência e aprovação associada à versão exata. |
+
+### Decisões que dependem do Cauê / Orquestrador
+
+1. **Aprovar a voz como prioridade do mix**, incluindo reduzir ou retirar um `grave` quando competir com a primeira palavra. Sugestão: aprovar essa regra; escolher a intensidade final ouvindo A/B.
+2. **Aprovar a retirada da grade obrigatória entre frases**, mantendo grade para música e cortes quando útil. Sugestão: usar pausas naturais e fechar a régua antes da imagem.
+3. **Aprovar preservar brutos e desabilitar fades obrigatórios**, com corte conservador opcional após verificação. Sugestão: manter a guarda de `audio2.py`, ajustar `aparar` como descrito e não retornar à política de −45 dBFS.
+4. **Confirmar o contexto de exibição e a sensação de trilha desejada.** Os alvos −16 LUFS e os parâmetros deste plano são ponto de partida para a entrega atual; o ouvido do Cauê decide presença de música, efeitos e respiros.
+5. **Autorizar em etapa futura a confirmação documental e o uso de contexto no ElevenLabs**, se suportado, e a geração/Scribe necessários para a narrativa aprovada. Sem essa confirmação, o plano funciona com tomadas separadas e revisão de continuidade.
+
+As pendências editoriais de estágio, histórico e assinatura continuam com o Orquestrador; fechar o texto antes de produzir as tomadas finais. Este plano está completo para revisão, mas não declara o áudio validado nem autoriza iniciar código, geração ou render.

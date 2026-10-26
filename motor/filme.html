@@ -1,0 +1,822 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<title>Frila · motor v4</title>
+<!-- Motor v4: cada quadro é calculado por seek(t). Nada depende do relógio do navegador.
+     Molas em forma fechada (sem bounce), um único ponto laranja que atravessa o filme, cursor que clica de verdade.
+     O render.py chama window.boot(tempos, idioma) e depois window.seek(t) a 240 quadros por segundo. -->
+<style>
+@font-face{font-family:PJS;src:url("../../../../assets/fontes/ttf/PlusJakartaSans%5Bwght%5D.ttf") format("truetype");font-weight:200 800}
+@font-face{font-family:AHN;src:url("../../../../assets/fontes/ttf/AtkinsonHyperlegibleNext%5Bwght%5D.ttf") format("truetype");font-weight:200 800}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#F7F3EE}
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:hidden;background:#F7F3EE;font-family:AHN;color:#18191C;-webkit-font-smoothing:antialiased}
+#world,#ov,#hud{position:absolute;left:0;top:0;width:1920px;height:1080px}
+#world{transform-origin:0 0}
+.ab{position:absolute}
+.sc{position:absolute;left:0;top:0;width:1920px;height:1080px;display:none}
+.h{font-family:PJS;font-weight:800;letter-spacing:-0.035em;line-height:1.02}
+.w{display:inline-block;white-space:pre}
+.k{font-family:AHN;font-weight:700;font-size:24px;letter-spacing:.14em;text-transform:uppercase;color:#5B6068}
+.mut{color:#5B6068}
+.ctr{left:0;width:1920px;text-align:center}
+#dot{position:absolute;background:#EA5A36}
+.oc{display:inline-block;height:1em;overflow:hidden;vertical-align:top}
+.os{display:block}
+.os span{display:block;height:1em;line-height:1em;text-align:center}
+.ox{display:inline-block;height:1em;line-height:1em;vertical-align:top;overflow:hidden}
+.odo{font-variant-numeric:tabular-nums;line-height:1em;white-space:nowrap}
+.card{background:#fff;border:2px solid #E7E1D8;border-radius:28px}
+.av{border-radius:50%;background:#F1ECE5;display:flex;align-items:center;justify-content:center;font-family:PJS;font-weight:800;color:#18191C}
+.btn{border-radius:16px;background:#18191C;color:#fff;font-family:PJS;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px}
+.fld{background:#fff;border:2px solid #E7E1D8;border-radius:16px}
+.lbl{font-family:AHN;font-weight:700;font-size:15px;letter-spacing:.12em;text-transform:uppercase;color:#5B6068}
+#cap{position:absolute;left:310px;width:1300px;bottom:78px;text-align:center;font-family:AHN;font-weight:600;font-size:40px;line-height:1.26}
+#src{position:absolute;left:72px;bottom:38px;font-family:AHN;font-weight:400;font-size:19px;color:#5B6068;max-width:1100px}
+</style></head>
+<body><div id="stage">
+  <div id="world"></div>
+  <div id="ov"></div>
+  <div id="hud"></div>
+</div>
+<script>
+"use strict";
+/* ---------- cores, molas, utilidades ---------- */
+const C={o:'#EA5A36',ob:'#C2410C',ink:'#18191C',paper:'#F7F3EE',mut:'#5B6068',line:'#E7E1D8',soft:'#F1ECE5',map:'#EFE9E1',white:'#FFFFFF'};
+// presets [ω rad/s, ζ]. ζ ≥ 0,74 => sobressinal ≤ 3 %. Nada de bounce.
+const PR={ui:[18,.86],move:[11,.82],soft:[7,.9],cam:[5.5,.95],pop:[16,.76],count:[5.2,.985],slow:[4.2,.95],snap:[34,.9]};
+const cl=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const lerp=(a,b,u)=>a+(b-a)*u;
+const eo=u=>1-Math.pow(1-u,3);
+const eio=u=>u<.5?4*u*u*u:1-Math.pow(-2*u+2,3)/2;
+const ramp=(t,a,d=.2)=>cl((t-a)/d);
+const fade=(t,a,d=.2)=>eo(ramp(t,a,d));
+function spr(t,p='ui'){ if(t<=0) return 0; const [w,z]=PR[p]; const wd=w*Math.sqrt(1-z*z); return 1-Math.exp(-z*w*t)*(Math.cos(wd*t)+(z*w/wd)*Math.sin(wd*t)); }
+const hex=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+const mixc=(a,b,u)=>{const A=hex(a),B=hex(b);return `rgb(${A.map((v,i)=>Math.round(lerp(v,B[i],cl(u)))).join(',')})`;};
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+
+/* trilhas: cada propriedade é uma soma de molas, uma por mudança de alvo */
+const K={};
+function key(n,t,v,p='ui'){ (K[n]||(K[n]=[])).push([t,v,p]); }
+function val(n,t){ const k=K[n]; let v=k[0][1]; for(let i=1;i<k.length;i++) v+=(k[i][1]-k[i-1][1])*spr(t-k[i][0],k[i][2]); return v; }
+function D(t,o,p='move'){ for(const [n,v] of Object.entries(o)){ if(n==='c'){ const [r,g,b]=hex(v); key('dr',t,r,p); key('dg',t,g,p); key('db',t,b,p);} else key(n==='r'?'dr_':'d'+n,t,v,p);} }
+function CAM(t,o,p='cam'){ for(const [n,v] of Object.entries(o)) key('c'+n,t,v,p); }
+function CUR(t,x,y,p='move'){ key('kx',t,x,p); key('ky',t,y,p); }
+const EV=[]; function ev(t,tipo,forca=1){ EV.push({t:+t.toFixed(4),tipo,forca}); }
+function click(t){ key('kp',t,.84,'ui'); key('kp',t+.09,1,'ui'); ev(t,'clique'); }
+
+function st(el,o){ if(!el) return; const s=el.style;
+  if(o.o!==undefined) s.opacity=cl(o.o).toFixed(4);
+  let tf='';
+  if(o.x||o.y) tf+=`translate(${(o.x||0).toFixed(2)}px,${(o.y||0).toFixed(2)}px) `;
+  if(o.s!==undefined) tf+=`scale(${o.s.toFixed(4)}) `;
+  if(o.sx!==undefined||o.sy!==undefined) tf+=`scale(${(o.sx??1).toFixed(4)},${(o.sy??1).toFixed(4)}) `;
+  if(o.rot) tf+=`rotate(${o.rot.toFixed(2)}deg) `;
+  s.transform=tf||'none';
+  if(o.blur!==undefined) s.filter=o.blur>.05?`blur(${o.blur.toFixed(2)}px)`:'none';
+}
+function box(el,x,y,w,h){ const s=el.style; s.left=x+'px'; s.top=y+'px'; s.width=w+'px'; s.height=h+'px'; }
+/* entra subindo, sai apagando. Uma propriedade por linha de texto. */
+function io(el,t,a,b,dy=26){ if(!el) return; const i=fade(t,a,.2), u=spr(t-a,'ui'), q=b==null?0:fade(t,b,.22);
+  st(el,{o:i*(1-q), y:(1-u)*dy-q*14, blur:q*6}); }
+function words(el){ const tx=el.textContent.trim().split(/\s+/); el.innerHTML=tx.map(w=>`<span class="w">${w}</span>`).join(' '); el._w=$$('.w',el); return el._w; }
+function wio(ws,t,a,stg,b,dy=40){ ws.forEach((w,i)=>{ const a0=a+i*stg; const i_=fade(t,a0,.16), u=spr(t-a0,'ui'), q=b==null?0:fade(t,b+i*.03,.2);
+  st(w,{o:i_*(1-q), y:(1-u)*dy-q*18, blur:q*8}); }); }
+let P=.491835; const g=(t,div=4)=>Math.round(t/(P/div))*(P/div);
+
+/* odômetro: a casa mais baixa gira contínua; as de cima só giram quando a de baixo passa de 9 */
+function mkOdo(el,fmt,fixas=1){
+  el.innerHTML=''; el.classList.add('odo'); const it=[]; let p=[...fmt].filter(c=>c==='#').length-1;
+  for(const c of fmt){ if(c==='#'){ const col=document.createElement('span'); col.className='oc'; const s=document.createElement('span'); s.className='os';
+      s.innerHTML=[0,1,2,3,4,5,6,7,8,9,0].map(d=>`<span>${d}</span>`).join(''); col.appendChild(s); el.appendChild(col); it.push({col,s,p:p--}); }
+    else { const x=document.createElement('span'); x.className='ox'; x.textContent=c; el.appendChild(x); it.push({x,lead:/[.,]/.test(c)}); } }
+  return {set(n){ let op=1; n=Math.max(0,n);
+    for(const k of it){ if(k.x){ if(k.lead){ k.x.style.opacity=op; k.x.style.maxWidth=(op*.4).toFixed(3)+'em'; } continue; }
+      const q=n/Math.pow(10,k.p); const roll=k.p===0?(q%10):(Math.floor(q)%10+cl((n/Math.pow(10,k.p-1))%10-9));
+      k.s.style.transform=`translateY(${(-roll).toFixed(4)}em)`; op=k.p<fixas?1:cl((q-.9)/.1); k.col.style.opacity=op; k.col.style.maxWidth=(op*.75).toFixed(3)+'em'; } } };
+}
+
+/* caça-níquel: cada casa tem largura fixa e rola de 0 até o próprio dígito (uma volta inteira antes), com a mesma mola,
+   e as casas partem uma depois da outra, da esquerda para a direita. Nada muda de largura no meio. */
+function mkSlot(el,txt,voltas=1){
+  el.innerHTML=''; el.classList.add('odo'); const it=[];
+  for(const c of txt){ if(/\d/.test(c)){ const d=+c, col=document.createElement('span'); col.className='oc'; const s=document.createElement('span'); s.className='os';
+      s.innerHTML=Array.from({length:10*voltas+d+1},(_,i)=>`<span>${i%10}</span>`).join(''); col.appendChild(s); el.appendChild(col); it.push({s,n:10*voltas+d}); }
+    else { const x=document.createElement('span'); x.className='ox'; x.textContent=c; el.appendChild(x); } }
+  return {set(t,a,stg=.09){ it.forEach((k,i)=>{ const u=spr(t-a-i*stg,'count'); k.s.style.transform=`translateY(${(-k.n*u).toFixed(4)}em)`; }); }};
+}
+
+/* ---------- textos ---------- */
+const TX={
+pt:{c01:['Faltou gente','no turno de hoje'], pill:['Garçom · hoje, 19h','R$ 120'],
+  c02:['Gente perto.','Turno coberto.'],
+  c03k:'Rotatividade em bares e restaurantes · 12 meses', c03n:'##,##%', c03s:'cerca de 7 em cada 10', c03f:'Fonte: Abrasel, via Monitor Mercantil, 09/12/2025.',
+  c04a:' em 10', c04s:'dos empresários acham difícil contratar', c04f:'Fonte: Abrasel, 30/04/2025.',
+  c05:[['Contratante','precisa de gente hoje'],['Profissional','quer trabalhar hoje']], chip:'Garçom · hoje, 19h',
+  passos:'4 passos', steps:[['Contratante publica a vaga','função, horário, endereço, valor'],['Profissional recebe o aviso','até 15 km'],['Contratante escolhe quem vai','vê o histórico'],['Os dois lados conferem','check-in, sim ou não']],
+  form:{role:'Contratante',t:'Nova vaga',f1:'Função',ph:'Escolha a função',v1:'Garçom',f2:'Horário',v2:['19h às ','h'],f3:'Endereço',v3:'Plano Piloto',f4:'Valor',v4:'R$ 120',b:'Publicar',b2:'Vaga publicada'},
+  lock:{role:'Profissional',clock:'17:52',app:'FRILA · agora',t:'Garçom · hoje, 19h',b:'R$ 120 · a 2,4 km'},
+  cand:{role:'Contratante',t:'Candidatos',n1:'Bruno T.',d1:'Garçom · a 3 km',s1:'Compareceu a 18 de 20 turnos',s2:'10 de 12 chamariam de novo',b:'Escolher',b2:'Escolhido',n2:'Carla M.',d2:'sem histórico'},
+  chk:{role:'Os dois lados',t:'Check-in',ring:'200 m',ok:'Check-in feito',d:'a 45 m do local',av:'Avaliação',sim:'Sim',nao:'Não'},
+  mapa:{k1:'Aviso',v1:'até 15 km',d1:'no máximo 1 aviso a cada 30 min',k2:'Presença',v2:'200 m',d2:'check-in e check-out a até 200 m do local',r1:'15 km',r2:'200 m'},
+  c09:['Cadastro','não é turno.'], c09hi:1,
+  c10:{url:'estaff.com.br',k:'eStaff',n1:'1,5',l1:'milhão de cadastrados',n2:'533',l2:'mil disponíveis',f:'Números do site estaff.com.br, como a empresa os declara. Acesso em 22/10/2026.'},
+  c11:['Quem aparece,','não quem se cadastra.'],
+  c12k:'Antes de escolher',
+  c13:{h:'Em teste no iPhone',d1:'20/10/2026',l1:'Teste fechado no TestFlight',d2:'13/11/2026',l2:'Meta: App Store, versão 1.0'},
+  c14:{coin:'R$ 0',a:'Contratante',b:'Profissional',h:'Grátis no piloto'},
+  c16:{tag:'Turno combinado, regra clara.',rod:'Narração com voz sintética (IA). Frila em teste no iPhone.'}},
+en:{c01:['Short on staff','for today’s shift'], pill:['Waiter · today, 7 pm','R$ 120'],
+  c02:['People nearby.','Shift covered.'],
+  c03k:'Staff turnover in bars and restaurants · 12 months', c03n:'##.##%', c03s:'about 7 in 10', c03f:'Source: Abrasel, via Monitor Mercantil, Dec 9, 2025.',
+  c04a:' in 10', c04s:'owners say hiring is hard', c04f:'Source: Abrasel, Apr 30, 2025.',
+  c05:[['Business','needs staff today'],['Worker','wants to work today']], chip:'Waiter · today, 7 pm',
+  passos:'4 steps', steps:[['Business posts a shift','role, time, address, pay'],['Worker gets an alert','up to 15 km'],['Business picks who goes','sees the track record'],['Both sides confirm','check-in, yes or no']],
+  form:{role:'Business',t:'New shift',f1:'Role',ph:'Choose a role',v1:'Waiter',f2:'Time',v2:['7 pm to ',' pm'],f3:'Address',v3:'Plano Piloto',f4:'Pay',v4:'R$ 120',b:'Post',b2:'Shift posted'},
+  lock:{role:'Worker',clock:'5:52',app:'FRILA · now',t:'Waiter · today, 7 pm',b:'R$ 120 · 2.4 km away'},
+  cand:{role:'Business',t:'Candidates',n1:'Bruno T.',d1:'Waiter · 3 km away',s1:'Showed up to 18 of 20 shifts',s2:'10 of 12 would hire again',b:'Choose',b2:'Chosen',n2:'Carla M.',d2:'no track record'},
+  chk:{role:'Both sides',t:'Check-in',ring:'200 m',ok:'Checked in',d:'45 m from the venue',av:'Rating',sim:'Yes',nao:'No'},
+  mapa:{k1:'Alert',v1:'up to 15 km',d1:'at most 1 alert every 30 min',k2:'Check-in',v2:'200 m',d2:'check-in and check-out within 200 m of the venue',r1:'15 km',r2:'200 m'},
+  c09:['Signing up','isn’t showing up.'], c09hi:2,
+  c10:{url:'estaff.com.br',k:'eStaff',n1:'1.5',l1:'million signed up',n2:'533',l2:'thousand available',f:'Figures from the estaff.com.br website, as the company states them. Accessed Oct 22, 2026.'},
+  c11:['Who shows up,','not who signs up.'],
+  c12k:'Before choosing',
+  c13:{h:'In testing on iPhone',d1:'Oct 20, 2026',l1:'Closed TestFlight test',d2:'Nov 13, 2026',l2:'Target: App Store, version 1.0'},
+  c14:{coin:'R$ 0',a:'Business',b:'Worker',h:'Free during the pilot'},
+  c16:{tag:'Shifts agreed, rules clear.',rod:'Narrated with a synthetic (AI) voice. Frila is in testing on iPhone.'}}
+};
+
+/* ---------- ícones ---------- */
+const ICO={
+  pessoa:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8.5" r="4"/><path d="M4.5 20.5c1.2-3.8 4.2-5.8 7.5-5.8s6.3 2 7.5 5.8"/></svg>`,
+  loja:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3.5 9.5 5 4h14l1.5 5.5"/><path d="M3.5 9.5h17a2.8 2.8 0 0 1-5.6 0 2.8 2.8 0 0 1-5.8 0 2.8 2.8 0 0 1-5.6 0z"/><path d="M5 12.5V20h14v-7.5M10 20v-4.5h4V20"/></svg>`,
+  check:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>`,
+  cursor:`<svg width="34" height="46" viewBox="0 0 34 46"><path d="M3 2 L3 34 L11 26.5 L16.5 39.5 L22.5 37 L17 24.5 L28 24.5 Z" fill="#18191C" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/></svg>`
+};
+
+/* ---------- cenas ---------- */
+let T,L,X,S={},ORD=[];
+const W=$('#world'), OV=$('#ov'), HUD=$('#hud');
+function add(par,html){ const d=document.createElement('div'); d.innerHTML=html.trim(); const el=d.firstElementChild; par.appendChild(el); return el; }
+const E={}; // elementos medidos/usados
+const SC=[];  // {id,root,run,plan}
+
+function cena(id,html,plan,run,par=W){ const root=add(par,`<div class="sc" id="${id}">${html}</div>`); SC.push({id,root,plan,run}); return root; }
+
+function build(){
+  const x=X;
+  /* camadas abaixo do ponto */
+  cena('c08m',`
+    <svg class="ab" id="mapa" style="left:560px;top:264px;overflow:visible" width="960" height="552" viewBox="0 0 960 552">
+      <path id="df" d="M70 6L930 6L915 80L940 160L918 240L950 320L925 400L955 480L935 546L40 546L30 470L55 390L18 300L48 220L10 140L55 70Z" fill="${C.map}" stroke="${C.ink}" stroke-width="2.5" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 1"/>
+      <g id="reg" font-family="AHN" font-weight="700" font-size="15" letter-spacing="1.6" fill="${C.mut}" text-anchor="middle">
+        ${[['Plano Piloto',388,166],['Taguatinga',172,372],['Ceilândia',150,292],['Gama',223,490],['Sobradinho',485,128],['Planaltina',680,100],['São Sebastião',560,412],['Brazlândia',132,212]].map(r=>`<text x="${r[1]}" y="${r[2]}">${r[0].toUpperCase()}</text>`).join('')}
+      </g>
+      <g id="gente"></g>
+      <circle id="r15" cx="388" cy="311" r="136" fill="${C.o}" fill-opacity=".08" stroke="${C.o}" stroke-width="3"/>
+      <text id="r15t" x="${388+104}" y="${311-108}" font-family="PJS" font-weight="800" font-size="34" fill="${C.ink}">${x.mapa.r1}</text>
+      <circle id="r200" cx="388" cy="311" r="32" fill="none" stroke="${C.ink}" stroke-width="1.6" stroke-dasharray="4 4"/>
+      <text id="r200t" x="${388+26}" y="${311-28}" font-family="PJS" font-weight="800" font-size="11" fill="${C.ink}">${x.mapa.r2}</text>
+      <g id="anda"><circle r="5.5" fill="${C.ink}"/></g>
+    </svg>`,null,null);
+  /* o ponto */
+  E.dot=add(W,`<div id="dot"></div>`);
+
+  /* c01 */
+  cena('c01',`
+    <div class="ab" id="pill" style="left:660px;top:488px;width:600px;height:104px;display:flex;align-items:center;justify-content:center;gap:22px;color:#fff;font-family:PJS;font-weight:700;font-size:36px">
+      <span style="width:16px;height:16px;border-radius:50%;background:${C.o}"></span><span>${x.pill[0]}</span><span style="width:2px;height:36px;background:#3A3B40"></span><span style="color:#B9B4AD">${x.pill[1]}</span></div>
+    <div class="ab h ctr" id="c01a" style="top:250px;font-size:116px">${x.c01[0]}</div>
+    <div class="ab h ctr" id="c01b" style="top:370px;font-size:116px"><span id="c01bw">${x.c01[1]}</span><svg id="q" width="60" height="118" viewBox="0 0 56 112" style="display:inline-block;vertical-align:-24px;margin-left:6px;overflow:visible"><path id="qh" d="M11 32 A17.5 17.5 0 1 1 41 44.5 L29 55 V68" fill="none" stroke="${C.ink}" stroke-width="15" pathLength="1" stroke-dasharray="1 1"/></svg></div>`,
+    planC01, runC01);
+
+  /* c02 */
+  const AV=[[-35,160],[42,260],[148,160],[205,260],[-112,260],[96,260],[-165,362],[8,362],[-62,362]];   // cada pessoa no vão entre dois anéis (110, 210, 310), sem encostar neles
+  cena('c02',`
+    <div class="ab h" id="c02a" style="left:150px;top:372px;font-size:104px">${x.c02[0]}</div>
+    <div class="ab h" id="c02b" style="left:150px;top:494px;font-size:104px">${x.c02[1]}</div>
+    <svg class="ab" style="left:0;top:0;overflow:visible" width="1920" height="1080">
+      ${[110,210,310].map((r,i)=>`<circle class="ring" cx="1320" cy="470" r="${r}" fill="none" stroke="${C.ink}" stroke-opacity=".14" stroke-width="2"/>`).join('')}
+      <circle id="wave" cx="1320" cy="470" r="40" fill="none" stroke="${C.o}" stroke-width="2.5"/>
+      <line id="c02l" x1="1320" y1="470" x2="1320" y2="470" stroke="${C.o}" stroke-width="3"/>
+    </svg>
+    ${AV.map(([a,r],i)=>{const X0=1320+r*Math.cos(a*Math.PI/180), Y0=470+r*Math.sin(a*Math.PI/180);
+      return `<div class="ab av c02av" data-x="${X0}" data-y="${Y0}" style="left:${X0-34}px;top:${Y0-34}px;width:68px;height:68px;background:#fff;border:2px solid ${C.line};color:${C.ink}">
+        <div class="ab" style="left:15px;top:15px;width:34px;height:34px;color:${C.ink}">${ICO.pessoa}</div>
+        ${i===0?`<div class="ab ok" style="left:15px;top:15px;width:34px;height:34px;color:#fff">${ICO.check}</div>`:''}</div>`;}).join('')}`,
+    planC02, runC02);
+
+  /* fileira de pessoas (c03 e c04) */
+  cena('row',Array.from({length:10},(_,i)=>`<div class="ab ra" data-i="${i}" style="border-radius:50%;background:${C.ink}"></div><div class="ab rb" data-i="${i}" style="border-radius:50%;border:4px solid ${C.ink}"></div>`).join(''),planRow,runRow);
+
+  /* c03 */
+  cena('c03',`
+    <div class="ab k ctr" id="c03k" style="top:226px"><span id="c03ks">${x.c03k}</span></div>
+    <div class="ab h ctr" style="top:272px;font-size:236px;letter-spacing:-0.045em"><span id="c03n"></span></div>
+    <div class="ab ctr" id="c03s" style="top:540px;font-family:PJS;font-weight:700;font-size:46px">${x.c03s}</div>`,
+    planC03, runC03);
+
+  /* c04 */
+  cena('c04',`
+    <div class="ab h ctr" id="c04n" style="top:236px;font-size:210px;letter-spacing:-0.045em"><span id="c04d"></span><span>${x.c04a}</span></div>
+    <div class="ab ctr" id="c04s" style="top:470px;font-family:PJS;font-weight:700;font-size:50px">${x.c04s}</div>`,
+    planC04, runC04);
+
+  /* c05 */
+  cena('c05',`
+    <svg class="ab" style="left:0;top:0" width="1920" height="1080">${['c05l','c05l2'].map(i=>`<line id="${i}" x1="780" y1="460" x2="1140" y2="460" stroke="${C.ink}" stroke-width="3" stroke-dasharray="2 10" stroke-linecap="round"/>`).join('')}</svg>
+    ${x.c05.map((c,i)=>`<div class="ab card c05c" style="left:${i?1140:220}px;top:320px;width:560px;height:280px;box-shadow:0 24px 60px rgba(24,25,28,.07)">
+       <div class="ab av" style="left:36px;top:36px;width:76px;height:76px"><div style="width:40px;height:40px">${i?ICO.pessoa:ICO.loja}</div></div>
+       <div class="ab k" style="left:36px;top:142px;color:${C.ob}">${c[0]}</div>
+       <div class="ab h" style="left:36px;top:180px;font-size:46px;width:500px">${c[1]}</div></div>`).join('')}
+    <div class="ab" id="chip" style="left:0;top:0;height:56px;padding:0 24px;border-radius:28px;background:${C.ink};color:#fff;font-family:PJS;font-weight:700;font-size:24px;display:flex;align-items:center;white-space:nowrap">${x.chip}</div>`,
+    planC05, runC05);
+
+  /* c06 + c07: telefone e lista de passos */
+  const f=x.form, lk=x.lock, cd=x.cand, ck=x.chk;
+  cena('fluxo',`
+    <div class="ab h" id="pss" style="left:1000px;top:138px;font-size:64px">${x.passos}</div>
+    <div class="ab" id="ind" style="left:992px;width:800px;border-radius:24px;background:#fff;border:2px solid ${C.line};box-shadow:0 18px 44px rgba(24,25,28,.06)"></div>
+    ${x.steps.map((s,i)=>`<div class="ab stp" style="left:1000px;top:${262+i*130}px;width:780px;height:110px">
+      <div class="ab num" style="left:24px;top:23px;width:64px;height:64px;border-radius:16px;background:${C.soft};display:flex;align-items:center;justify-content:center;font-family:PJS;font-weight:800;font-size:28px">0${i+1}</div>
+      <div class="ab tt" style="left:116px;top:16px;font-family:PJS;font-weight:700;font-size:36px;white-space:nowrap">${s[0]}</div>
+      <div class="ab mut" style="left:116px;top:62px;font-size:25px">${s[1]}</div></div>`).join('')}
+    <div class="ab" id="scr" style="left:484px;top:104px;width:352px;height:752px;border-radius:50px;background:${C.paper};overflow:hidden">
+      <div class="ab" id="isl" style="background:#000;border-radius:16px;overflow:hidden">
+        <div class="ab" id="nt" style="left:0;top:0;width:324px;height:128px;opacity:0">
+          <div class="ab" style="left:18px;top:20px;width:46px;height:46px;border-radius:12px;background:${C.o};display:flex;align-items:center;justify-content:center"><span style="width:14px;height:14px;border-radius:50%;background:#fff"></span></div>
+          <div class="ab" style="left:78px;top:18px;font-size:14px;font-weight:700;letter-spacing:.1em;color:#9C9894">${lk.app}</div>
+          <div class="ab" style="left:78px;top:40px;font-family:PJS;font-weight:700;font-size:21px;color:#fff;white-space:nowrap">${lk.t}</div>
+          <div class="ab" style="left:78px;top:72px;font-size:19px;color:#D8D3CC;white-space:nowrap">${lk.b}</div></div></div>
+      <!-- A: formulário -->
+      <div class="ab scA" style="left:0;top:0;width:352px;height:752px">
+        <div class="ab lbl" style="left:26px;top:62px;color:${C.ob}">${f.role}</div>
+        <div class="ab h" style="left:24px;top:86px;font-size:38px">${f.t}</div>
+        <div class="ab lbl" style="left:26px;top:166px">${f.f1}</div>
+        <div class="ab fld" id="fF" style="left:24px;top:190px;width:304px;height:64px"><div class="ab mut" id="fFp" style="left:20px;top:17px;font-size:22px">${f.ph}</div><div class="ab" id="fFv" style="left:20px;top:15px;font-family:PJS;font-weight:700;font-size:24px">${f.v1}</div><div class="ab" id="fFk" style="left:262px;top:19px;width:24px;height:24px;color:${C.o}">${ICO.check}</div></div>
+        <div class="ab lbl" style="left:26px;top:278px">${f.f2}</div>
+        <div class="ab fld" style="left:24px;top:302px;width:304px;height:104px"><div class="ab" style="left:20px;top:14px;font-family:PJS;font-weight:700;font-size:24px">${f.v2[0]}<span id="hora" style="display:inline-block;min-width:26px"></span>${f.v2[1]}</div>
+          <div class="ab" style="left:20px;top:70px;width:264px;height:6px;border-radius:3px;background:${C.line}"></div><div class="ab" id="trk" style="left:20px;top:70px;height:6px;border-radius:3px;background:${C.ink}"></div>
+          <div class="ab" id="hnd" style="top:60px;width:26px;height:26px;border-radius:50%;background:#fff;border:2px solid ${C.ink}"></div></div>
+        <div class="ab lbl" style="left:26px;top:430px">${f.f3}</div>
+        <div class="ab fld" style="left:24px;top:454px;width:304px;height:64px"><div class="ab" style="left:20px;top:15px;font-family:PJS;font-weight:700;font-size:24px">${f.v3}</div></div>
+        <div class="ab lbl" style="left:26px;top:542px">${f.f4}</div>
+        <div class="ab fld" style="left:24px;top:566px;width:304px;height:64px"><div class="ab" style="left:20px;top:15px;font-family:PJS;font-weight:700;font-size:24px">${f.v4}</div></div>
+        <div class="ab btn" id="pub" style="left:24px;top:658px;width:304px;height:66px;font-size:24px;overflow:hidden">
+          <span class="ab" id="pubA" style="left:0;width:304px;text-align:center">${f.b}</span>
+          <svg class="ab" id="pubS" style="left:136px;top:17px" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="none" stroke="#fff" stroke-opacity=".3" stroke-width="3.5"/><path d="M16 4a12 12 0 0 1 12 12" fill="none" stroke="#fff" stroke-width="3.5"/></svg>
+          <span class="ab" id="pubB" style="left:0;width:304px;display:flex;align-items:center;justify-content:center;gap:10px"><span style="width:26px;height:26px">${ICO.check}</span>${f.b2}</span></div>
+      </div>
+      <!-- B: tela de bloqueio -->
+      <div class="ab scB" style="left:0;top:0;width:352px;height:752px">
+        <div class="ab lbl" id="lkr" style="left:0;width:352px;text-align:center;top:214px;color:${C.ob}">${lk.role}</div>
+        <div class="ab h" style="left:0;width:352px;text-align:center;top:250px;font-size:96px;letter-spacing:-0.04em">${lk.clock}</div>
+      </div>
+      <!-- C: candidatos -->
+      <div class="ab scC" style="left:0;top:0;width:352px;height:752px">
+        <div class="ab lbl" style="left:26px;top:62px;color:${C.ob}">${cd.role}</div>
+        <div class="ab h" style="left:24px;top:86px;font-size:38px">${cd.t}</div>
+        <div class="ab card" style="left:16px;top:160px;width:320px;height:262px;border-radius:22px">
+          <div class="ab av" style="left:18px;top:18px;width:58px;height:58px;font-size:20px">BT</div>
+          <div class="ab" style="left:90px;top:18px;font-family:PJS;font-weight:800;font-size:26px">${cd.n1}</div>
+          <div class="ab mut" style="left:90px;top:52px;font-size:19px;white-space:nowrap">${cd.d1}</div>
+          <div class="ab" style="left:18px;top:100px;font-size:19px;font-weight:600;display:flex;gap:10px;align-items:center;white-space:nowrap"><span style="width:10px;height:10px;border-radius:50%;background:${C.o}"></span>${cd.s1}</div>
+          <div class="ab" style="left:18px;top:132px;font-size:19px;font-weight:600;display:flex;gap:10px;align-items:center;white-space:nowrap"><span style="width:10px;height:10px;border-radius:50%;background:${C.o}"></span>${cd.s2}</div>
+          <div class="ab btn" id="esc" style="left:18px;top:184px;width:284px;height:58px;font-size:22px;overflow:hidden">
+            <span class="ab" id="escA" style="left:0;width:284px;text-align:center">${cd.b}</span>
+            <span class="ab" id="escB" style="left:0;width:284px;display:flex;align-items:center;justify-content:center;gap:8px"><span style="width:24px;height:24px">${ICO.check}</span>${cd.b2}</span></div></div>
+        <div class="ab card" id="carla" style="left:16px;top:438px;width:320px;height:96px;border-radius:22px">
+          <div class="ab av" style="left:18px;top:18px;width:58px;height:58px;font-size:20px">CM</div>
+          <div class="ab" style="left:90px;top:16px;font-family:PJS;font-weight:800;font-size:26px">${cd.n2}</div>
+          <div class="ab mut" style="left:90px;top:50px;font-size:19px">${cd.d2}</div></div>
+      </div>
+      <!-- D: check-in e avaliação -->
+      <div class="ab scD" style="left:0;top:0;width:352px;height:752px">
+        <div class="ab lbl" style="left:26px;top:62px;color:${C.ob}">${ck.role}</div>
+        <div class="ab h" style="left:24px;top:86px;font-size:38px">${ck.t}</div>
+        <div class="ab" style="left:16px;top:160px;width:320px;height:270px;border-radius:22px;background:${C.map};overflow:hidden">
+          <svg class="ab" style="left:0;top:0" width="320" height="270"><circle id="ck200" cx="160" cy="138" r="96" fill="none" stroke="${C.ink}" stroke-width="2" stroke-dasharray="6 6"/>
+            <text id="ck200t" x="160" y="30" text-anchor="middle" font-family="PJS" font-weight="800" font-size="18" fill="${C.ink}">${ck.ring}</text></svg>
+          <div class="ab" style="left:150px;top:128px;width:20px;height:20px;border-radius:50%;background:${C.o}"></div>
+          <div class="ab" id="ckp" style="width:30px;height:30px;border-radius:50%;background:${C.ink};border:3px solid #fff;color:#fff"><div class="ab" id="ckpk" style="left:4px;top:4px;width:16px;height:16px">${ICO.check}</div></div></div>
+        <div class="ab" id="ckok" style="left:24px;top:448px;font-family:PJS;font-weight:800;font-size:28px;display:flex;align-items:center;gap:10px"><span style="width:28px;height:28px;color:${C.o}">${ICO.check}</span>${ck.ok}</div>
+        <div class="ab mut" id="ckd" style="left:62px;top:486px;font-size:21px">${ck.d}</div>
+        <div class="ab lbl" style="left:26px;top:552px">${ck.av}</div>
+        <div class="ab" style="left:16px;top:578px;width:320px;height:68px;border-radius:34px;background:${C.soft}"></div>
+        <div class="ab" id="thumb" style="top:584px;height:56px;border-radius:28px;background:${C.o}"></div>
+        <div class="ab" id="sim" style="left:16px;top:578px;width:160px;height:68px;display:flex;align-items:center;justify-content:center;font-family:PJS;font-weight:700;font-size:24px">${ck.sim}</div>
+        <div class="ab" style="left:176px;top:578px;width:160px;height:68px;display:flex;align-items:center;justify-content:center;font-family:PJS;font-weight:700;font-size:24px">${ck.nao}</div>
+      </div>
+    </div>`, planFluxo, runFluxo);
+
+  /* c08 painel (fora da câmera) */
+  cena('c08p',`
+    <div class="ab card" id="pan" style="left:96px;top:330px;width:430px;height:300px;box-shadow:0 24px 60px rgba(24,25,28,.07)">
+      <div class="ab k pA" style="left:36px;top:40px;color:${C.ob}">${x.mapa.k1}</div>
+      <div class="ab h pA" style="left:36px;top:80px;font-size:66px">${x.mapa.v1}</div>
+      <div class="ab mut pA" style="left:36px;top:170px;width:360px;font-size:27px;line-height:1.3">${x.mapa.d1}</div>
+      <div class="ab k pB" style="left:36px;top:40px;color:${C.ob}">${x.mapa.k2}</div>
+      <div class="ab h pB" style="left:36px;top:80px;font-size:66px">${x.mapa.v2}</div>
+      <div class="ab mut pB" style="left:36px;top:170px;width:360px;font-size:27px;line-height:1.3">${x.mapa.d2}</div></div>`, planC08, runC08, OV);
+
+  /* c09 */
+  cena('c09',`
+    <div class="ab h ctr" id="c09a" style="top:300px;font-size:160px;color:${C.paper}">${x.c09[0]}</div>
+    <div class="ab h ctr" id="c09b" style="top:470px;font-size:160px;color:${C.paper}">${x.c09[1]}</div>`, planC09, runC09, OV);
+
+  /* c10 */
+  cena('c10',`
+    <div class="ab" id="brw" style="left:410px;top:190px;width:1100px;height:560px;border-radius:26px;background:#222327;border:1.5px solid #34353A;overflow:hidden">
+      <div class="ab" style="left:0;top:0;width:1100px;height:64px;border-bottom:1.5px solid #34353A"></div>
+      ${[0,1,2].map(i=>`<div class="ab" style="left:${26+i*24}px;top:25px;width:14px;height:14px;border-radius:50%;background:#3A3B40"></div>`).join('')}
+      <div class="ab" style="left:300px;top:14px;width:500px;height:36px;border-radius:18px;background:#2C2D31;color:#9C9894;font-size:19px;display:flex;align-items:center;justify-content:center">${x.c10.url}</div>
+      <div class="ab" id="c10k" style="left:70px;top:116px;font-family:PJS;font-weight:800;font-size:30px;letter-spacing:-0.01em;color:#9C9894">${x.c10.k}</div>
+      <div class="ab h" style="left:70px;top:196px;font-size:150px;color:${C.paper};letter-spacing:-0.045em"><span id="n1"></span></div>
+      <div class="ab c10l" style="left:74px;top:372px;font-family:PJS;font-weight:700;font-size:36px;color:#9C9894;white-space:nowrap">${x.c10.l1}</div>
+      <div class="ab" id="c10d" style="left:620px;top:160px;width:2px;height:300px;background:#34353A"></div>
+      <div class="ab h" style="left:690px;top:196px;font-size:150px;color:${C.o};letter-spacing:-0.045em"><span id="n2"></span></div>
+      <div class="ab c10l" style="left:694px;top:372px;font-family:PJS;font-weight:700;font-size:36px;color:#9C9894;white-space:nowrap">${x.c10.l2}</div>
+    </div>`, planC10, runC10);
+
+  /* c11 */
+  cena('c11',`
+    <canvas id="ht" class="ab" width="1920" height="1080" style="left:0;top:0"></canvas>
+    <div class="ab h ctr" id="c11a" style="top:330px;font-size:128px;color:${C.paper}">${x.c11[0]}</div>
+    <div class="ab h ctr" id="c11b" style="top:470px;font-size:128px;color:#7E838A">${x.c11[1]}</div>`, planC11, runC11);
+
+  /* c12 */
+  cena('c12',`
+    <div class="ab k ctr" id="c12k" style="top:176px">${x.c12k}</div>
+    <div class="ab c12i" style="left:590px;top:280px;width:96px;height:96px;font-size:34px" ><div class="av" style="width:96px;height:96px">BT</div></div>
+    <div class="ab h c12i" style="left:710px;top:282px;font-size:50px">${cd.n1}</div>
+    <div class="ab mut c12i" style="left:712px;top:344px;font-size:29px">${cd.d1}</div>
+    <div class="ab btn c12i" id="c12b" style="left:1132px;top:290px;width:200px;height:64px;font-size:26px;overflow:hidden">
+      <span class="ab" id="c12bA" style="left:0;width:200px;text-align:center">${cd.b}</span>
+      <span class="ab" id="c12bB" style="left:0;width:200px;display:flex;align-items:center;justify-content:center;gap:8px"><span style="width:24px;height:24px">${ICO.check}</span>${cd.b2}</span></div>
+    <div class="ab c12i" style="left:590px;top:404px;width:740px;height:2px;background:${C.line}"></div>
+    <div class="ab c12i" style="left:590px;top:430px;font-family:PJS;font-weight:700;font-size:30px">${cd.s1}</div>
+    ${Array.from({length:20},(_,i)=>`<div class="ab c12d" style="left:${590+i*28}px;top:482px;width:18px;height:18px;border-radius:50%;background:${C.line}"></div>`).join('')}
+    <div class="ab c12i" style="left:590px;top:526px;font-family:PJS;font-weight:700;font-size:30px">${cd.s2}</div>
+    ${Array.from({length:12},(_,i)=>`<div class="ab c12s" style="left:${590+i*47}px;top:578px;width:39px;height:14px;border-radius:7px;background:${C.line}"></div>`).join('')}`,
+    planC12, runC12);
+
+  /* c13 */
+  const t13=x.c13;
+  cena('c13',`
+    <div class="ab h ctr" id="c13h" style="top:226px;font-size:76px">${t13.h}</div>
+    <svg class="ab" style="left:0;top:0" width="1920" height="1080">
+      ${['a','a2'].map(k=>`<line id="c13${k}" x1="420" y1="560" x2="420" y2="560" stroke="${C.ink}" stroke-width="4"/>`).join('')}
+      ${['b','b2'].map(k=>`<line id="c13${k}" x1="730" y1="560" x2="730" y2="560" stroke="${C.ink}" stroke-opacity=".45" stroke-width="4" stroke-dasharray="10 12"/>`).join('')}
+      <circle id="c13B" cx="1220" cy="560" r="26" fill="none" stroke="${C.o}" stroke-width="4"/></svg>
+    <div class="ab" id="c13A" style="left:678px;top:538px;width:44px;height:44px;border-radius:50%;background:${C.ink};color:#fff"><div class="ab" style="left:10px;top:10px;width:24px;height:24px">${ICO.check}</div></div>
+    <div class="ab h c13l1" style="left:450px;width:500px;text-align:center;top:446px;font-size:44px">${t13.d1}</div>
+    <div class="ab mut c13l1" style="left:450px;width:500px;text-align:center;top:614px;font-size:29px">${t13.l1}</div>
+    <div class="ab h c13l2" style="left:970px;width:500px;text-align:center;top:446px;font-size:44px">${t13.d2}</div>
+    <div class="ab mut c13l2" style="left:970px;width:500px;text-align:center;top:614px;font-size:29px">${t13.l2}</div>`, planC13, runC13);
+
+  /* c14 */
+  cena('c14',`
+    <div class="ab h" id="coin" style="left:810px;top:300px;width:300px;height:300px;display:flex;align-items:center;justify-content:center;font-size:96px;color:#fff;letter-spacing:-0.04em;border-radius:50%;overflow:hidden">${x.c14.coin}</div>
+    <div class="ab h c14a" style="left:220px;width:500px;text-align:right;top:420px;font-size:52px">${x.c14.a}</div>
+    <div class="ab h c14b" style="left:1200px;width:500px;top:420px;font-size:52px">${x.c14.b}</div>
+    <svg class="ab" style="left:0;top:0" width="1920" height="1080"><line id="c14l" x1="740" y1="450" x2="790" y2="450" stroke="${C.ink}" stroke-width="3"/><line id="c14r" x1="1130" y1="450" x2="1180" y2="450" stroke="${C.ink}" stroke-width="3"/></svg>
+    <div class="ab ctr mut" id="c14h" style="top:672px;font-family:PJS;font-weight:700;font-size:48px">${x.c14.h}</div>`, planC14, runC14);
+
+  /* c16 */
+  cena('c16',`
+    <svg class="ab" id="logo" style="left:610px;top:291px" width="700" height="318.6" viewBox="-4 -6 245 111.5" fill="none" stroke="${C.ink}" stroke-width="19" stroke-linecap="butt" stroke-linejoin="miter">
+      ${['M20 100V30A21.5 21.5 0 0 1 41.5 8.5H51','M0 45.5H73.5','M64 100V45.5','M64 67.5A22 22 0 0 1 86 45.5H95','M117.5 100V36','M149.5 100V0','M226.5 68a23 23 0 1 0 -46 0a23 23 0 1 0 46 0','M226.5 36V100'].map(d=>`<path class="lg" d="${d}" pathLength="1" stroke-dasharray="1 1"/>`).reduce((g,h,i)=>{ const k=[0,0,0,0,1,2,3,3][i]; (g[k]=g[k]||[]).push(h); return g; },[]).map(h=>`<g class="lgl">${h.join('')}</g>`).join('')}</svg>
+    <div class="ab h ctr" id="c16t" style="top:676px;font-size:60px">${x.c16.tag}</div>
+    <div class="ab ctr mut" id="c16r" style="top:1006px;font-size:22px">${x.c16.rod}</div>`, planC16, runC16);
+
+  /* cursor (no mundo) */
+  E.cur=add(W,`<div class="ab" id="cur" style="left:0;top:0;transform-origin:3px 2px">${ICO.cursor}</div>`);
+
+  /* HUD */
+  add(HUD,`<div>
+    <div id="src"></div><div id="cap"></div></div>`);
+}
+
+/* ---------- plano (trilhas) e execução por cena ---------- */
+function F(id,k){ return S[id].f[k-1]; }
+
+/* c01: o ponto vira a vaga, a vaga volta a ser ponto, o ponto vira o ponto da interrogação */
+function planC01(s){
+  const f=F('c01',1);
+  D(.24,{c:C.ink},'snap'); D(.30,{h:104,r:52},'ui'); D(.30,{w:600},'move');
+  D(.95,{y:760},'move');
+  D(2.05,{w:28,h:28,r:14},'ui'); D(2.2,{c:C.o},'snap'); ev(2.05,'pop',.6);
+  D(2.1,{x:E.q.x},'move'); D(2.34,{y:E.q.y,w:E.q.d,h:E.q.d,r:E.q.d/2},'move');   // anda por baixo do texto e sobe na coluna do "?", sem cruzar as palavras
+  ev(.30,'swish',.5);
+}
+function runC01(t,s){
+  const f=F('c01',1), ws=E.c01w, n=ws.length, stg=Math.min(.24,(f.fim-f.ini)*.8/n);
+  wio(ws,t,f.ini-.04,stg,s.end-.3,46);
+  const qi=f.ini+(n-.6)*stg, qo=fade(t,s.end-.3+n*.03,.2);
+  $('#qh').style.strokeDashoffset=(1-eo(ramp(t,qi,.35))).toFixed(4); $('#q').style.opacity=t>qi?1-qo:0;
+  const p=$('#pill'); st(p,{o:fade(t,.48,.2)*(1-fade(t,1.9,.12)),y:val('dy',t)-540});
+}
+
+/* c02: pin, radar, gente perto; o mais perto vira o turno coberto */
+function planC02(s){
+  const f=F('c02',1), d=f.fim-f.ini;
+  D(s.ini+.02,{x:1320,y:470,w:30,h:30,r:15},'move');   // só sai do "?" depois que o texto sumiu
+  s.av0=g(s.ini+.1)+P+.45;   // as pessoas só aparecem depois que os anéis abriram (o anel não passa por cima delas) E.c02av.forEach((a,i)=>ev(s.av0+i*P/4,'tick',.35));
+  s.pick=g(f.ini+.6*d,2); ev(s.pick,'pop',.8);
+  D(s.end-.42,{x:E.c03b.x,y:E.c03b.y,w:18,h:18,r:9},'move');
+}
+function runC02(t,s){
+  const f=F('c02',1), out=s.end-.25;
+  io($('#c02a'),t,f.ini+.05,out,30); io($('#c02b'),t,s.pick+.05,out,30);
+  $$('.ring',s.root).forEach((r,i)=>{ const a=g(s.ini+.1)+i*P/2, u=spr(t-a,'move'); r.setAttribute('r',Math.max(0,(110+i*100)*u)); r.setAttribute('stroke-opacity',(.14*(1-.6*spr(t-s.pick,'ui'))*(1-fade(t,out,.15))).toFixed(3)); });   // sai sumindo, sem encolher por cima das pessoas
+  const wv=$('#wave'), w0=g(s.ini+.1), ph=((t-w0)%(4*P))/(4*P), on=t>w0&&t<s.pick;
+  wv.setAttribute('r',Math.max(0,24+ph*92)); wv.style.opacity=on?(1-ph)*.7:0;   // a onda morre antes da primeira pessoa
+  E.c02av.forEach((a,i)=>{ const a0=s.av0+i*P/4, u=spr(t-a0,'pop')*(1-spr(t-out-.02*i,'ui'));
+    const pk=spr(t-s.pick,'ui'); let dx=0,dy=0;
+    if(i===0){
+      a.style.background=mixc(C.white,C.o,pk); a.style.borderColor=mixc(C.line,C.o,pk);
+      a.children[0].style.opacity=1-pk; a.children[1].style.opacity=pk; }
+    st(a,{o:Math.min(1,u*1.4)*(i===0?1:1-.6*fade(t,s.pick,.3)),x:dx,y:dy,s:u});
+  });
+  const l=$('#c02l'), a0=E.c02av[0], X1=+a0.dataset.x, Y1=+a0.dataset.y, pk=spr(t-s.pick,'ui');
+  const ex=lerp(1320,X1,pk), ey=lerp(470,Y1,pk);
+  l.setAttribute('x2',ex); l.setAttribute('y2',ey); l.style.opacity=pk*(1-fade(t,out,.2));
+}
+
+/* fileira: 10 pessoas, 7 trocam (c03); 9 em 10 ficam laranja (c04) e se juntam no ponto (c05) */
+const SWAP=[0,1,3,4,6,7,9];
+function planRow(s){
+  const c3=S.c03, c4=S.c04, c5=S.c05;
+  key('rcx',-9,960); key('rsp',-9,80); key('ry',-9,722); key('rsz',-9,40);
+  key('rsp',c4.ini+.05,120,'move'); key('rsz',c4.ini+.05,72,'move'); key('ry',c4.ini+.05,650,'move');
+  s.in0=g(c3.ini+.55); s.sw0=g(c3.cnt+1.0,4);
+  SWAP.forEach((i,k)=>ev(s.sw0+k*P/4,'tick',.5));
+  s.fill0=c4.fill0; s.merge=c5.ini-.36;
+}
+function runRow(t,s){
+  const c4=S.c04, cx=val('rcx',t), sp=val('rsp',t), y=val('ry',t), sz=val('rsz',t);
+  const ra=$$('.ra',s.root), rb=$$('.rb',s.root), solid=spr(t-c4.ini-.05,'ui');
+  for(let i=0;i<10;i++){
+    const x=cx+(i-4.5)*sp, u=spr(t-s.in0-i*P/8,'pop');
+    const k=SWAP.indexOf(i), ts=k<0?1e9:s.sw0+k*P/4, dn=spr(t-ts,'ui'), up=spr(t-ts-.08,'ui');
+    const m=i<9?spr(t-s.merge,'move'):0, mx=lerp(x,960,m), my=lerp(y,600,m), msz=sz*Math.pow(1-m,2.5);   // todas andam juntas (o espaço entre elas encolhe por igual) e somem antes de encostar; quem vira o ponto é o ponto laranja, que já está no lugar da primeira
+    const fo=i===0?0:(i<9?spr(t-c4.fill0-(i-1)*P/4,'ui'):0);
+    const col=mixc(C.ink,C.o,fo), gone=i===9?fade(t,s.merge,.2):(i===0?fade(t,c4.ini+.4,.1):0), end=i<9?fade(t,s.merge+.34,.06):0;
+    box(ra[i],mx-msz/2,my-msz/2,msz,msz); ra[i].style.background=col;
+    st(ra[i],{o:Math.min(1,u*1.5)*(k<0?1:(1-fade(t,ts,.16)))*(1-gone)*(1-end),y:(k<0?0:dn*40),s:u});
+    box(rb[i],mx-msz/2,my-msz/2,msz,msz); rb[i].style.borderColor=col; rb[i].style.background=mixc(C.paper,fo>0?C.o:C.ink,Math.max(solid,fo));
+    rb[i].style.borderWidth=lerp(4,0,solid).toFixed(2)+'px';
+    st(rb[i],{o:k<0?0:fade(t,ts+.08,.16)*(1-gone)*(1-end),y:(1-up)*-40});
+  }
+}
+
+/* c03: 73,49 % no odômetro */
+function planC03(s){
+  const f=F('c03',1), d=f.fim-f.ini;
+  s.cnt=g(f.ini+.45,2);
+  ev(s.cnt,'roll',1);
+}
+function runC03(t,s){
+  const out=s.end-.22;
+  io($('#c03k'),t,s.ini-.12,out,16); E.o3.set(7349*spr(t-s.cnt,'count'));
+  const n=$('#c03n').parentElement; st(n,{o:fade(t,s.cnt-.15,.2)*(1-fade(t,out,.22)),y:(1-spr(t-s.cnt+.15,'ui'))*30-fade(t,out,.22)*14,blur:fade(t,out,.22)*8});
+  io($('#c03s'),t,s.cnt+1.0,out,20);
+}
+
+/* c04: 9 em 10 */
+function planC04(s){
+  const f=F('c04',1), d=f.fim-f.ini;
+  s.fill0=g(f.ini+.25,4);
+  D(s.ini+.05,{x:960+(0-4.5)*120,y:650,w:72,h:72,r:36},'move');
+  for(let i=1;i<9;i++) ev(s.fill0+(i-1)*P/4,'tick',.6);
+  key('cnt9',-9,1); for(let i=1;i<9;i++) key('cnt9',s.fill0+(i-1)*P/4,i+1,'ui');
+  s.sub=f.ini+.42*d;
+  D(S.c05.ini-.36,{x:960,y:600,w:28,h:28,r:14},'move'); ev(S.c05.ini-.1,'swish',.7);
+}
+function runC04(t,s){
+  const out=s.end-.2;
+  E.o4.set(val('cnt9',t)); io($('#c04n'),t,s.ini-.05,out,30); io($('#c04s'),t,s.sub,out,20);
+}
+
+/* c05: quem precisa liga a quem quer trabalhar; o ponto leva a vaga e vira o telefone */
+function planC05(s){
+  const f=F('c05',1), d=f.fim-f.ini;
+  D(s.ini+.1,{x:960,y:460,w:26,h:26,r:13},'move');
+  s.l0=s.ini+.02; s.r0=g(f.ini+.5*d,2); s.go=g(f.ini+.6*d,2); s.hit=s.go+.62;
+  D(s.go,{x:1120},'soft'); ev(s.go,'swish',.4); ev(s.hit,'pop',.7);
+  D(s.end-.5,{x:660,y:480},'move'); D(s.end-.46,{c:C.ink},'snap'); D(s.end-.38,{w:380,h:780,r:64},'move'); ev(s.end-.38,'swish',.6);
+}
+function runC05(t,s){
+  const out=s.end-.4, cs=$$('.c05c',s.root);
+  [s.l0,s.r0].forEach((a,i)=>{ const q=fade(t,out,.22), u=spr(t-a,'move');
+    st(cs[i],{o:fade(t,a,.2)*(1-q),y:(1-u)*40,x:q*(i?40:-40)}); });
+  cs[1].style.borderColor=mixc(C.line,C.o,spr(t-s.hit,'ui')*(1-fade(t,out,.2)));
+  const u=spr(t-s.l0-.2,'soft'), lo=1-fade(t,out,.2), b=780+360*u, px=val('dx',t), pr=val('dw',t)/2+12;   // a linha abre um vão em volta do ponto
+  const seg=(el,a,z)=>{ el.setAttribute('x1',a); el.setAttribute('x2',Math.max(a,z)); el.style.opacity=z-a>2?lo:0; };
+  if(px+pr<=780||px-pr>=b){ seg($('#c05l'),780,b); seg($('#c05l2'),0,0); } else { seg($('#c05l'),780,px-pr); seg($('#c05l2'),px+pr,b); }
+  const ch=$('#chip'), dx=val('dx',t), cw=ch.offsetWidth; ch.style.left=Math.max(796,Math.min(dx-cw/2,1124-cw))+'px'; ch.style.top='376px';   // a etiqueta fica no vão entre os cartões
+  st(ch,{o:fade(t,s.l0+.25,.2)*(1-fade(t,s.hit-.12,.16)),y:(1-spr(t-s.l0-.25,'ui'))*16});
+}
+
+/* c06 + c07: o telefone, a lista e o cursor */
+function planFluxo(s){
+  const a=S.c06, b=S.c07, f1=F('c06',1), f2=F('c06',2), f3=F('c06',3), g1=F('c07',1), g2=F('c07',2);
+  s.list=g(f1.ini+.05,2);
+  s.st=[f2.ini-.1,f3.ini-.1,g1.ini-.1,g2.ini-.1].map(x=>g(x,4));
+  key('it',-9,262); key('ib',-9,372);
+  s.st.forEach((x,i)=>{ const y=262+i*130; if(i===0){ key('it',x,y,'ui'); key('ib',x,y+110,'ui'); } else { key('ib',x,y+110,'ui'); key('it',x+.04,y,'soft'); } ev(x,'tick',.5); });
+  // tela A: formulário
+  const A=f2.ini; const O={x:484,y:104};
+  key('ko',-9,0); key('kp',-9,1); CUR(-9,1100,980);
+  key('ko',A-.8,1,'ui'); CUR(A-.8,O.x+212,O.y+222);
+  s.fun=A-.32; click(s.fun);
+  CUR(A-.18,528,O.y+302+73); key('kp',A+.1,.84,'ui'); ev(A+.1,'clique',.6);
+  s.drag0=A+.16; CUR(s.drag0,792,O.y+302+73,'soft'); s.drag1=A+.82; key('kp',s.drag1,1,'ui');
+  CUR(s.drag1+.05,O.x+176,O.y+691); s.pub=s.drag1+.38; click(s.pub);
+  s.load=s.pub+.12; s.done=s.pub+.52; ev(s.done,'ok',1);
+  CUR(s.done+.15,O.x+420,O.y+760); key('ko',s.done+.15,0,'ui');
+  s.B=Math.max(f3.ini-.28,s.done+.25); s.isl=s.B+.42; ev(s.isl,'aviso',1);
+  // as horas do controle deslizante
+  s.hrs=[]; let last=0; for(let tt=s.drag0;tt<s.drag1+.3;tt+=1/240){ const u=hourU(tt,s); const h=Math.round(u*3); if(h!==last){ s.hrs.push(tt); ev(tt,'tick',.35); last=h; } }
+  // tela C: candidatos
+  s.C=b.ini-.05; key('ko',g1.ini+.15,1,'ui'); CUR(g1.ini+.15,O.x+176,O.y+160+213);
+  s.esc=g1.ini+.62*(g1.fim-g1.ini)+.1; click(s.esc); ev(s.esc+.06,'ok',.7);
+  CUR(s.esc+.3,O.x+430,O.y+520); key('ko',s.esc+.3,0,'ui');
+  // tela D: check-in e avaliação
+  s.D=g2.ini-.3; s.walk=s.D+.35; s.okk=s.walk+.55; ev(s.okk,'ok',.8);
+  key('ko',g2.ini+.55,1,'ui'); CUR(g2.ini+.55,O.x+96,O.y+612);
+  s.sim=Math.min(g2.ini+1.2,b.end-1.0); click(s.sim);
+  CUR(s.sim+.32,O.x+430,O.y+700); key('ko',s.sim+.32,0,'ui');
+  s.out=b.end-.7;
+  D(b.end-.62,{w:28,h:28,r:14},'move'); D(b.end-.42,{c:C.o},'snap'); D(b.end-.4,{x:948,y:575,w:26,h:26,r:13},'move'); ev(b.end-.62,'swish',.6);
+}
+function hourU(t,s){ const kx=val('kx',t); return cl((kx-528)/264); }
+function runFluxo(t,s){
+  const a=S.c06,b=S.c07, out=s.out;
+  // lista de passos
+  io($('#pss'),t,s.list,out,24);
+  $$('.stp',s.root).forEach((r,i)=>{ const a0=s.list+.1+i*P/4; io(r,t,a0,out+.03*i,28);
+    const on=i===0?spr(t-s.st[0],'ui')*(1-spr(t-s.st[1],'ui')):spr(t-s.st[i],'ui')*(i<3?(1-spr(t-s.st[i+1],'ui')):1);
+    const nm=$('.num',r); nm.style.background=mixc(C.soft,C.o,on); nm.style.color=mixc(C.ink,C.white,on);
+    $('.tt',r).style.opacity=(t>s.st[0]?lerp(.42,1,Math.max(on,t>s.st[i]?.55:0)):1).toFixed(3); });
+  const it=val('it',t), ib=val('ib',t), ind=$('#ind'); ind.style.top=it+'px'; ind.style.height=(ib-it)+'px';
+  ind.style.opacity=fade(t,s.st[0]-.02,.15)*(1-fade(t,out,.2));
+  // tela
+  const scr=$('#scr'); scr.style.opacity=fade(t,a.ini-.1,.12)*(1-fade(t,b.end-.75,.15));
+  const ent=(x0,x1)=>{ const i=spr(t-x0,'ui'), q=x1==null?0:spr(t-x1,'ui'); return {o:fade(t,x0,.15)*(1-fade(t,x1??1e9,.15)),y:(1-i)*30-q*30}; };
+  st($('.scA'),ent(a.ini+.12,s.B)); st($('.scB'),ent(s.B,s.C)); st($('.scC'),ent(s.C,s.D)); st($('.scD'),ent(s.D,null));
+  // formulário
+  const fu=fade(t,s.fun+.05,.14); $('#fFp').style.opacity=1-fu; st($('#fFv'),{o:fu,y:(1-spr(t-s.fun-.05,'ui'))*8}); st($('#fFk'),{o:fu,s:spr(t-s.fun-.1,'pop')});
+  $('#fF').style.borderColor=mixc(C.line,C.ink,fade(t,s.fun,.1)*(1-fade(t,s.drag0,.2)));
+  const u=t<s.drag0?0:(t<s.drag1?hourU(t,s):hourU(s.drag1,s)); const hx=20+264*u;
+  $('#hnd').style.left=(hx-13)+'px'; $('#trk').style.width=(264*u)+'px'; st($('#hnd'),{s:t>s.drag0-.08&&t<s.drag1?1.15:1});
+  const h=20+Math.round(u*3); $('#hora').textContent=L==='en'?String(h-12):String(h);
+  const pb=$('#pub'), pr=t>s.pub&&t<s.pub+.14?.96:1; st(pb,{s:lerp(1,.96,spr(t-s.pub,'ui')*(1-spr(t-s.pub-.1,'ui')))});
+  pb.style.background=mixc(C.ink,C.o,spr(t-s.done,'ui'));
+  $('#pubA').style.opacity=1-fade(t,s.load,.1); const ld=fade(t,s.load,.1)*(1-fade(t,s.done,.1));
+  const sp=$('#pubS'); sp.style.opacity=ld; sp.style.transform=`rotate(${(t-s.load)*720}deg)`; sp.style.transformOrigin='16px 16px';
+  st($('#pubB'),{o:fade(t,s.done,.14),y:(1-spr(t-s.done,'ui'))*14}); $('#pubA').style.top=$('#pubB').style.top='0px';
+  $('#pubA').style.lineHeight=$('#pubB').style.height='66px'; $('#pubB').style.top='0';
+  // ilha e aviso
+  const ie=spr(t-s.isl,'ui'), ih=spr(t-s.isl,'move'), ix=1-spr(t-s.C+.15,'ui');
+  const iw=lerp(110,324,ie*ix), ihh=lerp(32,128,ih*ix), il=$('#isl');
+  box(il,176-iw/2,14,iw,ihh); il.style.borderRadius=lerp(16,34,ie*ix)+'px';
+  $('#nt').style.opacity=fade(t,s.isl+.14,.16)*ix; $('#nt').style.transform=`scale(${lerp(.9,1,ie)})`; $('#nt').style.transformOrigin='162px 0';
+  // candidatos
+  const ec=spr(t-s.esc,'ui'); $('#esc').style.background=mixc(C.ink,C.o,ec); st($('#esc'),{s:lerp(1,.96,ec*(1-spr(t-s.esc-.1,'ui')))});
+  $('#escA').style.lineHeight='58px'; $('#escA').style.opacity=1-fade(t,s.esc,.1); $('#escB').style.height='58px'; st($('#escB'),{o:fade(t,s.esc+.04,.14),y:(1-spr(t-s.esc,'ui'))*12});
+  $('#carla').style.opacity=lerp(1,.4,fade(t,s.esc+.1,.3));
+  // check-in
+  const wk=spr(t-s.walk,'soft'), px=lerp(292,192,wk), py=lerp(236,174,wk), ckp=$('#ckp');
+  box(ckp,px-15,py-15,30,30); ckp.style.background=mixc(C.ink,C.o,spr(t-s.okk,'ui')); $('#ckpk').style.opacity=fade(t,s.okk,.12);
+  const rg=spr(t-s.D-.1,'move'); $('#ck200').setAttribute('r',Math.max(0,96*rg)); $('#ck200t').style.opacity=fade(t,s.D+.3,.2);
+  io($('#ckok'),t,s.okk,null,12); io($('#ckd'),t,s.okk+.08,null,12);
+  const th=$('#thumb'), cxp=484+96, tp=t-s.sim; const L0=lerp(96,20,spr(tp,'ui')), R0=lerp(96,172,spr(tp-.05,'soft'));
+  th.style.left=L0+'px'; th.style.width=Math.max(0,R0-L0)+'px'; th.style.opacity=t>s.sim?1:0;
+  $('#sim').style.color=mixc(C.ink,C.white,fade(t,s.sim+.04,.12));
+}
+
+/* c08: mapa, 15 km, zoom até 200 m */
+function planC08(s){
+  const f1=F('c08',1), f2=F('c08',2);
+  s.r15=g(f1.ini+.15,2); ev(s.r15,'swish',.5);
+  s.zoom=g(f2.ini-.25,2); CAM(s.zoom,{x:948,y:575,s:2.6},'cam'); D(s.zoom,{w:12,h:12,r:6},'cam');
+  s.r200=s.zoom+.55; ev(s.r200,'pop',.6); s.walk=s.r200+.6;
+  // pessoas espalhadas dentro do DF
+  const poly=[[70,6],[930,6],[915,80],[940,160],[918,240],[950,320],[925,400],[955,480],[935,546],[40,546],[30,470],[55,390],[18,300],[48,220],[10,140],[55,70]];
+  const inside=(x,y)=>{ let c=false; for(let i=0,j=poly.length-1;i<poly.length;j=i++){ const [xi,yi]=poly[i],[xj,yj]=poly[j]; if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi)) c=!c; } return c; };
+  let seed=7; const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647; const pts=[];
+  // nenhuma pessoa encosta em texto, nos anéis, no caminho de quem anda ou (no zoom) embaixo do painel
+  const livre=[...$$('#reg text')].map(e=>{ const n=e.textContent.length*11.5; return [+e.getAttribute('x')-n/2-10,+e.getAttribute('y')-22,+e.getAttribute('x')+n/2+10,+e.getAttribute('y')+10]; });
+  livre.push([388+104-12,311-108-36,388+104+112,311-108+14],[388+26-8,311-28-16,388+26+48,311-28+8]);
+  const tela=(x,y)=>[(560+x-948)*2.6+960,(264+y-575)*2.6+540];
+  const ok=(x,y,d)=>{ if(Math.abs(d-136)<16||Math.abs(d-32)<12||d<22) return false;
+    if(livre.some(([l,t,r,b])=>x>l&&x<r&&y>t&&y<b)) return false;
+    const u=Math.max(0,Math.min(1,((x-446)*-42+(y-351)*-29)/(42*42+29*29))); if(Math.hypot(x-446+42*u,y-351+29*u)<16) return false;
+    const [X,Y]=tela(x,y); if(X<526+30&&Y>330-30&&Y<630+30) return false; if(Y>930) return false;   // nem embaixo da legenda
+    return true; };
+  while(pts.length<46){ const x=40+rnd()*890, y=30+rnd()*500; const d=Math.hypot(x-388,y-311); if(inside(x,y)&&ok(x,y,d)&&!pts.some(p=>Math.hypot(p[0]-x,p[1]-y)<38)) pts.push([x,y,d]); }
+  $('#gente').innerHTML=pts.map(p=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="5" data-d="${p[2].toFixed(1)}"/>`).join('');
+  CAM(S.c09.ini+.75,{x:960,y:540,s:1},'cam');
+}
+function runC08(t,s){
+  const out=S.c08.end-.3, m=S.c08m.root;
+  const dr=eio(ramp(t,s.ini-.55,.9)); $('#df').style.strokeDashoffset=(1-dr).toFixed(4); $('#df').style.fillOpacity=fade(t,s.ini-.1,.4);
+  $('#reg').style.opacity=fade(t,s.ini+.1,.3)*(1-fade(t,s.zoom,.25));
+  $$('#gente circle').forEach((c,i)=>{ const d=+c.dataset.d, a=s.ini+.02+i*.012, lit=d<136?spr(t-s.r15-d/600,'ui'):0;
+    c.setAttribute('r',(5*spr(t-a,'pop')+1.5*lit).toFixed(2)); c.style.fill=mixc(C.mut,C.o,lit); c.style.opacity=lerp(.55,1,lit); });
+  const r=spr(t-s.r15,'move'); $('#r15').setAttribute('r',Math.max(0,136*r)); $('#r15t').style.opacity=fade(t,s.r15+.3,.2);
+  const r2=spr(t-s.r200,'move'); $('#r200').setAttribute('r',Math.max(0,32*r2)); $('#r200t').style.opacity=fade(t,s.r200+.3,.2);
+  const wk=spr(t-s.walk,'soft'); $('#anda').setAttribute('transform',`translate(${lerp(388+58,388+16,wk)},${lerp(311+40,311+11,wk)})`);
+  $('#anda').style.opacity=fade(t,s.walk-.3,.2); $('#anda circle').style.fill=mixc(C.ink,C.o,fade(t,s.walk+.55,.15)); if(t>s.walk+.55&&t<s.walk+.56) {}
+  // painel
+  const p=$('#pan'); st(p,{o:fade(t,s.ini-.1,.25)*(1-fade(t,out,.2)),y:(1-spr(t-s.ini+.1,'move'))*30});
+  const sw=spr(t-s.zoom,'ui');
+  $$('.pA',p).forEach((e,i)=>st(e,{o:1-fade(t,s.zoom+i*.03,.14),y:-sw*14}));
+  $$('.pB',p).forEach((e,i)=>{ const a=s.zoom+.12+i*.04; st(e,{o:fade(t,a,.16),y:(1-spr(t-a,'ui'))*18}); });
+}
+
+/* c09: o ponto engole a tela */
+function planC09(s){
+  const f=F('c09',1);
+  D(s.ini-.12,{c:C.ink},'snap'); D(s.ini-.04,{w:3000,h:3000,r:1500},'soft'); ev(s.ini-.04,'grave',1);
+  key('th',-9,0); key('th',s.ini+.06,1,'ui');
+  D(s.ini+.75,{x:960,y:540},'cam');
+}
+function runC09(t,s){
+  const f=F('c09',1), ws=E.c09w, n=ws.length, stg=Math.min(.24,(f.fim-f.ini)*.75/n);
+  wio(ws,t,f.ini-.04,stg,s.end-.3,50);
+}
+
+/* c10: os números do site */
+function planC10(s){
+  const f=F('c10',1), d=f.fim-f.ini;
+  s.n1=g(f.ini+.12*d,2); s.n2=g(f.ini+.52*d,2); ev(s.n1,'roll',1); ev(s.n2,'roll',.7);
+}
+function runC10(t,s){
+  const out=s.end-.25, a=s.ini-.15, b=$('#brw');
+  st(b,{o:fade(t,a,.25)*(1-fade(t,out,.22)),y:(1-spr(t-a,'move'))*60,s:lerp(.96,1,spr(t-a,'move'))-.04*fade(t,out,.22)});
+  io($('#c10k'),t,a+.2,null,14);
+  [[s.n1,'#n1',E.o10a],[s.n2,'#n2',E.o10b]].forEach(([n,id,o],i)=>{ o.set(t,n-.05);
+    st($(id).parentElement,{o:fade(t,n-.12,.18),y:(1-spr(t-n+.12,'ui'))*24}); io($$('.c10l',s.root)[i],t,n+.35,null,14); });
+  $('#c10d').style.opacity=fade(t,s.n2-.25,.25);
+}
+
+/* c11: meio-tom; poucos pontos laranja aparecem */
+function planC11(s){
+  const f=F('c11',1);
+  D(S.c12.ini-.3,{w:820,h:400,r:36,sh:1},'move'); D(S.c12.ini-.3,{y:440},'move'); D(S.c12.ini+.02,{c:C.white},'snap');
+  key('th',S.c12.ini-.05,0,'ui'); ev(S.c12.ini-.3,'grave',.8);
+  s.b=f.ini+.48*(f.fim-f.ini);
+}
+function runC11(t,s){
+  const f=F('c11',1), out=s.end-.28; io($('#c11a'),t,f.ini,out,34); io($('#c11b'),t,s.b,out,34);
+  const cv=$('#ht'), x=cv.getContext('2d'); x.clearRect(0,0,1920,1080);
+  const op=fade(t,s.ini+.05,.3)*(1-fade(t,out,.2)); if(op<=0) return; x.globalAlpha=op;
+  const lt=t-s.ini;
+  for(let j=0;j<24;j++) for(let i=0;i<41;i++){ const X0=24+i*47, Y0=24+j*45; const d=Math.hypot(X0-960,Y0-540);
+    const h=((i*73856093)^(j*19349663))>>>0, hot=(h%37)===0;
+    const w=cl((lt*900-d)/300); let r=1.6+2.2*w; if(hot){ r=lerp(r,9,spr(lt-1.0-(h%7)*.06,'ui')); }
+    x.fillStyle=hot&&lt>1.0?C.o:'#3A3B40'; x.beginPath(); x.arc(X0,Y0,r,0,7); x.fill(); }
+}
+
+/* c12: o cartão do Bruno */
+function planC12(s){
+  const f=F('c12',1), d=f.fim-f.ini;
+  s.d0=g(f.ini+.25*d,4); s.s0=g(f.ini+.6*d,4);
+  for(let i=0;i<18;i++) if(i%3===0) ev(s.d0+i*P/8,'tick',.3); for(let i=0;i<10;i++) ev(s.s0+i*P/8,'tick',.35);
+  key('ko',s.s0-.1,1,'ui'); CUR(s.s0-.1,1236,326);
+  s.esc=Math.min(s.s0+1.15,s.end-.75); click(s.esc); ev(s.esc+.06,'ok',.8);
+  CUR(s.esc+.3,1420,560); key('ko',s.esc+.3,0,'ui');
+  D(s.end-.42,{w:28,h:28,r:14,sh:0},'move'); D(s.end-.16,{c:C.o},'snap'); D(s.end-.2,{x:420,y:560},'move');
+}
+function runC12(t,s){
+  const out=s.end-.45; io($('#c12k'),t,s.ini-.05,out,18);
+  $$('.c12i',s.root).forEach((e,i)=>io(e,t,s.ini+.02+i*.035,out,22));
+  $$('.c12d',s.root).forEach((e,i)=>{ const on=i<18?spr(t-s.d0-i*P/8,'ui'):0; e.style.background=mixc(C.line,C.o,on); st(e,{s:1+.25*on*(1-spr(t-s.d0-i*P/8-.08,'ui')),o:fade(t,s.ini+.3,.2)*(1-fade(t,out,.2))}); });
+  $$('.c12s',s.root).forEach((e,i)=>{ const on=i<10?spr(t-s.s0-i*P/8,'ui'):0; e.style.background=mixc(C.line,C.ink,on); st(e,{o:fade(t,s.ini+.36,.2)*(1-fade(t,out,.2))}); });
+  const ec=spr(t-s.esc,'ui'); $('#c12b').style.background=mixc(C.ink,C.o,ec);
+  $('#c12bA').style.lineHeight='64px'; $('#c12bA').style.opacity=1-fade(t,s.esc,.1); $('#c12bB').style.height='64px'; st($('#c12bB'),{o:fade(t,s.esc+.04,.14),y:(1-spr(t-s.esc,'ui'))*12});
+}
+
+/* c13: linha do tempo */
+function planC13(s){
+  const f=F('c13',1), d=f.fim-f.ini;
+  s.A=g(f.ini+.22*d,2); s.B=g(f.ini+.62*d,2);
+  // o ponto chega ao check e some dentro dele; renasce à direita do check e segue até o anel
+  D(s.A-.3,{x:700},'move'); D(s.A-.02,{w:0,h:0,r:0},'snap'); D(s.A+.2,{x:700+48},'snap');
+  D(s.B-.55,{w:28,h:28,r:14},'ui'); D(s.B-.4,{x:1220},'soft'); D(s.B-.1,{w:30,h:30,r:15},'ui');
+  ev(s.A,'ok',.6); ev(s.B,'pop',.6);
+}
+function runC13(t,s){
+  const out=s.end-.42; io($('#c13h'),t,s.ini-.12,out,24);
+  // as linhas param a 12 px do ponto, do check e do anel: nada passa por cima de nada
+  const dx=val('dx',t), dr=val('dw',t)/2+12, lo=1-fade(t,out,.2);
+  const seg=(el,a,b)=>{ el.setAttribute('x1',a); el.setAttribute('x2',Math.max(a,b)); el.style.opacity=b-a>2?lo:0; };
+  const corta=(ids,a,b)=>{ const [p,q]=ids.map(i=>$('#c13'+i)); if(dx+dr<=a||dx-dr>=b){ seg(p,a,b); seg(q,0,0); } else { seg(p,a,dx-dr); seg(q,dx+dr,b); } };
+  const u=spr(t-s.ini+.15,'move'), v=fade(t,s.A,.5);
+  corta(['a','a2'],420,lerp(420,700-34,u)); corta(['b','b2'],700+34,lerp(700+34,1220-38,v));
+  st($('#c13A'),{s:spr(t-s.A,'pop'),o:1-fade(t,out,.2)});
+  st($('#c13B'),{o:fade(t,s.A+.2,.2)*(1-fade(t,out,.2))});
+  $$('.c13l1').forEach((e,i)=>io(e,t,s.A+.05+i*.06,out,16)); $$('.c13l2').forEach((e,i)=>io(e,t,s.B+.05+i*.06,out,16));
+}
+
+/* c14: moeda R$ 0 que gira */
+function planC14(s){
+  const f=F('c14',1);
+  D(s.ini-.3,{x:960,y:450},'move'); D(s.ini-.12,{w:300,h:300,r:150},'move');
+  s.flip=s.ini+.2; ev(s.flip,'swish',.5); s.lab=g(f.ini+.45*(f.fim-f.ini),2);
+  D(S.c16.ini-.3,{w:66,h:66,r:33},'ui');
+}
+function runC14(t,s){
+  const out=s.end-.2, th=Math.PI*2*spr(t-s.flip,'soft'), fx=Math.abs(Math.cos(th));
+  E.flip=t<s.end+.2?lerp(1,fx,1-fade(t,s.end-.4,.1)):1;
+  st($('#coin'),{o:fade(t,s.ini+.05,.15)*(1-fade(t,out,.15)),sx:fx});
+  io($('.c14a'),t,s.lab,out,20); io($('.c14b'),t,s.lab+.08,out,20);
+  const l=$('#c14l'), r=$('#c14r'); l.style.opacity=r.style.opacity=fade(t,s.lab,.2)*(1-fade(t,out,.2));
+  io($('#c14h'),t,s.ini+.15,out,20);
+}
+
+/* c16: logo se desenha; o ponto pousa no i; volta ao quadro 1 */
+function planC16(s){
+  const f1=F('c16',1);
+  s.land=f1.ini+.05; D(s.land-.34,{x:E.idot.x,y:E.idot.y},'move'); ev(s.land,'pouso',1);
+  // saída: as letras saem inteiras e, por último, o ponto encolhe até sumir. O filme acaba no papel limpo.
+  s.loop=T.total-1.7;
+  D(s.loop+.75,{w:0,h:0,r:0},'soft');
+}
+function runC16(t,s){
+  const f2=F('c16',2), lo=s.loop;
+  // entrada: cada letra (fr juntos, porque o traço do f entra no r) desenha todos os seus traços ao mesmo tempo, enquanto aparece e assenta;
+  // as letras vêm em sequência, da esquerda para a direita. Saída: o contrário, cada letra sai inteira (sobe, desfoca e some).
+  // Opacidade no grupo da letra, não no traço: nada fica mais escuro onde dois traços se cruzam, e nenhum traço é desmontado.
+  $$('.lgl',s.root).forEach((g,k)=>{ const a=s.ini-.16+k*.13, dr=eio(ramp(t,a,.62)), ap=eio(ramp(t,a,.3)), un=eio(ramp(t,lo+k*.08,.5));
+    $$('.lg',g).forEach(p=>{ p.style.strokeDashoffset=(1-dr).toFixed(4); });
+    const o=ap*(1-un), y=(1-spr(t-a,'ui'))*14-10*un;
+    g.style.opacity=o<.002?0:o.toFixed(3); g.style.transform=`translateY(${y.toFixed(2)}px)`; g.style.filter=un>0?`blur(${(3*un).toFixed(2)}px)`:''; });
+  const ws=E.c16w, stg=Math.min(.2,(f2.fim-f2.ini)*.75/ws.length); wio(ws,t,f2.ini-.04,stg,lo-.25,30);
+  io($('#c16r'),t,f2.ini+.4,lo-.25,10);
+}
+
+/* ---------- HUD, legenda, ponto, câmera ---------- */
+function runHUD(t){
+  const th=val('th',t), ink=mixc(C.ink,C.paper,th), mut=mixc(C.mut,'#8A8F96',th);
+  // fonte
+  const sr=$('#src'); let fs=null, fa=0, fb=0;
+  for(const [id,txt] of [['c03',X.c03f],['c04',X.c04f],['c10',X.c10.f]]){ const s=S[id]; if(t>=s.ini-.1&&t<s.end+.1){ fs=txt; fa=s.ini+.3; fb=s.end-.35; } }
+  if(fs){ if(sr.textContent!==fs) sr.textContent=fs; sr.style.color=mut; st(sr,{o:fade(t,fa,.25)*(1-fade(t,fb,.2))}); } else sr.style.opacity=0;
+  // legenda
+  const cp=$('#cap'); const fl=T.falas.find(f=>t>=f.leg_ini-.01&&t<f.leg_fim+.01);
+  if(fl&&!NOCAP.has(fl.cena.slice(0,3))){ if(cp.textContent!==fl.legenda) cp.textContent=fl.legenda; const i=fade(t,fl.leg_ini,.14), q=fade(t,fl.leg_fim-.14,.14);
+    cp.style.color=ink; st(cp,{o:i*(1-q),y:(1-spr(t-fl.leg_ini,'ui'))*10,blur:(1-i)*6+q*4}); } else cp.style.opacity=0;
+}
+const NOCAP=new Set(['c01','c09','c16']);
+
+function runDot(t){
+  const x=val('dx',t), y=val('dy',t), w=val('dw',t)*(E.flip??1), h=val('dh',t), r=val('dr_',t);
+  const d=E.dot.style; d.left=(x-w/2).toFixed(2)+'px'; d.top=(y-h/2).toFixed(2)+'px'; d.width=Math.max(0,w).toFixed(2)+'px'; d.height=Math.max(0,h).toFixed(2)+'px';
+  d.borderRadius=Math.max(0,Math.min(r,w/2,h/2)).toFixed(2)+'px';
+  d.background=`rgb(${cl(val('dr',t),0,255)|0},${cl(val('dg',t),0,255)|0},${cl(val('db',t),0,255)|0})`;
+  const sh=cl(val('dsh',t)); d.boxShadow=sh>.01?`0 ${24*sh}px ${60*sh}px rgba(24,25,28,${.09*sh})`:'none';
+}
+function runCam(t){ const cx=val('cx',t), cy=val('cy',t), s=val('cs',t);
+  W.style.transform=`translate(960px,540px) scale(${s.toFixed(5)}) translate(${(-cx).toFixed(3)}px,${(-cy).toFixed(3)}px)`; }
+function runCursor(t){ const c=E.cur; c.style.left=val('kx',t).toFixed(2)+'px'; c.style.top=val('ky',t).toFixed(2)+'px'; st(c,{o:val('ko',t),s:val('kp',t)}); }
+
+/* ---------- boot e seek ---------- */
+window.boot=async function(tempos,lang){
+  T=tempos; L=lang; X=TX[lang]; P=T.P;
+  document.documentElement.lang=lang==='en'?'en':'pt-BR';
+  build();
+  await document.fonts.load('800 100px PJS'); await document.fonts.load('700 100px PJS'); await document.fonts.load('700 40px AHN'); await document.fonts.load('400 40px AHN'); await document.fonts.ready;
+  // régua das cenas
+  for(const c of T.cenas){ const id=c.id.slice(0,3); S[id]={id,ini:c.ini,dur:c.dur,end:c.ini+c.dur,f:T.falas.filter(f=>f.cena===c.id)}; ORD.push(S[id]); }
+  S.c08m={ini:S.c08.ini,end:S.c09.ini+.2}; S.row={ini:S.c03.ini,end:S.c05.ini+.3}; S.fluxo={ini:S.c06.ini,end:S.c07.end}; S.c08p=S.c08;
+  // medidas (sem transformações ainda)
+  $$('.sc').forEach(e=>e.style.display='block');
+  E.c01w=[...words($('#c01a')),...words($('#c01bw'))];
+  const q=$('#q').getBoundingClientRect(); E.q={x:q.left+q.width*29/56,y:q.top+q.height*86/112,d:21};
+  const k=$('#c03ks').getBoundingClientRect(); E.c03b={x:k.left-24,y:k.top+k.height/2};
+  E.c02av=$$('.c02av'); E.c09w=[...words($('#c09a')),...words($('#c09b'))]; E.c16w=words($('#c16t'));
+  E.c09w.slice(-X.c09hi).forEach(w=>w.style.color=C.o);
+  E.o3=mkOdo($('#c03n'),X.c03n,3); E.o4=mkOdo($('#c04d'),'#',1); E.o10a=mkSlot($('#n1'),X.c10.n1); E.o10b=mkSlot($('#n2'),X.c10.n2);
+  E.idot={x:610+(117.5+4)*700/245,y:291+(10.49+6)*700/245};
+  $$('.sc').forEach(e=>e.style.display='none');
+  // trilhas iniciais
+  D(-9,{x:960,y:540,w:28,h:28,r:14,c:C.o,sh:0},'ui'); key('th',-9,0);
+  CAM(-9,{x:960,y:540,s:1});
+  // dr_ (raio) separado de dr (vermelho)
+  const origD=D;
+  for(const sc of SC){ const s=S[sc.id]; s.root=sc.root; }
+  window.__D=D;
+  for(const sc of [...SC.filter(c=>c.id!=='row'),SC.find(c=>c.id==='row')]){ if(sc.plan) sc.plan(S[sc.id]); }
+  for(const n in K) K[n].sort((a,b)=>a[0]-b[0]);
+  EV.sort((a,b)=>a.t-b.t); window.eventos=EV;
+  return {total:T.total, eventos:EV.length};
+};
+window.seek=function(t){
+  E.flip=1;
+  for(const sc of SC){ const s=S[sc.id]; const on=t>=s.ini-1.0&&t<s.end+.9; sc.root.style.display=on?'block':'none'; if(on&&sc.run) sc.run(t,s); }
+  runDot(t); runCam(t); runCursor(t); runHUD(t);
+};
+</script></body></html>
