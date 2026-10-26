@@ -14,13 +14,13 @@ Cada papel trabalha no seu worktree e commita no seu branch, sem push. O Maestro
 
 ## 2. Fluxo
 
-1. **Roteiro mestre travado** (`roteiro.json`): texto, duração-alvo, ordem das cenas. Só o Fabrício muda.
+1. **Roteiro mestre travado** (`roteiro.json`): texto enxuto aprovado em 26/10/2026 (13 cenas, 156 palavras, alvo ~80 s; ids v01–v14 sem a v08, não renumerados). Só o Fabrício muda.
 2. **Metas de melhoria sobre a v4.** O Fabrício avaliou a v4 (`~/Downloads/frila-pitch-pt.mp4`, 76,7 s) com **nota 8/10**. O trabalho é **evoluir a v4, não substituí-la**. Os três pontos a melhorar:
    - **Emenda de voz mais natural.** Na v4, as pausas entre frases da mesma cena são sempre 0,21–0,29 s (frases geradas isoladas e encaixadas); é o "remendo" audível. Alvo: voz por bloco em tomada contínua (A3, A4).
    - **Leves ajustes de motion** nas cenas existentes, sem refazer a coreografia que já funciona.
    - **Exibição do mockup do aparelho.** Na v4 o celular ocupa ~70% da altura, a tela tem texto minúsculo e metade do quadro vai para a lista de passos. Alvo: aparelho maior, tela legível, zoom e parallax na tela (D1 do `DESIGN.md` §14), lista de passos sem competir com o aparelho.
 2b. **Bíblia de motion da v4:** o Diretor extrai de `~/Downloads/frila-pitch-pt.mp4` e de `docs/v4/` as curvas, os tempos de entrada e as regras que fizeram a v4 boa, e grava em `DESIGN.md`. É o piso de qualidade.
-3. **Blocos** (proposta, o Maestro valida com a régua): **A** Abertura e dores v01–v04 · **B** Virada e soluções v05–v09 · **C** Prova e potencial v10–v12 · **D** Fecho v13–v14.
+3. **Blocos** (proposta, o Maestro valida com a régua): **A** Abertura e dores v01–v04 · **B** Virada e soluções v05, v06, v07 e v09 (a v08 foi removida) · **C** Prova e potencial v10–v12 · **D** Fecho v13–v14.
 4. **Piloto no Bloco A**, de ponta a ponta (voz, imagem, mix do bloco, revisão). O Fabrício assiste e aprova antes de B, C e D. **Bloco aprovado fica congelado.**
 5. **Montagem:** imagem de cada bloco em um clipe com margem de transição; **voz por bloco**; **uma única trilha de música sobre o vídeo inteiro** (nada de emenda de música entre blocos); mix e master no vídeo inteiro.
 6. **QA final e escuta integral do Fabrício.**

@@ -7,26 +7,26 @@
 - **Uma versão de vídeo apenas** (sem versão curta separada).
 - **Contato discreto no fim:** `frila.org@gmail.com`, só na tela, nunca falado.
 - **Descartados:** "eStaff declara 31 clientes no DF", "conversas em andamento" com âncoras (não há âncoras nomeadas), a faixa de R$ 11,9 a R$ 71,2 mi, versão curta.
-- **Duração-alvo:** em torno de 100 s.
+- **Duração-alvo:** ~80 s (texto enxuto aprovado pelo Fabrício em 26/10/2026; a v5 de ~100 s foi reprovada). A medida real sai da voz.
 - **Metas do piloto (8 semanas, 50 vagas, 90%):** mantidas como meta, com a tag "hipótese a calibrar". Interpretei "4. pode ignorar" como "sem objeção"; se era para cortar, a cena P2 sai e o vídeo encurta ~7,5 s.
 
-## Roteiro (14 momentos, 204 palavras faladas (contagem por espaços))
+## Roteiro enxuto (13 momentos, 156 palavras faladas (contagem por espaços)). Aprovado em 26/10/2026; o `roteiro.json` é a fonte
 
 | # | Momento | Fala (voz da Fernanda) | Tela | Janela |
 |---|---|---|---|---|
 | 1 | **Gancho, Dor 1** | Hoje, dezenove horas. Faltou gente no turno. | Cartão "Garçom · hoje, 19h" cai; ponto vira o "?". Tag "Exemplo" | 4,0 s |
 | 2 | **Dor 1, dado** | Segundo a Abrasel, nove em cada dez empresários de bares e restaurantes acham difícil contratar. | "9 em 10", 9 laranja + 1 grafite. Fonte: Abrasel, 30/04/2025 | 6,0 s |
-| 3 | **Dor 2, confiança** | E quem se candidata, dá para contar? Uma plataforma declara um milhão e meio de cadastrados. Cadastro não é turno. | Fundo escuro; janela eStaff: 1,5 milhão cadastrados · 533 mil disponíveis, "como a empresa declara, acesso em 22/10/2026" | 9,0 s |
-| 4 | **Dor 3, rotatividade** | E a equipe não fica: nos bares e restaurantes, a rotatividade passou de setenta por cento em um ano. | "73,49%" enorme; "dez/2024 a nov/2025"; cartões de escala mudam e a vaga nova reaparece | 7,5 s |
-| 5 | **Virada** | Mapeamos essas dores. O Frila conecta quem precisa de gente a profissionais perto. | Vaga do gancho vira o mockup; três marcas das dores | 6,0 s |
+| 3 | **Dor 2, confiança** | Uma plataforma declara um milhão e meio de cadastrados. Cadastro não é turno. | Fundo escuro; janela eStaff: 1,5 milhão cadastrados · 533 mil disponíveis, "como a empresa declara, acesso em 22/10/2026" | 9,0 s |
+| 4 | **Dor 3, rotatividade** | Nos bares e restaurantes, a rotatividade passou de setenta por cento em um ano. | "73,49%" enorme; "dez/2024 a nov/2025"; cartões de escala mudam e a vaga nova reaparece | 7,5 s |
+| 5 | **Virada** | O Frila conecta quem precisa de gente a profissionais perto. | Vaga do gancho vira o mockup; três marcas das dores | 6,0 s |
 | 6 | **Solução 1** | Você publica a vaga. O Frila avisa quem está perto, até quinze quilômetros. | Mockup em foco (zoom + parallax): Nova vaga → publicada → aviso → candidatura; mapa 15 km | 6,5 s |
 | 7 | **Solução 2** | Antes de escolher, você vê o histórico. No local, o profissional faz check-in. | Mockup em foco: cartão do candidato (tag "Exemplo") → escolha → check-in a 200 m | 7,0 s |
-| 8 | **Teaser (meio)** | Há um número que não achamos em pesquisa pública: quantas vezes falta alguém no turno. | Pergunta grande; contador vazio "— vezes por ano" | 6,0 s |
-| 9 | **Solução 3** | Depois do turno, os dois lados avaliam: chamaria de novo? O histórico ajuda na próxima escolha. | Mockup em foco: avaliação Sim/Não → histórico ilustrativo | 7,5 s |
-| 10 | **P1, o dado** | Cada turno com check-in vira dado. Dos vinte e dois apps que estudamos, nenhum mostra comparecimento medido. | 22 pontos cinza; só o do Frila ganha o check. Rodapé: "Pesquisa interna de 22 concorrentes, 01/10/2026" | 7,5 s |
+| 8 | ~~**Teaser (meio)**~~ **REMOVIDO** | ~~Há um número que não achamos em pesquisa pública: quantas vezes falta alguém no turno.~~ | Pergunta grande; contador vazio "— vezes por ano" | 6,0 s |
+| 9 | **Solução 3** | Depois do turno, os dois lados avaliam: chamaria de novo? | Mockup em foco: avaliação Sim/Não → histórico ilustrativo | 7,5 s |
+| 10 | **P1, o dado** | Dos vinte e dois apps que estudamos, nenhum mostra comparecimento medido. | 22 pontos cinza; só o do Frila ganha o check. Rodapé: "Pesquisa interna de 22 concorrentes, 01/10/2026" | 7,5 s |
 | 11 | **P2, a meta** | Meta do piloto: oito semanas, cinquenta vagas por semana e nove em cada dez profissionais presentes. | Três contadores, tag "Meta do piloto · hipótese a calibrar" | 7,5 s |
-| 12 | **P3, a estratégia** | Núcleo de quinze quilômetros, com âncoras em eventos e buffets. Depois, bares e restaurantes. Depois, o Distrito Federal. | Mapa da cena 8: círculo de 15 km, 3 pontos-âncora, pontos menores, cresce até o DF. Só na tela: "23.271 empresas ativas no DF" e "~1.300 restaurantes e bares com 10+ pessoas · IBGE 2024" | 9,0 s |
-| 13 | **Fecho** | Menos tempo procurando gente. Mais tempo no seu negócio. Deixa que o Frila cuida. Foque no essencial. | Off-white, calmo; o relógio do gancho volta sem pressa | 8,0 s |
+| 12 | **P3, a estratégia** | Começamos por um núcleo de quinze quilômetros. Depois, bares e restaurantes. Depois, o Distrito Federal. | Mapa da cena 8: círculo de 15 km, 3 pontos-âncora, pontos menores, cresce até o DF. Só na tela: "23.271 empresas ativas no DF" e "~1.300 restaurantes e bares com 10+ pessoas · IBGE 2024" | 9,0 s |
+| 13 | **Fecho** | Menos tempo procurando gente. Mais tempo no seu negócio. Deixa que o Frila cuida. | Off-white, calmo; o relógio do gancho volta sem pressa | 8,0 s |
 | 14 | **Assinatura** | Frila. Turno combinado, regra clara. | Logo A1; **"frila.org@gmail.com"** discreto embaixo; "Narração com voz sintética (IA)" | 6,0 s |
 
 **Soma das janelas: ~97,5 s.** É planejamento (palavras × ritmo da v4/v5 + tempo de ver cada tela), não medida. A medida real sai da voz com a régua do `tempos2.py`.
