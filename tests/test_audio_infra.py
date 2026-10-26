@@ -19,9 +19,9 @@ class Preparacao(unittest.TestCase):
         self.assertEqual(r.returncode, 0, r.stderr.decode())
 
     def test_bruto_com_consoante_fraca_preservado_sem_fade(self):
-        from motor.tempos2 import aparar
+        from motor.tempos2 import preparar
         x = np.r_[np.full(2000, 0.00002), np.full(4000, 0.1), np.full(2000, -0.00002)].astype('float32')
-        self.assertTrue(np.array_equal(aparar(x), x), 'Consoante/cauda não podem ser alteradas')
+        self.assertTrue(np.array_equal(preparar(x)[0], x), 'Consoante/cauda não podem ser alteradas')
 
     def test_preparacao_invalida_bloqueia_e_padding_preserva(self):
         import motor.tempos2 as t

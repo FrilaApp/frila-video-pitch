@@ -361,7 +361,7 @@ históricas e não foram repetidas com voz v5 (ainda inexistente).
    posição; ganhos/preparação ganham metadados em amostras. A T5 ligará as cenas
    finais, pausas e overrides de fecho. `cenas` inicia vazio, sem copiar os IDs
    obsoletos 09/10 do exemplo B3.
-2. **Preservação padrão:** `aparar()` conserva todas as amostras e não aplica
+2. **Preservação padrão:** `preparar()` (em `motor/tempos2.py`; substituiu `aparar()`) conserva todas as amostras e não aplica
    fade. Padding e corte são explícitos; corte só com limites confirmados e
    aprovação, mantendo 80/160 ms quando disponíveis. Silêncio, vazio e NaN
    bloqueiam preparação. Limites desconhecidos protegem o arquivo inteiro e

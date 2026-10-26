@@ -72,11 +72,6 @@ def preparar(x, limites=None, confirmado=False, cortar=False, aprovado=False):
                "limites_confirmados": confirmado, "fades": [], "ganho_db": 0}
 
 
-def aparar(x):
-    """Compatibilidade: preserva todas as amostras; não corta nem aplica fade."""
-    return preparar(x)[0]
-
-
 def frases(texto):
     return re.split(r"(?<=[.?!])\s+", texto.strip())
 
