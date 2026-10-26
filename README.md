@@ -24,7 +24,7 @@ export ELEVENLABS_API_KEY=...   # ou ~/.config/elevenlabs/chave
 scripts/pipeline.sh   # lista as etapas: voz, conferir, tempos, quadros, imagem, audio, mux, tudo
 ```
 
-Requisitos: macOS (Apple Silicon testado), FFmpeg, Python 3.12.
+Requisitos: macOS (Apple Silicon testado), FFmpeg, Python 3.12 ou 3.14.
 
 ## O que não está aqui (de propósito)
 

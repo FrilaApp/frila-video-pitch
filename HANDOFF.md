@@ -79,7 +79,7 @@ Não está no repositório (de propósito): a **trilha musical** (licença Mixki
 
 ## 4. Começar do zero (≈ 15 min)
 
-**Requisitos:** macOS (Apple Silicon testado), FFmpeg, Python 3.12, git. O render usa 6 processos do Chromium: ~4 min no Mac do Cauê para 76 s; espere ~5 min para 100 s.
+**Requisitos:** macOS (Apple Silicon testado), FFmpeg, Python 3.12 ou 3.14 (os dois foram testados), git. O render usa 6 processos do Chromium: ~4 min no Mac do Cauê para 76 s; espere ~5 min para 100 s.
 
 ```sh
 git clone https://github.com/FrilaApp/frila-video-pitch.git && cd frila-video-pitch
@@ -169,7 +169,8 @@ Esforço: **P** pequeno (≤ 2 h), **M** médio (meio dia), **G** grande (1 a 2 
 5. **Ids de cena estão fixos** em `tempos2.py` e `filme.html`. Trocar os ids sem atualizar os dois quebra a régua em silêncio.
 6. **`eventos-pt.json` é gerado pelo render.** Sem ele não há efeitos.
 7. **Quadros de teste são rápidos; o render completo não.** Use `quadros` enquanto monta cada cena.
-8. **A trilha não pode ser redistribuída.** Não a comite; a licença não cobre TV, rádio, CD/DVD nem remix.
+8. **Render com `NetworkError`.** Apareceu 1 vez em 5 execuções durante a verificação; a abertura da página agora tenta 3 vezes. Se ainda acontecer, rode de novo. Se repetir, pare e investigue (porta do servidor local, Chromium instalado em `motor/browsers`).
+9. **A trilha não pode ser redistribuída.** Não a comite; a licença não cobre TV, rádio, CD/DVD nem remix.
 
 ## 10. Como trabalhar e entregar
 

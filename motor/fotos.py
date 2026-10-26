@@ -1,5 +1,5 @@
 """Quadros de teste: .venv/bin/python fotos.py pt 1.2 3.5 ...  (ou 'cenas' para 3 quadros por cena). Saída em cache/fotos/."""
-import json, sys, os, pathlib, threading, functools, http.server
+import json, sys, os, pathlib, threading, functools, http.server, time
 from playwright.sync_api import sync_playwright
 AQUI = pathlib.Path(__file__).resolve().parent
 RAIZ = AQUI.parent  # raiz do repositório (o filme.html carrega ../assets/)
@@ -20,9 +20,16 @@ def abrir(pw, L, url):
     erros = []
     pg.on("pageerror", lambda e: erros.append(str(e)))
     pg.on("console", lambda m: m.type == "error" and erros.append(m.text))
-    pg.goto(url)
     tempos = json.loads((AQUI / f"tempos-{L}.json").read_text())
-    info = pg.evaluate("([t,l])=>window.boot(t,l)", [tempos, L])
+    # v5: o render abre 6 páginas de uma vez; uma falha de rede passageira (visto 1 vez em 5 execuções) não deve derrubar tudo
+    for tentativa in range(3):
+        try:
+            pg.goto(url)
+            info = pg.evaluate("([t,l])=>window.boot(t,l)", [tempos, L])
+            break
+        except Exception as e:
+            if tentativa == 2: raise
+            erros.clear(); time.sleep(1 + tentativa)
     return b, pg, tempos, info, erros
 
 if __name__ == "__main__":
