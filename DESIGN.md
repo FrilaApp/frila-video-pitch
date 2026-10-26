@@ -2,7 +2,7 @@
 
 **Para que serve.** Ser a fonte única de verdade do design do vídeo: tokens, componentes, movimento, som, ritmo e regras. Toda mudança de design da v5 começa aqui e só depois vai para o `motor/filme.html`.
 
-**Status (26/10/2026).** Descreve a **v4 como ela é** (lida do código, não de memória). A v5 ainda não mudou nada de design: a seção 14 mostra como a narrativa aprovada se apoia nos componentes existentes, e a seção 16 lista o que ficou em aberto para o critique.
+**Status (26/10/2026).** As seções 1–13 documentam a v4 de referência. A montagem visual da v5 (14 cenas) foi aplicada no motor e conferida com régua **provisória, sem voz**; decisões e medidas em §19. D1 em escala 1,10 aprovado pelo Fabrício em 26/10/2026. Texto e régua oficial continuam pendentes.
 
 **Como foi levantado.** Lidos: `motor/filme.html` (CSS, tokens, textos, cenas, HUD), `motor/tempos2.py`, `motor/audio2.py`, `docs/v4/STORYBOARD.md`, `docs/v4/LEIA-ME.md`, `assets/cores.json`, e a revisão de narrativa. **Não verificado:** posições e tamanhos de cada elemento por captura (só os que o código declara); níveis de volume ouvindo o MP4. Onde o texto diz "Inferência", é leitura minha.
 
@@ -243,9 +243,9 @@ A configuração e o QA acompanham cada sessão. A montagem musical/cenas ainda
 
 A numeração pula o 15, que era o pedido de piloto (saiu na v3).
 
-## 14. Mapa da v5 (14 momentos; proposta, ainda não aplicado)
+## 14. Mapa da v5 (14 momentos; montagem visual aplicada, régua provisória)
 
-Fonte: `NARRATIVA-v5-100s.md` e `roteiro-v5-100s.json`. Marca o que reaproveita da v4, o que adapta e o que é novo. **Os ids das cenas mudam** (`v01` a `v14`): `NOCAP`, `NO_COMPASSO`, `DURACAO_MIN`, `ENTRADA` e as trilhas `th` do motor precisam ser reescritos para os ids novos.
+Fonte: `NARRATIVA-v5-100s.md` e `roteiro-v5-100s.json`. Marca o que reaproveita da v4, o que adapta e o que é novo. **Os ids das cenas mudam** (`v01` a `v14`): `NOCAP` e tema `th` já usam os ids novos no `filme.html`. `NO_COMPASSO`, `DURACAO_MIN`, `ENTRADA` e seções musicais de `tempos2.py` ficam para T5; não foram alterados por T6.
 
 | v5 | Momento | Componentes | Origem |
 |---|---|---|---|
@@ -308,7 +308,7 @@ Entram aqui antes de virar código. Status: **definidas, não implementadas**.
 
 | # | Diretriz | O que significa no design | Status |
 |---|---|---|---|
-| D1 | **Mockup com foco na tela do dispositivo** | Quando um mockup está em cena (cenas 6, 7 e 8 da v5), a tela do aparelho é o protagonista. Câmera faz **zoom-in de foco** na tela e as camadas (aparelho, fundo, lista de passos, ponto) se movem com **parallax** em profundidades diferentes, para mostrar o device com volume | A especificar (movimento, escala, camadas, mola) e implementar no `filme.html`, depois que as cenas novas forem montadas |
+| D1 | **Mockup com foco na tela do dispositivo** | Quando um mockup está em cena (v06, v07 e v09 da v5), a tela do aparelho é o protagonista. Câmera faz **zoom-in de foco** na tela e as camadas (aparelho, fundo, lista de passos, ponto) se movem com **parallax** em profundidades diferentes, para mostrar o device com volume | Implementado para ensaio em `filme.html`; parâmetros e medidas em §19, aprovação por captura pendente |
 | D2 | **Ducking cuidadoso com o voice-over** | A música e os efeitos nunca disputam com a voz; margem mínima entre voz e música em cada frase | Em planejamento (`PLANO-AUDIO.md`, Astra) |
 | D3 | **Trilhas de áudio separadas desde a geração** | Voz, música e efeitos saem como arquivos próprios; mudar um não refaz os outros | Em planejamento (`PLANO-AUDIO.md`) |
 | D4 | **Sem cortes de fala** | Nenhuma sílaba comida pelo corte automático, pela geração por frase ou pela mixagem | Evidências na seção 17; plano em `PLANO-AUDIO.md` |
@@ -337,3 +337,22 @@ Levantadas lendo o código e os slides exportados; **nenhuma foi corrigida**.
 - 26/10/2026: documento criado a partir da v4. Nenhuma mudança de design aplicada.
 - 26/10/2026: diretrizes D1 a D4 do Cauê (seção 16b) e observações 8 a 11 sobre cortes de fala. Engenharia sonora delegada ao Astra (`PLANO-AUDIO.md`).
 - 26/10/2026: narrativa passou a `NARRATIVA-v5-100s.md` (14 momentos, ~100 s). A seção 14 ficou desatualizada; contato `frila.org@gmail.com` entra na cena final, em texto pequeno, sem fala.
+
+
+## 19. Implementação visual T6 e preparação T7 — 26/10/2026
+
+Escopo autorizado: cenas v01–v14 conforme §14 e narrativa de 100 s, sem promover o rascunho a roteiro aprovado. `roteiro.json`, voz e régua oficial permanecem pendentes. Cada cena tem `planVXX`/`runVXX`, textos em `TX.pt` e eventos `ev(...)`. O tema escuro fica apenas em v03; a faixa a partir de y=890 fica reservada ao HUD (legenda/fonte), com exceção do rodapé da assinatura, que não tem legenda queimada.
+
+Reutilizar os tokens, molas, odômetros, pílula, cartões, telas de telefone, janela eStaff, mapa esquemático e traços do logo da v4. v04 usa cartões de escala que trocam, sem converter rotatividade em probabilidade individual. Os 22 pontos de v10 representam somente os concorrentes pesquisados; o ponto do Frila fica separado e recebe o check. Valores de perfis e vagas são os exemplos herdados, sempre com a tag “Exemplo”. As três âncoras do mapa são esquemáticas, sem nomes ou contratos inferidos. Metas continuam marcadas como hipótese; números de mercado mantêm a atribuição da narrativa (fontes primárias ainda não reabertas).
+
+D1: iniciar o ensaio com escala 1,20 e mola `cam`, entrada de aproximadamente 0,6 s; testar também os quadros de saída. Camadas de mapa/fundo 0,6×, passos 0,85×, aparelho 1,0×, cursor/ponto 1,1×; limitar deslocamento de parallax a 30 px. A lista esmaece e sai lateralmente no foco, voltando ao final. Se 1,20 atingir a faixa da legenda ou recortar o aparelho, reduzir a escala e registrar o valor medido aqui antes da alteração no motor.
+
+A régua de ensaio é explicitamente **PROVISÓRIA**, estimada a 2,3 palavras/s com pausas e mínimos visuais de `janela_s`, sem áudio nem grade musical oficial. Script separado em `scripts/tempos-provisorios.py`; saída ignorada `motor/tempos-pt.json`. Não importa nem altera `tempos2.py`, não produz voz, não monta música e não serve à mixagem/entrega final. As capturas e relatórios ficam somente em `motor/cache/`.
+
+
+**Conferência D1 inicial:** a captura com escala 1,20 mediu aparelho de 902,40 px, y=3,80 até y=906,20 nas três cenas, invadindo 16,20 px da faixa reservada (y=890). Aplicada escala **1,10**, centro visual y=430: altura medida 827,20 px (aproximadamente 77% do quadro), aparelho inteiro e legenda livre. É a redução prevista em §14; a referência “~90%” cede à faixa da legenda. Escala 1,10 aprovada pelo Fabrício em 26/10/2026. Evidência local: `motor/cache/qa-v5/limites-d1-1.20.json`.
+
+
+**Resultado do ensaio:** 14 cenas, 28 frases estimadas, 43 eventos visuais. A régua provisória soma 107,4196 s (não atende nem pretende substituir a duração oficial de T5). `NOCAP` = v01, v13 e v14, conforme `legenda_queimada` do rascunho. 42 quadros padrão, estados adicionais por frase e buscas fora de ordem conferidos em Chromium; sem erros. Nos 328 instantes amostrados dos mockups, topo mínimo y=16,396 e base máxima y=843,604, com lista de passos separada do aparelho. O zoom volta a 1 antes de cada corte.
+
+A varredura original `sobreposicoes.py pt` a cada 1/15 s encontrou **13 pares geométricos esperados, zero pares de texto**: cursor tocando botões/aparelho; traços do ícone de loja e do logo; mapa sob seus marcadores/círculo; círculo nascendo do ponto. Não foram adicionados filtros ao detector. Detalhes, reprodução e caminhos das capturas em `docs/QA-CENAS-v5.md`. A duração real ainda depende da voz e da régua oficial. Rodapé da v12 sem citar arquivo do repositório (só "Dados · CNPJs ativos no DF; IBGE 2024."), aprovado pelo Fabrício em 26/10/2026.
