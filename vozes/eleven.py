@@ -7,29 +7,30 @@
   python3 eleven.py saldo                caracteres usados no mês
 
 Chave: lida de ELEVENLABS_API_KEY ou de ~/.config/elevenlabs/chave. Nunca é impressa nem gravada aqui.
-Ajustes por variável de ambiente: VOZ (padrão: Fernanda), MODELO, VEL (0.7 a 1.2), ESTAB (0.35), SIM, ESTILO (0.35), SEED (1).
+Ajustes por variável de ambiente: VOZ (padrão: Ana Dias), MODELO, VEL (1.0), ESTAB (0.55), SIM (0.75), ESTILO (0.10), SEED (1).
+Baseline A9: pt-BR neutro, formal, editorial/jornalístico, sem sotaque regional.
 No fluxo legado, cada frase leva as 2 falas anteriores e a seguinte como contexto.
 Scribe é pista: divergência exige revisão; não regenerar em loop para satisfazer o ASR.
 Os comandos por frase são legados. Para a nova produção, PLAYBOOK A1–A7:
 uma tomada por bloco; legenda usa timestamps sem cortar a voz.
 """
-import hashlib, json, os, re, subprocess, sys, unicodedata, urllib.request, urllib.error, wave
+import hashlib, json, os, re, subprocess, sys, urllib.request, urllib.error, wave
 try:
-    from .manifesto import frases, frases_do_roteiro, guardar_tomada
+    from .manifesto import frases, frases_do_roteiro, guardar_tomada, normal, extenso
 except ImportError:
-    from manifesto import frases, frases_do_roteiro, guardar_tomada
+    from manifesto import frases, frases_do_roteiro, guardar_tomada, normal, extenso
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
 ROTEIRO = AQUI.parent / "roteiro.json"
 SAIDA = AQUI / "frases/pt"
 API = "https://api.elevenlabs.io"
-VOZ = os.environ.get("VOZ", "7iqXtOF3wl3pomwXFY7G")  # Fernanda (aprovada pelo Cauê em 26/10/2026)
+VOZ = os.environ.get("VOZ", "MZxV5lN3cv7hi1376O0m")  # Ana Dias, aprovada pelo Fabrício em 26/10/2026 (A9)
 MODELO = os.environ.get("MODELO", "eleven_multilingual_v2")
 CONFIG = {
-    "stability": float(os.environ.get("ESTAB", 0.35)),
+    "stability": float(os.environ.get("ESTAB", 0.55)),
     "similarity_boost": float(os.environ.get("SIM", 0.75)),
-    "style": float(os.environ.get("ESTILO", 0.35)),
+    "style": float(os.environ.get("ESTILO", 0.10)),
     "use_speaker_boost": True,
     "speed": float(os.environ.get("VEL", 1.0)),
 }
@@ -133,6 +134,8 @@ def gerar_bloco(bloco):
     textos = [' '.join(cenas[c] for c in b['cenas']) for b in blocos]
     if any(not t for t in textos):
         raise ValueError('Bloco sem fala')
+    if any(':' in t for t in textos):
+        raise ValueError('A8: dois-pontos na fala; geração bloqueada antes da rede')
     i = ids.index(bloco)
     contexto = {'previous_text': textos[i - 1] if i else '',
                 'next_text': textos[i + 1] if i + 1 < len(textos) else ''}
@@ -151,6 +154,7 @@ def gerar_bloco(bloco):
             'sha256': hashlib.sha256(wav.read_bytes()).hexdigest(),
             'roteiro_sha256': hashlib.sha256(roteiro_bytes).hexdigest(),
             'duracao': len(pcm) / 48000, 'aprovada': False,
+            'caracteres_texto': len(textos[i]),
             'aprovacao_ouvido': None, 'estado': 'scribe_pendente'}
     def gravar():
         wav.with_suffix('.json').write_text(json.dumps(meta, ensure_ascii=False, indent=2) + '\n')
@@ -159,6 +163,8 @@ def gerar_bloco(bloco):
     resposta = json.loads(chamar('/v1/speech-to-text', multipart=multipart(
         {'model_id': 'scribe_v2', 'language_code': 'por', 'timestamps_granularity': 'word'}, wav)))
     (raiz / 'scribe.json').write_text(json.dumps(resposta, ensure_ascii=False, indent=2) + '\n')
+    meta.update(resposta_scribe='scribe.json',
+                scribe_sha256=hashlib.sha256((raiz / 'scribe.json').read_bytes()).hexdigest())
     palavras = [w for w in resposta.get('words', []) if w.get('type') == 'word']
     validas = bool(palavras) and all(0 <= w['start'] < w['end'] <= meta['duracao']
                                    for w in palavras)
@@ -173,39 +179,6 @@ def gerar_bloco(bloco):
         raise ValueError('Scribe sem tempos válidos; tomada preservada e bloqueada')
     print(f'Bloco {bloco}: {meta["duracao"]:.3f} s; aguardando escuta; {wav}')
     return wav
-
-
-UNID = "zero um dois três quatro cinco seis sete oito nove dez onze doze treze quatorze quinze dezesseis dezessete dezoito dezenove".split()
-DEZ = "_ _ vinte trinta quarenta cinquenta sessenta setenta oitenta noventa".split()
-CENT = "_ cento duzentos trezentos quatrocentos quinhentos seiscentos setecentos oitocentos novecentos".split()
-
-
-def extenso(n):
-    """0 a 999.999, só para comparar o que o Scribe escreve em algarismos com o texto da fala."""
-    if n >= 1000:
-        m, r = divmod(n, 1000)
-        return ("mil" if m == 1 else extenso(m) + " mil") + (" e " + extenso(r) if r and (r < 100 or r % 100 == 0) else " " + extenso(r) if r else "")
-    if n == 100:
-        return "cem"
-    if n >= 100:
-        c, r = divmod(n, 100)
-        return CENT[c] + (" e " + extenso(r) if r else "")
-    if n >= 20:
-        d, u = divmod(n, 10)
-        return DEZ[d] + (" e " + UNID[u] if u else "")
-    return UNID[n]
-
-
-def normal(t):
-    """Põe fala e transcrição na mesma forma: sem acento, números por extenso, "19h" = dezenove horas, 'Freela'=Frila, 'pra'=para."""
-    t = re.sub(r"(\d+)\s*%", lambda m: m.group(1) + " por cento", t.lower())
-    t = re.sub(r"(\d+)\s*h\b", r"\1 horas", t)
-    t = re.sub(r"\d+", lambda m: extenso(int(m.group())), t)
-    t = t.replace("km", "quilômetros").replace(" m ", " metros ")
-    t = unicodedata.normalize("NFD", t)
-    t = "".join(ch for ch in t if unicodedata.category(ch) != "Mn")
-    t = t.replace("freela", "frila").replace("e-staff", "estaff").replace("da staff", "da estaff")
-    return [("para" if w == "pra" else w) for w in re.findall(r"[a-z0-9]+", t)]
 
 
 def conferir(filtro):

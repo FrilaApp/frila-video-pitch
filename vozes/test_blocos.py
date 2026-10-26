@@ -9,6 +9,14 @@ from vozes import eleven
 
 
 class Blocos(unittest.TestCase):
+    def test_baseline_aprovada_ana_dias(self):
+        self.assertEqual(eleven.VOZ, 'MZxV5lN3cv7hi1376O0m')
+        self.assertEqual(eleven.MODELO, 'eleven_multilingual_v2')
+        self.assertEqual(eleven.CONFIG['stability'], .55)
+        self.assertEqual(eleven.CONFIG['similarity_boost'], .75)
+        self.assertEqual(eleven.CONFIG['style'], .10)
+        self.assertEqual(eleven.CONFIG['speed'], 1.)
+
     def roteiro(self):
         return {'audio_blocos_aprovados': True,
                 'blocos': [{'id': 'A', 'cenas': ['um']}, {'id': 'B', 'cenas': ['dois']}],
@@ -21,6 +29,15 @@ class Blocos(unittest.TestCase):
             p = Path(d) / 'roteiro.json'; p.write_text('{"cenas": []}')
             with patch.object(eleven, 'ROTEIRO', p), patch.object(eleven, 'chamar', side_effect=AssertionError('rede')):
                 with self.assertRaisesRegex(ValueError, 'aprovad'):
+                    eleven.gerar_bloco('A')
+
+    def test_dois_pontos_na_fala_bloqueia_antes_da_rede(self):
+        with tempfile.TemporaryDirectory() as d:
+            p = Path(d) / 'roteiro.json'; r = self.roteiro()
+            r['cenas'][0]['pt']['fala'] = 'Uma: frase.'
+            p.write_text(json.dumps(r))
+            with patch.object(eleven, 'ROTEIRO', p), patch.object(eleven, 'chamar', side_effect=AssertionError('rede')):
+                with self.assertRaisesRegex(ValueError, 'dois-pontos'):
                     eleven.gerar_bloco('A')
 
     def test_uma_tomada_continua_contexto_timestamps_e_imutabilidade(self):

@@ -1,6 +1,6 @@
 # Plano de áudio — Frila v5, PT-BR
 
-**Estado atual (26/10/2026): v5 de 108 s reprovada. Base: v4 de 76,7 s, nota 8/10 do Fabrício. Roteiro novo de ~80 s pendente; nenhuma geração real autorizada. PLAYBOOK A1–A7 e §I abaixo substituem as orientações históricas de geração/edição por frase em D1–D3. As seções anteriores permanecem como histórico da T4.**
+**Estado atual (26/10/2026): roteiro enxuto e voz Ana Dias aprovados pelo Fabrício; autorizada uma geração real apenas do Bloco A. Base visual: v4 de 76,7 s, nota 8/10. PLAYBOOK A1–A9 e §J substituem as orientações históricas de geração/edição por frase e a baseline Fernanda. §§A–I preservam o histórico das tarefas anteriores.**
 
 Prioridade: preservar a frase inteira, manter a voz inteligível e permitir ajustes independentes de voz, música e efeitos. A narrativa de referência é `docs/historico/NARRATIVA-v5-aprovada.md`; este plano não altera texto, imagem, voz escolhida ou trilha.
 
@@ -658,3 +658,173 @@ Pendências: confirmar/refutar candidatos de v5 de ouvido; obter Scribe/rótulos
 da v4 para calibrar recuperação cega; revisão audiovisual quando existir bloco
 aprovado. Não há geração real, mix novo, render, aprovação de som ou aprovação
 do roteiro nesta entrega.
+
+## J. Tarefa 2 — Ana Dias, A8 determinístico e piloto real do Bloco A
+
+### J1. Decisão antes do código
+
+**Informado e autorizado pelo Fabrício/Maestro em 26/10/2026:** opção C,
+Ana Dias (`MZxV5lN3cv7hi1376O0m`), `eleven_multilingual_v2`, estabilidade
+0,55, similaridade 0,75, estilo 0,10, velocidade 1,0, seed 1, contexto vizinho.
+Direção A9: português do Brasil neutro, formal, editorial/jornalístico, sem
+sotaque regional. Voz/parâmetros não são substituídos para satisfazer o ASR.
+`use_speaker_boost: true` é preservado do cliente existente e registrado.
+
+Os PRs #6, #7 e #8 entraram em main; por orientação posterior do Maestro,
+esta tarefa continua em `feat/bloco-a`, criado de main `7b6abd2`, no worktree
+`fvp-audio-blocos`. Isso substitui a entrega no branch antigo. O rebase sobre
+`docs/voz-editorial` foi feito antes desse aviso; nenhuma alteração nova foi
+transportada manualmente. Roteiro/PLAYBOOK integrados são a fonte vigente.
+
+**Medido aqui:** Bloco A aprovado tem 299 caracteres no texto enviado,
+incluindo espaços/pontuação, quatro cenas e seis frases. O contexto seguinte
+é o Bloco B inteiro, em `next_text`; `previous_text` é vazio. Nenhum contexto
+é inserido na fala. Não editar o texto para aproximá-lo de “330 caracteres”.
+Chave: ler `~/.config/elevenlabs/chave` sem imprimi-la. Uma única requisição
+TTS para A; uma conferência Scribe do bruto inteiro. Nenhuma geração B/C/D,
+nem repetição automática de TTS. Gravar consumo/contagem de caracteres,
+receita, hashes e resultado; preservar a tomada mesmo se falhar o Scribe/A8.
+
+### J2. A8: limite, alinhamento e decisão
+
+- Dois-pontos em `fala` bloqueiam antes de gerar; dois-pontos em `legenda`
+  continuam permitidos. O detector também relata essa violação ao auditar
+  texto/áudio já existentes.
+- Usar as frases do **texto de origem**, separadas por `. ? !`; não inferir
+  fronteiras pela pontuação do Scribe, que em v04 substituiu dois-pontos por
+  ponto. Alinhar palavras normalizadas (mesmas equivalências do cliente) às
+  frases e conservar timestamps Scribe. Divergência/ambiguidade entra como
+  pendência, nunca recebe aprovação silenciosa.
+- Interpretação explícita do “~0,5 s”: **0,500 s inclusivo**. O caso obrigatório
+  de 62,090208 s mede exatamente 0,500 s no cache; comparar com tolerância
+  numérica de 1 ns, sem alterar os tempos. Pausas entre frases não são A8.
+- A8 recebe texto de `--falas JSON` (roteiro, manifesto de frases ou metadata
+  da tomada); emite todas as pausas classificadas, violações de texto/pausa,
+  palavras e WAV ±2 s para cada pausa reprovada, mesmo se `emendas: []`.
+- Conforme PLAYBOOK §5b, suspeitas cegas sem calibração **informam**; A8 e
+  frase atravessando emenda declarada **bloqueiam**. Distinguir `bloqueado`,
+  pendências e escuta; nenhum campo libera aprovação artística do Fabrício.
+
+### J3. Sequência de validação e geração
+
+Documentar → testes vermelhos (baseline Ana Dias; dois-pontos antes da rede;
+fronteira de frase do texto sobre pontuação ASR; pausa 0,500 s inclusive;
+pausa entre frases permitida; falha sem emenda física) → implementar →
+testes verdes → calibrar A8 com v5/Scribe e fala original, procurando os quatro
+tempos 54,0 / 62,1 / 77,8 / 79,5 s → gerar A uma vez → guardar Scribe, palavras
+e pausas → executar auditoria no bruto com manifesto sem emendas internas →
+registrar medidas e limites aqui → commit local sem push → `maestri ask`.
+
+A ausência de vídeo novo do Bloco A e de acesso perceptivo não será tratada
+como escuta executada. A8 passado é resultado objetivo; A9 editorial e a
+naturalidade exigem a escuta do Fabrício. Não aprovar som por gate técnico.
+
+### J4. Resultados medidos — geração real e calibração
+
+**Calibração A8 na v5 reprovada, com fala original do manifesto e Scribe em
+cache:** recuperou **4/4 casos obrigatórios** dentro de ±120 ms dos tempos
+informados. Não é resultado da detecção cega. Há um quinto caso:
+
+| Centro (s) | Pausa Scribe (s) | Palavras ao redor | Resultado |
+|---:|---:|---|---|
+| 21,804458 | 0,560 | “fica.” [21,244–21,524] → “Nos” [22,084–22,224] | A8; texto original tem dois-pontos, não ponto |
+| 54,020833 | 0,620 | “pública:” [53,331–53,711] → “quantas” [54,331–54,751] | A8; caso obrigatório |
+| 62,090208 | 0,500 | “avaliam:” [61,340–61,840] → “chamaria” [62,340–62,760] | A8; limite inclusivo, caso obrigatório |
+| 77,751833 | 0,920 | “piloto:” [76,832–77,292] → “oito” [78,212–78,412] | A8; caso obrigatório |
+| 79,541833 | 0,860 | “semanas,” [78,512–79,112] → “50” [79,972–80,212] | A8; caso obrigatório |
+
+Mais quatro violações textuais de dois-pontos (v04/v08/v09/v11). O alinhamento
+global da v5 é incompleto, como já registrado no Scribe; os cinco intervalos
+acima estão alinhados às respectivas frases de origem. Palavra de duração
+zero permanece como pendência. A v5 retorna bloqueio objetivo e código 2.
+Os trechos e palavras estão em `motor/cache/emendas/a8-v5/`.
+**Informado pelo Fabrício no PLAYBOOK A8:** a escuta confirmou que as pausas
+internas após dois-pontos causaram a percepção dos “3 a 5 cortes”. Essa decisão
+substitui a hipótese histórica de §§I4–I5; não é diagnóstico de corte físico.
+
+**Bloco A real:** uma requisição TTS, uma Scribe, sem regeneração; parâmetros
+exatos de J1, seed 1, contexto do B (somente contexto). WAV PCM mono, 24 kHz,
+16 bits, **549.477 amostras / 22,894875 s**. Nenhuma amostra aparada, nenhum
+silêncio/fade inserido; nenhuma geração B/C/D. Fonte:
+
+`vozes/tomadas/blocos/pt/A/b92c749be0314efea49558e467da3eb8/bruto.wav`
+
+SHA-256: `056f3ac2572220ed2b10160548dc276f4ff668fe7b84584519d5257f7e65b596`.
+`bruto.json` contém receita e hash da resposta `scribe.json`; os três arquivos
+permanecem na tomada, sem alteração após geração. Inventário de hashes em
+`motor/cache/bloco-a/hashes-tomada.json`.
+
+Scribe: **46 entradas de palavra**, timestamps válidos; texto confere após as
+equivalências já existentes (19h/dezenove horas, 10/dez, 1/um, 70%/setenta por
+cento). Não houve substituição para esconder divergência. Alinhamento A8
+completo nas seis frases; **zero dois-pontos, zero pausas internas ≥0,500 s**.
+Todas as 40 pausas internas foram registradas. Maiores:
+
+| Intervalo (s) | Pausa (s) | Palavras |
+|---|---:|---|
+| 5,000 → 5,480 | 0,480 | Abrasel → nove |
+| 8,820 → 9,300 | 0,480 | restaurantes → acham |
+| 18,500 → 18,900 | 0,400 | restaurantes → a |
+| 0,360 → 0,740 | 0,380 | Hoje → 19h |
+
+| Frase | Início → fim Scribe (s) |
+|---|---|
+| v01-gancho-1 | 0,060 → 1,740 |
+| v01-gancho-2 | 2,120 → 3,300 |
+| v02-dor1-1 | 3,860 → 10,660 |
+| v03-dor2-1 | 11,320 → 14,840 |
+| v03-dor2-2 | 15,500 → 16,680 |
+| v04-dor3-1 | 17,200 → 22,260 |
+
+As cinco pausas **entre frases** são 0,380 / 0,560 / 0,660 / 0,660 / 0,520 s;
+não são falha A8. Timestamps Scribe são pista temporal, não medição exata de
+fonema/silêncio. Folgas estimadas na tomada: 60 ms antes da primeira palavra
+e 634,875 ms depois da última; não foram criadas por edição.
+
+Manifesto do bruto declara **zero emendas internas**: toda a fala vem de uma
+tomada TTS contínua. Auditoria com manifesto: `bloqueado: false`, A8
+`sem_falha`, `apto_para_escuta: true`, `aprovado: false`, escuta pendente.
+Varredura cega adicional produziu **26 pistas informativas**, incluindo nove
+valas dentro de palavras; nenhuma é prova de corte, nem bloqueia o bruto
+contínuo sob §5b. Não removi pausas/sílabas para satisfazer a heurística.
+
+**Consumo medido no serviço:** 299 caracteres enviados em `text`. O histórico
+TTS `fKYWQFm3rODJ2NwrcphW` informa `character_count_change_from: 19775` e
+`character_count_change_to: 19895`: **débito de 120 no contador da chamada**.
+O contador global posterior passou a 19902 (variação 127); não atribuí os sete
+restantes sem evidência específica. A consulta imediatamente após geração
+ainda mostrava 19775; foi conferida de novo e confrontada com o histórico da
+voz/texto exatos. Não inferir custo pelo tamanho do contexto ou por tarifa.
+Registros: `motor/cache/bloco-a/producao.json` e `consumo.json`, sem chave.
+
+### J5. Reprodução e handoff
+
+```sh
+# Auditorias offline; não repetir a geração real desta autorização.
+.venv/bin/python -m unittest motor.test_emendas vozes.test_blocos
+.venv/bin/python -m unittest discover -s tests
+.venv/bin/python motor/analisar_emendas.py \
+  vozes/tomadas/blocos/pt/A/b92c749be0314efea49558e467da3eb8/bruto.wav \
+  --scribe vozes/tomadas/blocos/pt/A/b92c749be0314efea49558e467da3eb8/bruto.json \
+  --manifesto motor/cache/bloco-a/manifesto.json \
+  --falas motor/cache/bloco-a/manifesto.json --saida motor/cache/bloco-a/auditoria
+```
+
+27 testes de áudio/blocos e 13 regressões existentes passaram (40 no total).
+Cobrem A8 no limite, frase definida pelo roteiro, quatro referências reais,
+ausência/divergência de Scribe, A8 sem emenda física, suspeita cega informativa,
+baseline Ana Dias e dois-pontos antes da rede. Normalização foi compartilhada
+em `vozes/manifesto.py`, sem duplicá-la nem importar o cliente de API no detector.
+Saída 2 agora significa **bloqueio objetivo**; saída 0 pode conter pistas e
+pendências. Ler `a8.estado`, `apto_para_escuta` e o resumo; somente o Fabrício
+aprova. `aprovado` global permanece falso até essa decisão.
+
+Pacote local ignorado pelo Git: `motor/cache/bloco-a/RELATORIO.md` (WAV, 46
+palavras, todas as pausas e pistas com trechos ±2 s), `manifesto.json`,
+`auditoria/emendas.json`, `varredura-cega/emendas.json`, consumo e hashes.
+Os 100 trechos exportados nesta conferência (26 do A e 74 da v5, incluindo
+cinco A8) foram comparados amostra por amostra aos originais decodificados;
+hashes íntegros e três arquivos da tomada A sem alteração, registrados em
+`motor/cache/bloco-a/verificacao-exportacao.json`.
+Nenhum vídeo do bloco foi entregue para revisão audiovisual nesta tarefa;
+escuta perceptiva e avaliação editorial/A9 continuam pendentes do Fabrício.
