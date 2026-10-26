@@ -2,9 +2,9 @@
 
 **Para que serve.** Ser a fonte única de verdade do design do vídeo: tokens, componentes, movimento, som, ritmo e regras. Toda mudança de design da v5 começa aqui e só depois vai para o `motor/filme.html`.
 
-**Status (26/10/2026).** As seções 1–13 documentam a v4 de referência. A montagem visual da v5 (14 cenas) foi aplicada no motor e conferida com régua **provisória, sem voz**; decisões e medidas em §19. D1 em escala 1,10 aprovado pelo Fabrício em 26/10/2026. Texto e régua oficial continuam pendentes.
+**Status (26/10/2026).** Retomada a partir da v4 após reprovação da v5 de 108 s. A bíblia medida, a proposta do aparelho e a calibração D2 estão em §§20–23. §§14–19 registram o ensaio anterior rejeitado; não são a base da retomada. Roteiro ~80 s e aprovação das propostas ainda pendentes. Nenhuma nova cena montada nesta tarefa.
 
-**Como foi levantado.** Lidos: `motor/filme.html` (CSS, tokens, textos, cenas, HUD), `motor/tempos2.py`, `motor/audio2.py`, `docs/v4/STORYBOARD.md`, `docs/v4/LEIA-ME.md`, `assets/cores.json`, e a revisão de narrativa. **Não verificado:** posições e tamanhos de cada elemento por captura (só os que o código declara); níveis de volume ouvindo o MP4. Onde o texto diz "Inferência", é leitura minha.
+**Levantamento original (histórico; a medição desta tarefa está no §20).** Lidos: `motor/filme.html` (CSS, tokens, textos, cenas, HUD), `motor/tempos2.py`, `motor/audio2.py`, `docs/v4/STORYBOARD.md`, `docs/v4/LEIA-ME.md`, `assets/cores.json`, e a revisão de narrativa. **Não verificado:** posições e tamanhos de cada elemento por captura (só os que o código declara); níveis de volume ouvindo o MP4. Onde o texto diz "Inferência", é leitura minha.
 
 Fontes dos tokens de marca: brand book v1 (22/10/2026), combinação C. Não confundir com o `DESIGN.md` de `frila-apresentação/Apresentação 1`, que é de outro deck e usa outra paleta (`#f6f4ef`, `#ff4d17`).
 
@@ -356,3 +356,160 @@ A régua de ensaio é explicitamente **PROVISÓRIA**, estimada a 2,3 palavras/s 
 **Resultado do ensaio:** 14 cenas, 28 frases estimadas, 43 eventos visuais. A régua provisória soma 107,4196 s (não atende nem pretende substituir a duração oficial de T5). `NOCAP` = v01, v13 e v14, conforme `legenda_queimada` do rascunho. 42 quadros padrão, estados adicionais por frase e buscas fora de ordem conferidos em Chromium; sem erros. Nos 328 instantes amostrados dos mockups, topo mínimo y=16,396 e base máxima y=843,604, com lista de passos separada do aparelho. O zoom volta a 1 antes de cada corte.
 
 A varredura original `sobreposicoes.py pt` a cada 1/15 s encontrou **13 pares geométricos esperados, zero pares de texto**: cursor tocando botões/aparelho; traços do ícone de loja e do logo; mapa sob seus marcadores/círculo; círculo nascendo do ponto. Não foram adicionados filtros ao detector. Detalhes, reprodução e caminhos das capturas em `docs/QA-CENAS-v5.md`. A duração real ainda depende da voz e da régua oficial. Rodapé da v12 sem citar arquivo do repositório (só "Dados · CNPJs ativos no DF; IBGE 2024."), aprovado pelo Fabrício em 26/10/2026.
+
+## 20. Retomada da v4 — bíblia de motion medida (26/10/2026)
+
+**Esta seção rege a retomada.** A v5 de 108 s foi reprovada pelo Fabrício. §§14, 16b e 19 são histórico do ensaio rejeitado, não autorização para usá-lo como base. O roteiro será enxugado pelo Maestro para ~80 s e aprovado pelo Fabrício. Nenhuma nova cena, voz ou régua definitiva entra nesta tarefa. Entrega: documentação, propostas estáticas e instrumento de revisão; sem push.
+
+### Fontes e distinção entre dado e julgamento
+
+Fonte executável: `git show 4efa75a:motor/filme.html`, preservada apenas em cache para a inspeção. Régua e eventos: `docs/v4/tempos-pt.json`, `docs/v4/eventos-pt.json`; descrição: `docs/v4/STORYBOARD.md`. Referência visual: `/Users/fabriciotosta/Downloads/frila-pitch-pt.mp4`, **76,733333 s, 1920×1080, 60 fps**, medidos com ffprobe nesta tarefa. V5 somente para calibração: `../fvp-tempos/pt/frila-pitch-pt.mp4`, **108,200 s de imagem / 108,204 s de contêiner**. A nota 8/10 é avaliação do Fabrício, não resultado do detector.
+
+### Curvas reais, sem substituir por curvas genéricas
+
+A função `spr(t,p)` da fonte é a resposta ao degrau de segunda ordem: `1 − exp(−ζωt)·[cos(ωd t)+(ζω/ωd)sin(ωd t)]`, `ωd=ω√(1−ζ²)`, zero para t≤0. `val` soma a resposta de cada mudança de alvo à posição anterior: a velocidade não é reiniciada a cada cena. Presets lidos em `PR`:
+
+| Preset | ω | ζ | Onde se lê o uso |
+|---|---:|---:|---|
+| ui | 18 | 0,86 | texto, botão, indicador dos passos |
+| move | 11 | 0,82 | ponto, mudança de forma, cursor |
+| soft | 7 | 0,90 | chip, arrasto, caminhada, expansão escura |
+| cam | 5,5 | 0,95 | zoom 2,6× do mapa, reposicionamento amplo |
+| pop | 16 | 0,76 | rostos e confirmações |
+| count | 5,2 | 0,985 | odômetros, separados da velocidade dos títulos |
+| slow | 4,2 | 0,95 | preset declarado; não implica uso em toda cena |
+| snap | 34 | 0,90 | troca de cor e desaparecimento deliberado do ponto |
+
+A expressão “sem quique” nos docs significa amortecimento alto, não sobressinal matematicamente zero: ζ<1 permite sobressinal. Não aumentar a elasticidade. Há também `eo(u)=1−(1−u)³` e `eio(u)=4u³ / 1−(−2u+2)³/2`, com `u` limitado a [0,1]. `fade` usa `eo`; não é CSS ease. `g(t,div)` arredonda para `P/div`, com **P=0,491835 s** na régua v4.
+
+Entradas reais: `io`: opacidade 0→1 em **0,20 s**, posição sobe **26 px** por `ui`; saída em **0,22 s**, sem reversão da trajetória. `wio`: fade **0,16 s**, sobe **40 px** (46 no gancho, 50 no contraste), palavras defasadas conforme a fala; saída defasada **0,03 s/palavra**, fade **0,20 s**. Cursor: compressão para **0,84**, retorno acionado após **0,09 s**. Isso é coreografia de filme; limites de duração para UI interativa não substituem estes valores.
+
+### Régua e respiração por cena
+
+Tempos abaixo são absolutos da régua v4; gatilhos relativos vêm das funções `planC*`/`runC*`. `f.ini` e `f.fim` referem-se à fala arquivada, não ao roteiro atual.
+
+| Cena | Janela (s) | Coreografia lida na fonte; saída / ligação |
+|---|---|---|
+| c01 | 0–3,4428 | pílula: cor 0,24; forma 0,30; desce em 0,95; encolhe em 2,05; vai à coluna do ? em 2,10 e sobe em 2,34, sem cruzar palavras; texto sai end−0,30 |
+| c02 | 3,4428–7,3775 | ponto ao radar ini+0,02; anéis a cada P/2; rostos só após `g(ini+0,1)+P+0,45`, a cada P/4; escolha em 60% da fala; ponto parte end−0,42; anéis apagam sem encolher sobre rostos |
+| c03 | 7,3775–12,2959 | contador `g(f.ini+0,45,2)` com count; subtítulo 1 s depois; pessoas a cada P/8, esvaziamentos a cada P/4; texto sai end−0,22 |
+| c04 | 12,2959–17,7061 | preenchimento `g(f.ini+0,25,4)` a cada P/4; subtítulo em 42% da fala; fileira converge inteira, desaparece antes de encostar; ponto continua; saída end−0,20 |
+| c05 | 17,7061–22,6244 | cartão esquerdo ini+0,02, direito em 50% da fala, chip em 60%, pouso +0,62; texto sai end−0,40; ponto se move end−0,50, vira grafite end−0,46 e chassi end−0,38 |
+| c06 | 22,6244–29,5101 | lista `g(f1.ini+0,05,2)` com P/4 entre linhas; cursor antes da segunda fala; função A−0,32, arrasto A+0,16 até A+0,82, publicar +0,38 após arrasto, confirmação +0,52 após publicar; bloqueio e aviso seguem a terceira fala |
+| c07 | 29,5101–35,4121 | **mesmo telefone e lista**, candidatos ini−0,05; escolha a 62% da primeira fala +0,1; check-in segunda fala−0,30, caminhada +0,35; Sim até end−1; lista sai end−0,70, telefone encolhe end−0,62, vira laranja end−0,42 e ponto do mapa end−0,40 |
+| c08 | 35,4121–43,2815 | mapa já começa a desenhar ini−0,55 durante 0,90 s; raio15 `g(f1.ini+0,15,2)`; câmera 2,6× em `g(f2.ini−0,25,2)` com cam; raio200 +0,55, caminhada +0,60; saída end−0,30 |
+| c09 | 43,2815–46,2325 | ponto grafite ini−0,12, expande 3000×3000 em ini−0,04 com soft; tema ini+0,06; palavras; saída end−0,30. STORYBOARD chama de corte seco, mas a fonte faz expansão: preservar a evidência, não presumir descontinuidade |
+| c10 | 46,2325–53,1182 | janela entra ini−0,15; dois slots numéricos usam count e defasagem 0,09 s/dígito; saída end−0,25 |
+| c11 | 53,1182–57,0529 | grade nasce em onda radial, alguns pontos crescem após 1 s; frase em duas partes; saída end−0,28 |
+| c12 | 57,0529–61,9712 | barras em 25% / 60% da fala, segmentos P/8; cursor escolhe; saída end−0,45; ponto encolhe end−0,42 e parte end−0,20 |
+| c13 | 61,9712–66,3977 | nós em 22% / 62% da fala; ponto entra no check, zera tamanho A−0,02, muda posição invisível A+0,20, reaparece B−0,55; linhas guardam 12 px de folga; saída end−0,42 |
+| c14 | 66,3977–69,3487 | moeda cresce ini−0,12; giro ini+0,20 com soft; rótulos em 45% da fala; encolhe 0,30 s antes de c16; saída end−0,20 |
+| c16 | 69,3487–76,7262 | letras defasadas 0,13 s, traço em 0,62 s e fade em 0,30 s; pouso f1.ini+0,05; saída total−1,70, letras a cada 0,08 s saem inteiras em 0,50 s; ponto some depois (+0,75), deixando papel limpo |
+
+### Continuidade e regras que preservam o piso
+
+O ponto é **um único DOM `#dot`**, com trilhas globais de posição, tamanho, raio e cor: ele não nasce de novo no corte. c03→c04 conserva a fileira; c05→c06 conserva a transformação do ponto em chassi; c06→c07 conserva chassi, tela, ilha e lista (`fluxo` único); c07→c08 conserva o ponto no local (948,575); c08→c09 amplia o mesmo ponto; c09–c11 conservam o escuro; c12 devolve ao claro; c13 esconde o ponto intencionalmente dentro do check; c14→c16 conserva o ponto até o i. Nem todo ponto laranja visível é o `#dot`: mapa e grade têm marcadores próprios.
+
+Cada raiz fica habilitada de ini−1,0 a end+0,9; isso permite sobreposição temporal das entradas/saídas, mas não prova continuidade visual por si só. A câmera é global; HUD fica fora dela. Não recriar o estado de elementos persistentes no início de um bloco. Na produção futura, reservar ≥12 quadros nas emendas (D3), medidos na taxa de saída, e registrar qualquer corte seco novo.
+
+Regras verificáveis da fonte: textos entram antes de assentarem; ação tem preparação, execução e confirmação; contador lento não herda ui; rostos só entram depois dos anéis; linhas deixam vão para o ponto; fileira converge sem empilhar; a saída das letras opera no grupo completo. Julgamento editorial: essas relações tornam o percurso compreensível e dão hierarquia; não atribuir a nota 8/10 a uma fórmula automática. Pausas longas devem ser vistas no contexto, não apagadas só porque os pixels pararam.
+
+## 21. Proposta de exibição do aparelho — somente estudo para aprovação
+
+**Problema medido na v4:** chassi 380×780, centro (660,480), caixa (470,90)–(850,870): **72,22%** da altura. Tela 352×752 em (484,104). Lista/realce ocupa x≈992–1792 (800 px); dados de candidato têm 19 px, campos principais 24 px e cabeçalho do aviso 14 px. Medição da fonte e conferência no MP4 a 25,400 s. c05 é a transformação; c06–c07 têm tela; c08 é mapa, não telefone.
+
+**Tratamento recomendado [H], três estados do mesmo passo, sem cena nova:**
+
+1. **Apresentar:** chassi a **1,10× = 418×858 px**, centro (980,454), topo25/base883; tela 387,2×827,2. Proporção **79,44%** do quadro. Faixa y≥890 livre. Retirar a lista completa durante o foco; um único passo à esquerda em x260–690, número 01 e título curto herdado. Progresso 01/04 com 4 marcas, em vez de 4 chamadas competindo. Tela e textos continuam os da v4.
+2. **Ler/agir:** aproximar a tela dentro de uma janela fixa **620×820 px em (760,40)**, recortada com cantos do aparelho; conteúdo a **1,65×**. Dados 24→39,6 px, rótulos 15→24,75 px; para o passo de candidatos, 19→31,35 px. Recorte deliberado do contexto superior/inferior conforme o alvo; não prometer aparelho inteiro a essa escala. Cursor, ilha e tela usam a mesma matriz. O estado anterior mostra o corpo completo para manter a identidade de aparelho. Campo de atenção = função/horário.
+3. **Confirmar:** mesma janela e escala, foco vertical acompanha o botão Publicar; contexto residual não disputa com a confirmação. Voltar ao corpo inteiro antes de devolver ao ponto/mapa, preservando os alvos de c07.
+
+**Zoom e parallax [H]:** usar `cam` da v4, sem nova curva. Em 0,6 s a resposta cam chega só a ~86,4% do alvo (não é assentamento completo); reservar **~1,1 s** para chegar perto do repouso, ajustando depois à voz aprovada. Pan de leitura com `soft`. Movimento diferencial horizontal máximo **18 px**: fundo 0,35×, chassi 0,80×, tela 1,00× e cursor 1,00× (cursor precisa continuar tocando o botão); rótulo do passo 0,20×. Tela dentro do recorte, sem mover o cursor independentemente do alvo. Lista completa só reaparece fora do foco se a leitura precisar; não voltar por rotina.
+
+Alternativas consideradas [H]: só ampliar tudo a 1,10× preserva o aparelho inteiro, mas deixa 19 px em 20,9 px (ganho insuficiente); ampliar tudo a 1,65× invade a legenda. O tratamento em dois enquadramentos conserva o objeto e permite ler a ação. Os três PNGs comparativos serão **propostas estáticas**, não evidência de motion aprovado. Arquivos em `motor/cache/revisao-v4-v5/proposta-01.png` a `03.png`, v4 à esquerda, estudo à direita, com o mesmo instante/estado da ação. Não alterar `motor/filme.html` nesta tarefa.
+
+## 22. Especificação da revisão D2 (antes da implementação)
+
+`motor/analisar_video.py VIDEO --tempos REGUA --saida PASTA [--html FONTE] [--contrato JSON]` lê o MP4 real; não gera voz nem monta filme. Dependências do modo raster: ffmpeg/ffprobe, numpy, Pillow e OpenCV; modo fonte: Playwright e Chromium já locais. Ambiente isolado de revisão em cache; não instalar no venv compartilhado.
+
+Entregas: contatos paginados **12 fps por cena**, imagens dos cortes/emendas em **±0,5 s** (incluindo o último/primeiro quadro efetivo), clipes de revisão por cena e por corte; `achados.json` com tempo, intervalo, tipo, evidência e grau de confiança; métricas por cena e parâmetros explícitos. Análise raster a **60 fps** para não esconder flash entre amostras de 12 fps. Resolução reduzida para métricas, frames de evidência saem do vídeo. Pausas sem expectativa declarada são `pausa_a_revisar`, não “travada confirmada”.
+
+Detectores iniciais, iguais nas duas versões: baixa diferença por ≥0,60 s (pausa); diferença de luminância com retorno no quadro seguinte (cintilação); mudança isolada de grande área e/ou deslocamento de features (salto suspeito). Cortes conhecidos são anotados, não descartados. Semântica opcional da fonte: amostrar retângulos de texto com recorte e opacidade herdada, testar interseção entre textos sem relação de ancestralidade; acompanhar `#dot`, tela e câmera. Contrato explícito permite exigir presença/movimento numa janela e detectar nascimento/sumiço fora dela. Sem contrato, registrar lacuna de cobertura sem inventar horário “correto”. DOM é evidência auxiliar: duração compatível e fonte registrada, mas não se presume identidade entre fonte e MP4.
+
+Validação: testes com vídeo/estados controlados que incluam pausa intencional, travada em janela de movimento, flash, salto, ausência/presença indevida e colisão de texto; calibração nos dois MP4 reais com os mesmos limiares. Não ajustar limiar para fazer a v4 passar. A v4 deve ter poucos **defeitos confirmados**, mas suas pausas e transformações continuam no relatório. A ferramenta não mede qualidade artística, não detecta emendas de voz e não aprova o vídeo. Resultado comparativo e limites reais entram aqui após a execução.
+
+**Contrato para continuidade entre aparelhos (complemento antes do código):** além da presença conservadora dentro de uma cena, a calibração deve exigir o corpo do aparelho atravessando c06→c07 (v4) e v06→v07 (v5). Selector pode reunir as duas instâncias por vírgula; considerar a instância visível de maior opacidade efetiva. `opacidade_min: 0.5` significa exigir pelo menos metade da opacidade no corte, não declarar elemento invisível abaixo disso. A ausência nesse contrato é perda de continuidade/legibilidade, diferente de um sumiço literal. Comparar janela v4 29,25–29,75 s à v5 42,40–42,90 s, segundo D3. O limite deve constar da evidência e não mudar os limiares raster.
+
+## 23. Calibração D2, evidências e entrega — 26/10/2026
+
+**Execução com os mesmos limiares raster nas duas versões.** Relatórios completos em `motor/cache/revisao-v4-v5/v4/achados.json` e `v5/achados.json`; métricas nativas a 60 fps em `metricas.json`; geometria a 12 fps em `geometria.json`. Contratos conservadores e o contrato de continuidade estão em `contrato-v4.json` / `contrato-v5.json` na pasta de revisão. Artefatos não entram no git.
+
+| Medida | V4 de referência | V5 reprovada |
+|---|---:|---:|
+| Janela de imagem medida | 76,733333 s | 108,200000 s |
+| Pausas ≥0,60 s com baixa alteração | 21 intervalos / 27,465 s (~35,8%) | 30 intervalos / 62,299 s (~57,6%) |
+| Saltos suspeitos raster (registros, não episódios) | 4 | 9 |
+| Cintilação global de um quadro | 0 | 0 |
+| Interseção texto↔texto visível na fonte | 0 | 0 |
+| Continuidade do aparelho pelo contrato ≥50% opacidade | nenhuma quebra na janela 29,25–29,75 | quebra amostrada 42,500–42,667 s |
+| Páginas de faixas / frames extraídos | 32 / 926 | 44 / 1303 |
+| Cortes com PNG e clipe de ±0,5 s | 14 | 13 |
+| Clipes integrais de cenas, com margens | 15 | 14 |
+
+**Interpretação, não placar de aprovação:** a v4 fica quase limpa de defeitos objetivos neste escopo. Seus 4 alertas de salto estão em **43,317 / 43,333 / 43,350 / 43,500 s**, todos na expansão deliberada do ponto para o fundo escuro. As 21 pausas são repousos para leitura/voz, não 21 travadas comprovadas. Zero no detector de flash significa só ausência do padrão global A–B–A com os limiares declarados, não ausência de toda cintilação local. “Texto visível” usa clipping, opacidade herdada e teste de oclusão por superfícies opacas; não certifica toda colisão possível.
+
+### Achados por instante e comparação editorial
+
+| Instante | Evidência | Avaliação |
+|---|---|---|
+| v4 27,633–29,233; 30,400–31,400 | aparelho em repouso depois de aviso/escolha | na v4 a ação prepara, acontece e confirma; manter esses respiros |
+| v5 38,633–40,933 | 2,300 s de baixa alteração na cena v06 | mais tempo sustentando o mesmo estado; pista de perda de ritmo, não erro de render |
+| **v5 42,500–42,667**, corte 42,661521 | contrato encontra opacidade do aparelho abaixo de 0,5; em 42,583 há ausência até no limiar de 0,05; PNG do corte mostra apagamento e reapresentação | **quebra de continuidade visível em comparação à v4**. A v4 mantém o mesmo chassi em 29,5101; a v5 tem telefones por cena sob `base(t,s)` com fade de raiz. Não atribuir o sumiço à compressão |
+| v5 45,750–47,217; 47,483–49,033; 49,150–50,133 | v07 soma 4,000 s de baixa alteração (47,1% da cena), contra 1,000 s (16,9%) na c07 v4 | check-in fica sustentado por mais tempo, com pouca evolução visual; a v4 encaminha a avaliação e depois transforma o telefone no ponto |
+| v5 32,400–35,883 | 3,483 s de repouso na virada; v05 soma 5,150 s (77,4%) | revisar coreografia quando o texto estiver aprovado; não esticar o estado |
+| v5 70,933–75,683 | repouso de 4,750 s; v10 soma 7,533 s (83,5%) | prioridade de ritmo para a fase de prova, sem montar bloco agora |
+| v5 79,333–84,167 | repouso de 4,833 s após os contadores | mesma recomendação de revisão, não substituir as molas v4 |
+| v5 11,150–11,183 e 20,150–20,183 | 6 dos 9 alertas de salto estão nas trocas claro/escuro; outros: 0,333, 51,167 e 84,450 | são pistas de mudança/associação de features, não prova de teletransporte. O de 0,333 coincide com entrada da pílula; 51,167 e 84,450 ficam perto de cortes. Não usar a contagem 9×4 como nota de motion |
+
+O `achados.json` da v5 contém **dois registros de sumiço referentes ao mesmo episódio**: contrato de continuidade (42,500–42,667) e estado isolado A–B–A (42,583). Não são duas quebras diferentes. Nenhum nascimento fora da janela foi identificado nos contratos limitados desta calibração; a detecção desse caso foi exercitada nos testes controlados. Não foi fornecido um contrato de movimento obrigatório para cada elemento, portanto os repousos reais não foram promovidos a “travadas”.
+
+**Conferência da fonte auxiliar:** um frame em 55% de cada cena foi comparado ao MP4. MAD em cinza 480×270: v4 **0,835–1,850**, v5 **2,071–2,780** em escala 0–255. Isso apoia o alinhamento, mas não prova identidade ao longo de toda a cena. A perda de continuidade acima também foi conferida nos quadros do MP4, não inferida só do DOM. Não foi feita avaliação de áudio nesta tarefa.
+
+### Onde revisar
+
+- Propostas finais: `motor/cache/revisao-v4-v5/proposta-01.png` (**24,500 s**, corpo inteiro), `proposta-02.png` (**25,400 s**, leitura), `proposta-03.png` (**26,500 s**, confirmação). Cada arquivo tem **3840×1160**, comparação 1920×1080 de cada lado mais cabeçalho; versões `-antes.png` e `-depois.png` também disponíveis. Todos são estados da v4 transformados para estudo; o motor de produção está intacto.
+- Medidas verificadas do estudo: corpo inteiro **418×858 px em (771,25)**; foco com janela **(760,40)–(1380,860)** e tela a 1,65×. Pan do grupo, relativo à janela: **(−777,5; −235)** na leitura e **(−777,5; −580)** na confirmação, evitando cortar palavras/ação. Cursor usa a mesma transformação. Parallax e zoom em movimento continuam **propostos**, não validados pelos PNGs.
+- Comparação dos mesmos instantes relativos de c06/v06 e c07/v07: `comparacao-aparelho-publicar-01.png` a `03.png` e `comparacao-aparelho-escolher-01.png` a `03.png` (24 pares no total). Percentuais de progresso são iguais; cada lado informa seu tempo absoluto, arredondado ao frame real. Narrativas não são idênticas, por isso comparar também preparação/ação/repouso, sem supor que 55% sempre contenha o mesmo gesto.
+- Faixas completas: `v4/faixas/` e `v5/faixas/`, **12 fps**, até 36 imagens/página. `faixas.json` registra o PTS real de cada imagem. A amostragem usa frames existentes, sem a seleção no meio do intervalo feita pelo filtro `fps`.
+- Cortes: `v4/cortes/029.510100.png` / `.mp4` versus `v5/cortes/042.661521.png` / `.mp4`; demais cortes nas mesmas pastas. O manifesto `cortes.json` registra amostras em ±0,5 s e os frames imediatamente antes/depois. `--emendas` permite acrescentar emendas de bloco quando existirem.
+- Vídeos por cena: `v4/clipes/` e `v5/clipes/`, na cadência original e sem áudio, com 0,5 s de margem de cada lado (≥12 frames a 60 fps, salvo extremos do filme). São material de revisão, não o futuro render de blocos.
+
+### Reprodução, testes e limites
+
+Ambiente isolado desta tarefa: `motor/cache/qa-venv` (numpy, Pillow, OpenCV e Playwright); Chromium em `motor/browsers`, ffmpeg/ffprobe no PATH. Não modificado o venv compartilhado. Preparação em outra máquina: criar um venv de revisão e instalar `numpy pillow opencv-python-headless playwright`; apontar `PLAYWRIGHT_BROWSERS_PATH` para o Chromium local. Para a v4, guardar a fonte de `git show 4efa75a:motor/filme.html` em cache e servir os assets da raiz do repo.
+
+```sh
+motor/cache/qa-venv/bin/python -m unittest discover -s motor/tests -v
+motor/cache/qa-venv/bin/python motor/analisar_video.py \
+  /Users/fabriciotosta/Downloads/frila-pitch-pt.mp4 \
+  --tempos docs/v4/tempos-pt.json \
+  --html motor/cache/revisao-v4-v5/filme-v4.html \
+  --contrato motor/cache/revisao-v4-v5/contrato-v4.json \
+  --saida motor/cache/revisao-v4-v5/v4
+motor/cache/qa-venv/bin/python motor/analisar_video.py \
+  /Users/fabriciotosta/dev/video-frila/fvp-tempos/pt/frila-pitch-pt.mp4 \
+  --tempos ../fvp-tempos/motor/tempos-pt.json \
+  --html ../fvp-tempos/motor/filme.html --raiz ../fvp-tempos \
+  --contrato motor/cache/revisao-v4-v5/contrato-v5.json \
+  --saida motor/cache/revisao-v4-v5/v5
+```
+
+Testes incluem flash de **um frame em MP4 real a 60 fps**, salto, repouso versus movimento exigido, presença/ausência fora da janela, opacidade de continuidade, escolha entre instâncias do mesmo objeto, colisão de texto, texto sob fundo opaco e precisão dos frames nas faixas/cortes. As falhas iniciais e correções não mudaram os limiares para limpar a v4: corrigidos o teste de oclusão e os rótulos de PTS (não são ajustes de sensibilidade).
+
+Limites: detector de texto é geométrico texto↔texto, exclui odômetros sob recorte; o teste de superfície opaca amostra três pontos por trecho e não substitui conferência visual de oclusões parciais/SVG/canvas. Raster usa quadro reduzido (480×270), não garante capturar falha pequena/local. Contratos são necessários para atribuir horário/expectativa. Sem HTML, a cobertura semântica é explicitamente ausente. Sem artefatos (`--sem-artefatos`), a execução não satisfaz sozinha D2. Não há aprovação de bloco, novo filme ou validação de motion do estudo; o Fabrício decide após vídeo. Próximo passo depende da aprovação destes estudos e do roteiro pelo Fabrício.
+
+**Revisão independente do instrumento (antes das correções):** identificados três casos a cobrir: aparelho totalmente encoberto não pode satisfazer presença visível; janelas exclusivas repetidas do mesmo id precisam formar uma união de horários permitidos; régua precisa cobrir o vídeo todo, com cenas ordenadas, duração positiva e ids únicos (tolerância de um frame entre limites arredondados). Presença considera também pontos junto à borda para não confundir o chassi visível com sua tela opaca. São correções de cobertura/contrato, sem afrouxar limiares raster. Reexecutar testes e calibração após a correção.
+
+**Fechamento da revisão do código:** os três casos foram corrigidos e ganharam testes. A rechecagem encontrou ainda um override de selector reservado mascarado pelo default; corrigido com agrupamento separado dos selectors declarados e teste em Chromium. A suíte final tem **16 testes**. A calibração mantém os mesmos limiares e resultados da tabela; a presença considera oclusão também nos elementos acompanhados.
+
+Índice local para revisão dos vídeos e acesso às evidências: `motor/cache/revisao-v4-v5/index.html` (191 links locais conferidos). Verificação final: 16/16 testes, recompilação Python, leitura dos dois MP4 e seus relatórios, 27 cortes com PTS na grade real e 29 clipes a 60 fps. Rechecagem independente do código confirmou as quatro correções. Isso valida o instrumento e a integridade dos artefatos; aprovação editorial continua pendente.
