@@ -15,7 +15,11 @@ Cada papel trabalha no seu worktree e commita no seu branch, sem push. O Maestro
 ## 2. Fluxo
 
 1. **Roteiro mestre travado** (`roteiro.json`): texto, duração-alvo, ordem das cenas. Só o Fabrício muda.
-2. **Bíblia de motion da v4:** o Diretor extrai de `~/Downloads/frila-pitch-pt.mp4` e de `docs/v4/` as curvas, os tempos de entrada e as regras que fizeram a v4 boa, e grava em `DESIGN.md`. É o piso de qualidade.
+2. **Metas de melhoria sobre a v4.** O Fabrício avaliou a v4 (`~/Downloads/frila-pitch-pt.mp4`, 76,7 s) com **nota 8/10**. O trabalho é **evoluir a v4, não substituí-la**. Os três pontos a melhorar:
+   - **Emenda de voz mais natural.** Na v4, as pausas entre frases da mesma cena são sempre 0,21–0,29 s (frases geradas isoladas e encaixadas); é o "remendo" audível. Alvo: voz por bloco em tomada contínua (A3, A4).
+   - **Leves ajustes de motion** nas cenas existentes, sem refazer a coreografia que já funciona.
+   - **Exibição do mockup do aparelho.** Na v4 o celular ocupa ~70% da altura, a tela tem texto minúsculo e metade do quadro vai para a lista de passos. Alvo: aparelho maior, tela legível, zoom e parallax na tela (D1 do `DESIGN.md` §14), lista de passos sem competir com o aparelho.
+2b. **Bíblia de motion da v4:** o Diretor extrai de `~/Downloads/frila-pitch-pt.mp4` e de `docs/v4/` as curvas, os tempos de entrada e as regras que fizeram a v4 boa, e grava em `DESIGN.md`. É o piso de qualidade.
 3. **Blocos** (proposta, o Maestro valida com a régua): **A** Abertura e dores v01–v04 · **B** Virada e soluções v05–v09 · **C** Prova e potencial v10–v12 · **D** Fecho v13–v14.
 4. **Piloto no Bloco A**, de ponta a ponta (voz, imagem, mix do bloco, revisão). O Fabrício assiste e aprova antes de B, C e D. **Bloco aprovado fica congelado.**
 5. **Montagem:** imagem de cada bloco em um clipe com margem de transição; **voz por bloco**; **uma única trilha de música sobre o vídeo inteiro** (nada de emenda de música entre blocos); mix e master no vídeo inteiro.
@@ -39,7 +43,7 @@ Cada papel trabalha no seu worktree e commita no seu branch, sem push. O Maestro
 
 ## 4. Regras de imagem e motion (inegociáveis)
 
-**D1. A v4 é o piso.** Cena nova parte dos componentes e das curvas da v4. Reescrever do zero exige justificativa registrada no `DESIGN.md` e aprovação do Fabrício. Cada bloco passa por **comparação lado a lado** com a mesma cena da v4 (mesmos instantes).
+**D1. A v4 (nota 8/10) é o piso e a base.** Cena nova parte dos componentes e das curvas da v4. Reescrever do zero exige justificativa registrada no `DESIGN.md` e aprovação do Fabrício. Cada bloco passa por **comparação lado a lado** com a mesma cena da v4 (mesmos instantes).
 
 **D2. Revisão é em vídeo, não em quadro parado.** Para cada bloco o Diretor gera: faixa de quadros a 12 fps por cena; quadros de ±0,5 s em torno de cada corte e de cada emenda de bloco; e a análise de movimento (`motor/analisar_video.py`, a ser criada) com: **travada** (quadros iguais onde devia haver movimento), **salto** (mudança brusca de posição ou escala), **cintilação**, **elemento que some ou nasce fora de hora** e **sobreposição de texto**. Resultado vira lista de achados por instante.
 
