@@ -1,6 +1,6 @@
 # Narrativa da v5 — versão aprovada pelo Orquestrador (26/10/2026)
 
-Base: `NARRATIVA-v5.md` (minha proposta) + `REVISAO-CODEX.md` (revisão do Codex GPT-6-Astra high). Esta é a versão que vai para o `roteiro.json` assim que o Cauê confirmar os 3 pontos abertos no fim.
+Base: `docs/historico/NARRATIVA-v5.md` (minha proposta) + `docs/historico/REVISAO-CODEX.md` (revisão do Codex GPT-6-Astra high). Esta é a versão que vai para o `roteiro.json` assim que o Cauê confirmar os 3 pontos abertos no fim.
 
 **Arco:** abre com as 3 dores seguidas (urgência → confiança → rotatividade), vira uma vez, responde na mesma ordem, fecha em tempo e foco. Sem preço, sem pedido.
 

@@ -2,7 +2,7 @@
 
 **Estado: proposta para revisão do Orquestrador e aprovação do Cauê. Nenhuma implementação autorizada por este documento.**
 
-Prioridade: preservar a frase inteira, manter a voz inteligível e permitir ajustes independentes de voz, música e efeitos. A narrativa de referência é `NARRATIVA-v5-aprovada.md`; este plano não altera texto, imagem, voz escolhida ou trilha.
+Prioridade: preservar a frase inteira, manter a voz inteligível e permitir ajustes independentes de voz, música e efeitos. A narrativa de referência é `docs/historico/NARRATIVA-v5-aprovada.md`; este plano não altera texto, imagem, voz escolhida ou trilha.
 
 Convenções: **Código** = comportamento lido nos arquivos autorizados; **Medido aqui** = leitura/medição local desta missão; **Informado** = medição fornecida pelo Orquestrador, não repetida aqui; **Hipótese** = causa a investigar; **Proposta** = parâmetro ou critério ainda sem validação auditiva. Os valores de processamento e aceite propostos não são resultados já alcançados.
 
@@ -13,7 +13,7 @@ Convenções: **Código** = comportamento lido nos arquivos autorizados; **Medid
 | Evidência | Resultado | Origem e limite |
 |---|---|---|
 | Formato entregue da v4 | H.264; áudio AAC, 48 kHz, estéreo; início dos dois streams em 0 s | **Medido aqui:** `ffprobe` no MP4 autorizado. Não prova alinhamento de cada palavra. |
-| Durações da v4 | Imagem: 76,733333 s; áudio: 76,726292 s; régua: 76,7263 s | **Medido aqui:** MP4 e `motor2/tempos-pt.json` da cópia entregue. A diferença final de aproximadamente 7 ms não explica, por si, problemas em palavras no meio do vídeo. |
+| Durações da v4 | Imagem: 76,733333 s; áudio: 76,726292 s; régua: 76,7263 s | **Medido aqui:** MP4 e `docs/v4/tempos-pt.json` da cópia entregue. A diferença final de aproximadamente 7 ms não explica, por si, problemas em palavras no meio do vídeo. |
 | Loudness do MP4 da v4 | −16,14 LUFS integrado; −1,96 dBTP; LRA 2,80 LU | **Medido aqui:** primeira análise `loudnorm`, saída descartada em `null`. Foram usados os campos `input_*`, que descrevem o arquivo entregue; `output_*` não é uma nova entrega. Próximo do informado: −16,0 LUFS / −2,0 dBTP. |
 | Régua e eventos da v4 | 15 cenas, 20 frases, 69 eventos; pausas entre arquivos na mesma cena: 0,209–0,345 s; entre cenas: 0,549–2,419 s | **Medido aqui:** JSONs autorizados. São intervalos entre `fim` e `ini`, não silêncio acústico medido entre fonemas. |
 | “Cadastro” na v4 | Frase começa em 43,527 s; `grave` em 43,2415 s: antecedência de 285,5 ms | **Medido aqui:** JSONs. A função `grave()` lida no motor da v5 dura 0,7 s; usando essa duração, a sobreposição prevista com a frase é 414,5 ms. Essa conta não mede a intensidade residual do efeito no MP4. |
@@ -319,7 +319,7 @@ Mesmo com cache, master/loudness devem ser reavaliados no programa completo. Evi
 
 ### Não mudar
 
-- `../v4-final-26-10/` e `motor2/`: somente referências de leitura; não editar, reprocessar por cima, apagar ou substituir entregas.
+- `docs/v4/` e `motor2/`: somente referências de leitura; não editar, reprocessar por cima, apagar ou substituir entregas.
 - Nenhum texto da narrativa aprovada, fato, função do app, identidade da voz Fernanda, música escolhida ou evento visual muda por decisão deste plano.
 - Nenhuma chave, configuração de credenciais ou autorização de API é lida ou registrada. Nesta missão, somente este documento foi criado.
 - Não adicionar compressor, equalizador, de-esser ou nova trilha por hábito. Primeiro preservar a voz e corrigir níveis/colisões; qualquer tratamento adicional exige defeito identificado e A/B.

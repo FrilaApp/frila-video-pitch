@@ -1,0 +1,176 @@
+{
+  "marca": "Frila",
+  "versao": "1 (22/10/2026, para revisão)",
+  "combinacao": "C",
+  "cores": {
+    "laranja-frila": {
+      "hex": "#EA5A36",
+      "rgb": [
+        234,
+        90,
+        54
+      ],
+      "uso": "A marca: ícone, topo de tela, peças chapadas, logo. Texto branco só em tamanho grande."
+    },
+    "laranja-queimado": {
+      "hex": "#C2410C",
+      "rgb": [
+        194,
+        65,
+        12
+      ],
+      "uso": "Botões e links. Segura texto branco em qualquer tamanho."
+    },
+    "grafite": {
+      "hex": "#18191C",
+      "rgb": [
+        24,
+        25,
+        28
+      ],
+      "uso": "Texto, botão escuro, ponto do logo no laranja, fundo escuro."
+    },
+    "areia": {
+      "hex": "#F7F3EE",
+      "rgb": [
+        247,
+        243,
+        238
+      ],
+      "uso": "Fundo das telas e das peças claras."
+    },
+    "branco": {
+      "hex": "#FFFFFF",
+      "rgb": [
+        255,
+        255,
+        255
+      ],
+      "uso": "Cartões, letras do logo no laranja."
+    },
+    "cinza-texto": {
+      "hex": "#5B6068",
+      "rgb": [
+        91,
+        96,
+        104
+      ],
+      "uso": "Texto secundário: horário, distância, nota."
+    }
+  },
+  "estado_do_app": {
+    "ok": {
+      "hex": "#007A33",
+      "uso": "Confirmado / verificado (FrilaColor.verified)"
+    },
+    "aviso-texto": {
+      "hex": "#9E5C00",
+      "uso": "Atenção em texto (FrilaColor.warningText)"
+    },
+    "erro": {
+      "hex": "#D82020",
+      "uso": "Erro / prazo vencido (FrilaColor.error)"
+    }
+  },
+  "proporcao": {
+    "app": {
+      "laranja-frila": 25,
+      "laranja-queimado": 12,
+      "grafite": 18,
+      "areia": 30,
+      "branco": 15
+    },
+    "campanha": {
+      "laranja-frila": 60,
+      "grafite": 25,
+      "branco": 15
+    }
+  },
+  "contraste": [
+    {
+      "texto": "grafite",
+      "fundo": "areia",
+      "razao": 15.91,
+      "uso": "texto de qualquer tamanho (AA)"
+    },
+    {
+      "texto": "grafite",
+      "fundo": "branco",
+      "razao": 17.58,
+      "uso": "texto de qualquer tamanho (AA)"
+    },
+    {
+      "texto": "cinza-texto",
+      "fundo": "branco",
+      "razao": 6.33,
+      "uso": "texto de qualquer tamanho (AA)"
+    },
+    {
+      "texto": "cinza-texto",
+      "fundo": "areia",
+      "razao": 5.73,
+      "uso": "texto de qualquer tamanho (AA)"
+    },
+    {
+      "texto": "branco",
+      "fundo": "laranja-queimado",
+      "razao": 5.18,
+      "uso": "texto de qualquer tamanho (AA)"
+    },
+    {
+      "texto": "laranja-queimado",
+      "fundo": "branco",
+      "razao": 5.18,
+      "uso": "texto de qualquer tamanho (AA)"
+    },
+    {
+      "texto": "laranja-queimado",
+      "fundo": "areia",
+      "razao": 4.69,
+      "uso": "texto de qualquer tamanho (AA)"
+    },
+    {
+      "texto": "grafite",
+      "fundo": "laranja-frila",
+      "razao": 5.03,
+      "uso": "texto de qualquer tamanho (AA)"
+    },
+    {
+      "texto": "branco",
+      "fundo": "laranja-frila",
+      "razao": 3.49,
+      "uso": "só texto grande, ícone e logo (AA grande)"
+    },
+    {
+      "texto": "laranja-frila",
+      "fundo": "branco",
+      "razao": 3.49,
+      "uso": "só texto grande, ícone e logo (AA grande)"
+    },
+    {
+      "texto": "laranja-frila",
+      "fundo": "grafite",
+      "razao": 5.03,
+      "uso": "texto de qualquer tamanho (AA)"
+    },
+    {
+      "texto": "branco",
+      "fundo": "grafite",
+      "razao": 17.58,
+      "uso": "texto de qualquer tamanho (AA)"
+    },
+    {
+      "texto": "laranja-frila",
+      "fundo": "areia",
+      "razao": 3.16,
+      "uso": "só texto grande, ícone e logo (AA grande)"
+    },
+    {
+      "texto": "laranja-frila",
+      "fundo": "laranja-queimado",
+      "razao": 1.48,
+      "uso": "não usar para texto nem logo"
+    }
+  ],
+  "nota": "Contraste pela fórmula de luminância do WCAG 2.2 (cálculo próprio). CMYK e Pantone ainda não definidos: pedir prova à gráfica."
+}

@@ -4,6 +4,7 @@
 # Uso: bash mux.sh [pt|en]
 set -euo pipefail
 cd "$(dirname "$0")"
+mkdir -p ../pt
 for L in ${@:-pt}; do
   case $L in
     pt) LANG3=por; AVISO="Narração com voz sintética (IA)";;

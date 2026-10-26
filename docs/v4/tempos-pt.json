@@ -1,0 +1,423 @@
+{
+ "lang": "pt",
+ "P": 0.491835,
+ "bar": 1.96734,
+ "total": 76.7263,
+ "cenas": [
+  {
+   "id": "c01-gancho",
+   "ini": 0.0,
+   "dur": 3.4428
+  },
+  {
+   "id": "c02-promessa",
+   "ini": 3.4428,
+   "dur": 3.9347
+  },
+  {
+   "id": "c03-rotatividade",
+   "ini": 7.3775,
+   "dur": 4.9184
+  },
+  {
+   "id": "c04-contratar",
+   "ini": 12.2959,
+   "dur": 5.4102
+  },
+  {
+   "id": "c05-o-que-e",
+   "ini": 17.7061,
+   "dur": 4.9183
+  },
+  {
+   "id": "c06-passos-a",
+   "ini": 22.6244,
+   "dur": 6.8857
+  },
+  {
+   "id": "c07-passos-b",
+   "ini": 29.5101,
+   "dur": 5.902
+  },
+  {
+   "id": "c08-mapa",
+   "ini": 35.4121,
+   "dur": 7.8694
+  },
+  {
+   "id": "c09-cadastro",
+   "ini": 43.2815,
+   "dur": 2.951
+  },
+  {
+   "id": "c10-concorrente",
+   "ini": 46.2325,
+   "dur": 6.8857
+  },
+  {
+   "id": "c11-contraste",
+   "ini": 53.1182,
+   "dur": 3.9347
+  },
+  {
+   "id": "c12-confianca",
+   "ini": 57.0529,
+   "dur": 4.9183
+  },
+  {
+   "id": "c13-estagio",
+   "ini": 61.9712,
+   "dur": 4.4265
+  },
+  {
+   "id": "c14-gratis",
+   "ini": 66.3977,
+   "dur": 2.951
+  },
+  {
+   "id": "c16-logo",
+   "ini": 69.3487,
+   "dur": 7.3775
+  }
+ ],
+ "falas": [
+  {
+   "cena": "c01-gancho",
+   "k": 1,
+   "ini": 0.984,
+   "fim": 2.982,
+   "legenda": "Faltou gente no turno de hoje?",
+   "leg_ini": 0.934,
+   "leg_fim": 3.323
+  },
+  {
+   "cena": "c02-promessa",
+   "k": 1,
+   "ini": 3.689,
+   "fim": 6.622,
+   "legenda": "O Frila encontra gente perto para cobrir o turno.",
+   "leg_ini": 3.639,
+   "leg_fim": 7.222
+  },
+  {
+   "cena": "c03-rotatividade",
+   "k": 1,
+   "ini": 7.623,
+   "fim": 11.993,
+   "legenda": "Em bar e restaurante, a rotatividade passa de 70% em um ano.",
+   "leg_ini": 7.573,
+   "leg_fim": 12.176
+  },
+  {
+   "cena": "c04-contratar",
+   "k": 1,
+   "ini": 12.542,
+   "fim": 15.947,
+   "legenda": "E 9 em cada 10 empresários acham difícil contratar.",
+   "leg_ini": 12.492,
+   "leg_fim": 16.547
+  },
+  {
+   "cena": "c05-o-que-e",
+   "k": 1,
+   "ini": 17.952,
+   "fim": 21.872,
+   "legenda": "O Frila liga quem precisa de gente hoje a quem quer trabalhar hoje.",
+   "leg_ini": 17.902,
+   "leg_fim": 22.472
+  },
+  {
+   "cena": "c06-passos-a",
+   "k": 1,
+   "ini": 22.87,
+   "fim": 24.382,
+   "legenda": "São 4 passos.",
+   "leg_ini": 22.82,
+   "leg_fim": 24.542
+  },
+  {
+   "cena": "c06-passos-a",
+   "k": 2,
+   "ini": 24.592,
+   "fim": 26.586,
+   "legenda": "O contratante publica a vaga.",
+   "leg_ini": 24.542,
+   "leg_fim": 26.755
+  },
+  {
+   "cena": "c06-passos-a",
+   "k": 3,
+   "ini": 26.805,
+   "fim": 28.811,
+   "legenda": "Quem está perto recebe o aviso.",
+   "leg_ini": 26.755,
+   "leg_fim": 29.39
+  },
+  {
+   "cena": "c07-passos-b",
+   "k": 1,
+   "ini": 29.756,
+   "fim": 32.252,
+   "legenda": "O contratante vê o histórico e escolhe.",
+   "leg_ini": 29.706,
+   "leg_fim": 32.411
+  },
+  {
+   "cena": "c07-passos-b",
+   "k": 2,
+   "ini": 32.461,
+   "fim": 34.902,
+   "legenda": "Depois, check-in no local e um sim ou não.",
+   "leg_ini": 32.411,
+   "leg_fim": 35.292
+  },
+  {
+   "cena": "c08-mapa",
+   "k": 1,
+   "ini": 35.658,
+   "fim": 37.828,
+   "legenda": "O aviso chega a até 15 km.",
+   "leg_ini": 35.608,
+   "leg_fim": 38.067
+  },
+  {
+   "cena": "c08-mapa",
+   "k": 2,
+   "ini": 38.117,
+   "fim": 41.108,
+   "legenda": "A presença é conferida a 200 m do local.",
+   "leg_ini": 38.067,
+   "leg_fim": 41.708
+  },
+  {
+   "cena": "c09-cadastro",
+   "k": 1,
+   "ini": 43.527,
+   "fim": 45.208,
+   "legenda": "Cadastro não é turno.",
+   "leg_ini": 43.477,
+   "leg_fim": 45.808
+  },
+  {
+   "cena": "c10-concorrente",
+   "k": 1,
+   "ini": 46.478,
+   "fim": 52.628,
+   "legenda": "No site da eStaff: 1,5 milhão de cadastrados e 533 mil disponíveis.",
+   "leg_ini": 46.428,
+   "leg_fim": 52.998
+  },
+  {
+   "cena": "c11-contraste",
+   "k": 1,
+   "ini": 53.364,
+   "fim": 56.25,
+   "legenda": "O Frila mede quem aparece, não quem se cadastra.",
+   "leg_ini": 53.314,
+   "leg_fim": 56.85
+  },
+  {
+   "cena": "c12-confianca",
+   "k": 1,
+   "ini": 57.299,
+   "fim": 61.532,
+   "legenda": "Antes de escolher, o contratante vê quem aparece e quem chamaria de novo.",
+   "leg_ini": 57.249,
+   "leg_fim": 61.851
+  },
+  {
+   "cena": "c13-estagio",
+   "k": 1,
+   "ini": 62.217,
+   "fim": 66.01,
+   "legenda": "O app já está em teste no iPhone, com meta de App Store em novembro.",
+   "leg_ini": 62.167,
+   "leg_fim": 66.278
+  },
+  {
+   "cena": "c14-gratis",
+   "k": 1,
+   "ini": 66.644,
+   "fim": 68.979,
+   "legenda": "No piloto, é grátis para os dois lados.",
+   "leg_ini": 66.594,
+   "leg_fim": 69.229
+  },
+  {
+   "cena": "c16-logo",
+   "k": 1,
+   "ini": 69.595,
+   "fim": 70.725,
+   "legenda": "Frila.",
+   "leg_ini": 69.545,
+   "leg_fim": 71.02
+  },
+  {
+   "cena": "c16-logo",
+   "k": 2,
+   "ini": 71.07,
+   "fim": 72.8,
+   "legenda": "Turno combinado, regra clara.",
+   "leg_ini": 71.02,
+   "leg_fim": 73.4
+  }
+ ],
+ "musica": [
+  {
+   "v": 0.0,
+   "src": 1.014
+  },
+  {
+   "v": 1.9673,
+   "src": 2.9813400000000003
+  },
+  {
+   "v": 3.9347,
+   "src": 4.94868
+  },
+  {
+   "v": 5.902,
+   "src": 6.9160200000000005
+  },
+  {
+   "v": 7.8694,
+   "src": 8.88336
+  },
+  {
+   "v": 9.8367,
+   "src": 10.8507
+  },
+  {
+   "v": 11.804,
+   "src": 12.81804
+  },
+  {
+   "v": 13.7714,
+   "src": 2.9813400000000003
+  },
+  {
+   "v": 15.7387,
+   "src": 14.78538
+  },
+  {
+   "v": 17.7061,
+   "src": 16.75272
+  },
+  {
+   "v": 19.6734,
+   "src": 18.72006
+  },
+  {
+   "v": 21.6407,
+   "src": 20.6874
+  },
+  {
+   "v": 23.6081,
+   "src": 22.65474
+  },
+  {
+   "v": 25.5754,
+   "src": 24.62208
+  },
+  {
+   "v": 27.5428,
+   "src": 26.58942
+  },
+  {
+   "v": 29.5101,
+   "src": 28.55676
+  },
+  {
+   "v": 31.4774,
+   "src": 30.5241
+  },
+  {
+   "v": 33.4448,
+   "src": 32.491440000000004
+  },
+  {
+   "v": 35.4121,
+   "src": 34.458780000000004
+  },
+  {
+   "v": 37.3795,
+   "src": 36.426120000000004
+  },
+  {
+   "v": 39.3468,
+   "src": 38.393460000000005
+  },
+  {
+   "v": 41.3141,
+   "src": 46.262820000000005
+  },
+  {
+   "v": 43.2815,
+   "src": 48.230160000000005
+  },
+  {
+   "v": 45.2488,
+   "src": 50.197500000000005
+  },
+  {
+   "v": 47.2162,
+   "src": 52.164840000000005
+  },
+  {
+   "v": 49.1835,
+   "src": 54.132180000000005
+  },
+  {
+   "v": 51.1508,
+   "src": 56.099520000000005
+  },
+  {
+   "v": 53.1182,
+   "src": 58.066860000000005
+  },
+  {
+   "v": 55.0855,
+   "src": 62.001540000000006
+  },
+  {
+   "v": 57.0529,
+   "src": 63.968880000000006
+  },
+  {
+   "v": 59.0202,
+   "src": 65.93622
+  },
+  {
+   "v": 60.9875,
+   "src": 67.90356
+  },
+  {
+   "v": 62.9549,
+   "src": 69.87089999999999
+  },
+  {
+   "v": 64.9222,
+   "src": 71.83824
+  },
+  {
+   "v": 66.8896,
+   "src": 73.80558
+  },
+  {
+   "v": 68.8569,
+   "src": 75.77292
+  },
+  {
+   "v": 70.8242,
+   "src": 77.74025999999999
+  },
+  {
+   "v": 72.7916,
+   "src": 79.7076
+  },
+  {
+   "v": 74.7589,
+   "src": 81.67494
+  }
+ ]
+}

@@ -4,7 +4,7 @@
 
 **Status (26/10/2026).** Descreve a **v4 como ela é** (lida do código, não de memória). A v5 ainda não mudou nada de design: a seção 14 mostra como a narrativa aprovada se apoia nos componentes existentes, e a seção 16 lista o que ficou em aberto para o critique.
 
-**Como foi levantado.** Lidos: `motor/filme.html` (CSS, tokens, textos, cenas, HUD), `motor/tempos2.py`, `motor/audio2.py`, `../STORYBOARD.md`, `../LEIA-ME.md`, `../../assets/cores.json` e `LEIA-ME.md`, e a revisão de narrativa. **Não verificado:** posições e tamanhos de cada elemento por captura (só os que o código declara); níveis de volume ouvindo o MP4. Onde o texto diz "Inferência", é leitura minha.
+**Como foi levantado.** Lidos: `motor/filme.html` (CSS, tokens, textos, cenas, HUD), `motor/tempos2.py`, `motor/audio2.py`, `docs/v4/STORYBOARD.md`, `docs/v4/LEIA-ME.md`, `assets/cores.json`, e a revisão de narrativa. **Não verificado:** posições e tamanhos de cada elemento por captura (só os que o código declara); níveis de volume ouvindo o MP4. Onde o texto diz "Inferência", é leitura minha.
 
 Fontes dos tokens de marca: brand book v1 (22/10/2026), combinação C. Não confundir com o `DESIGN.md` de `frila-apresentação/Apresentação 1`, que é de outro deck e usa outra paleta (`#f6f4ef`, `#ff4d17`).
 
@@ -25,7 +25,7 @@ Tom visual: **Praça** (sério, para todas as idades, sem infantilizar). Fundo c
 | Vídeo | H.264, `preset medium`, `crf 14`, `yuv420p`, cores bt709 | `render.py` |
 | Render | 6 processos em paralelo, cada um num trecho; ~4 min para o PT | `render.py`, LEIA-ME |
 | Áudio | AAC 256 kbit/s, 48 kHz, estéreo | `mux.sh` |
-| Loudness medida na v4 | −16,0 LUFS integrado, pico real −2,0 dBTP, LRA 2,6 LU | `../LEIA-ME.md` (medido pelo time em 22/10) |
+| Loudness medida na v4 | −16,0 LUFS integrado, pico real −2,0 dBTP, LRA 2,6 LU | `docs/v4/LEIA-ME.md` (medido pelo time em 22/10) |
 | Metadados | idioma da faixa `por`; comentário "Narração com voz sintética (IA)" | `mux.sh` |
 | Saída | `v5-pt/pt/frila-pitch-pt.mp4` e `.srt` | `mux.sh`, `legendas2.py` |
 
@@ -152,7 +152,7 @@ Visibilidade: a cena fica ativa de 1,0 s antes do início até 0,9 s depois do f
 | 14 | a moeda "R$ 0" |
 | 16 | pousa como pingo do "i" do logo, com sino |
 
-Fonte: `../STORYBOARD.md`. Regra: **o ponto nunca some**; se uma cena nova não tem papel para ele, ele fica pequeno e quieto num canto de passagem.
+Fonte: `docs/v4/STORYBOARD.md`. Regra: **o ponto nunca some**; se uma cena nova não tem papel para ele, ele fica pequeno e quieto num canto de passagem.
 
 ## 9. Tema claro e escuro
 
@@ -233,28 +233,36 @@ Fonte dos gatilhos: chamadas `ev(...)` no `filme.html`. Os sons são sintetizado
 
 A numeração pula o 15, que era o pedido de piloto (saiu na v3).
 
-## 14. Mapa da v5 (proposta; ainda não aplicado)
+## 14. Mapa da v5 (14 momentos; proposta, ainda não aplicado)
 
-> **Desatualizado em 26/10/2026:** a narrativa agora tem 14 momentos (fonte: `NARRATIVA-v5-100s.md`), com teaser, dado, meta e estratégia de prospecção, e o contato `frila.org@gmail.com` na cena final. Esta tabela cobre só as 10 cenas anteriores; reescrever quando as cenas novas forem montadas.
-
-Apoia-se em `NARRATIVA-v5-aprovada.md`. Marca o que reaproveita, o que adapta e o que é novo.
+Fonte: `NARRATIVA-v5-100s.md` e `roteiro-v5-100s.json`. Marca o que reaproveita da v4, o que adapta e o que é novo. **Os ids das cenas mudam** (`v01` a `v14`): `NOCAP`, `NO_COMPASSO`, `DURACAO_MIN`, `ENTRADA` e as trilhas `th` do motor precisam ser reescritos para os ids novos.
 
 | v5 | Momento | Componentes | Origem |
 |---|---|---|---|
-| 1 | Dor 1, gancho | Pílula, "?", ponto; tag "Exemplo" | **reaproveita** c01 (sem preço na pílula: ajuste) |
-| 2 | Dor 1, dado | Contador "9 em 10", 9+1 bolinhas, fonte | **reaproveita** c04 |
-| 3 | Dor 2, confiança | Fundo escuro, janela eStaff, "Cadastro não é turno" | **adapta** c09 + c10 numa cena só |
-| 4 | Dor 3, rotatividade | 73,49%, fileira, "outra busca" (campo de vaga volta) | **adapta** c03 (muda a leitura: sem "equipe inteira trocada") |
-| 5 | Virada | Dois cartões / chip, mockup | **adapta** c05; **novo:** marcas das 3 dores, nota de estágio |
-| 6 | Solução 1 | Telefone formulário + aviso; mapa 15 km | **reaproveita** c06 + parte de c08 |
-| 7 | Solução 2 | Candidatos + check-in 200 m | **reaproveita** c07 + cartão c12; tag "Exemplo" |
-| 8 | Solução 3 | Avaliação Sim/Não → histórico | **adapta** fim de c07; **novo:** histórico ilustrativo |
-| 9 | Fecho | Off-white calmo, relógio do gancho volta | **novo** |
-| 10 | Assinatura | Logo A1 | **reaproveita** c16 |
+| v01 | Gancho, Dor 1 | Pílula, "?", ponto; tag "Exemplo" | **reaproveita** c01 (pílula sem preço: ajuste) |
+| v02 | Dor 1, dado | Contador "9 em 10", 9+1 bolinhas, fonte | **reaproveita** c04 |
+| v03 | Dor 2, confiança | Fundo escuro, janela eStaff, "Cadastro não é turno" | **adapta** c09 + c10 numa cena só |
+| v04 | Dor 3, rotatividade | 73,49%, fileira, vaga nova reaparece | **adapta** c03 (sem "equipe inteira trocada") |
+| v05 | Virada | Dois cartões / chip, mockup, três marcas | **adapta** c05; **novo:** marcas das dores |
+| v06 | Solução 1 | Telefone formulário + aviso; mapa 15 km | **reaproveita** c06 + parte de c08, **com a diretriz D1** (zoom + parallax) |
+| v07 | Solução 2 | Candidatos + check-in 200 m | **reaproveita** c07 + cartão c12, **com D1**; tag "Exemplo" |
+| v08 | Teaser | Pergunta grande, contador vazio "— vezes por ano", ponto pairando | **novo** |
+| v09 | Solução 3 | Avaliação Sim/Não → histórico ilustrativo | **adapta** fim de c07, **com D1**; **novo:** histórico |
+| v10 | O dado | 22 pontos cinza, só o do Frila com check; rodapé da pesquisa | **novo** (usa a grade de pontos da c11) |
+| v11 | A meta | Três contadores (`mkOdo`), tag "Meta do piloto · hipótese a calibrar" | **novo** (reaproveita o odômetro) |
+| v12 | A estratégia | Mapa da c08: círculo de 15 km, 3 pontos-âncora, pontos menores, cresce até o DF; números só na tela | **adapta** c08 |
+| v13 | Fecho | Off-white calmo; relógio do gancho volta | **novo** |
+| v14 | Assinatura | Logo A1; contato `frila.org@gmail.com` em texto pequeno | **reaproveita** c16 + linha de contato |
 
-Sai da v5: c11 (grade "Quem aparece…"), c13 (estágio, condicionado à confirmação do Cauê), c14 (preço).
+Sai da v4: c11 (grade "Quem aparece…"), c13 (estágio), c14 (preço R$ 0).
 
-Ao definir a trilha de cenas da v5, **atualizar `NOCAP`, `NO_COMPASSO`, `DURACAO_MIN` e as trilhas `th`**, porque os ids mudam.
+### D1 em detalhe: mockup em foco com parallax e zoom (valores iniciais **propostos**, a validar por captura com o Cauê)
+
+- **Zoom de foco:** a câmera (`CAM`, mola `cam`) aproxima da tela do aparelho. A tela tem 752 px de altura num palco de 1080; escala **1,20 a 1,30** deixa o aparelho com ~90% da altura do quadro. Entrada em ~0,6 s; saída antes do corte.
+- **Parallax:** camadas com fator de deslocamento diferente durante o zoom e o movimento da câmera: fundo e mapa **0,6×**, lista de passos **0,85×**, aparelho **1,0×**, cursor e ponto laranja **1,1×**. Deslocamento máximo de ~30 px, para não parecer tremor.
+- **Lista de 4 passos:** esmaece e desloca para fora do foco enquanto o zoom está no máximo; volta ao final da cena. Nunca cobre a tela do aparelho.
+- **Faixa da legenda** permanece livre (regra herdada); se o zoom invadir, reduzir a escala.
+- **Verificar** com `scripts/pipeline.sh quadros` e `sobreposicoes.py` (regra "nada cobre nada").
 
 ## 15. Regras de ouro
 

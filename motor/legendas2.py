@@ -28,5 +28,6 @@ for L in ("pt",):
         assert len(linhas) <= 2 and max(map(len, linhas)) <= 58, f["legenda"]
         blocos.append(f"{i}\n{ts(f['leg_ini'])} --> {ts(f['leg_fim'])}\n" + "\n".join(linhas))
     p = AQUI.parent / L / f"frila-pitch-{L}.srt"
+    p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text("\n\n".join(blocos) + "\n", encoding="utf-8")
     print(p.relative_to(AQUI.parent), len(blocos), "legendas")

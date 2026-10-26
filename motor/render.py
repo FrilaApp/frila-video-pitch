@@ -17,7 +17,7 @@ def trabalho(arg):
                            "-r", str(FPS), "-c:v", "libx264", "-preset", "medium", "-crf", "14", "-pix_fmt", "yuv420p",
                            "-color_primaries", "bt709", "-color_trc", "bt709", "-colorspace", "bt709", str(saida)], stdin=subprocess.PIPE)
     with sync_playwright() as pw:
-        b, pg, tempos, info, erros = abrir(pw, L, f"http://127.0.0.1:{porta}/video/v5-pt/motor/filme.html")
+        b, pg, tempos, info, erros = abrir(pw, L, f"http://127.0.0.1:{porta}/motor/filme.html")
         for q in range(q0, q1):
             # o subquadro k do quadro final n cobre (n - 1 + (k+1)/4)/60: o quadro n é a média do intervalo que termina nele
             t = (q + 1) / (FPS * SUB) - 1 / (FPS * SUB) * (SUB - 1) / 2
@@ -50,7 +50,7 @@ if __name__ == "__main__":
     from playwright.sync_api import sync_playwright
     from fotos import abrir
     with sync_playwright() as pw:
-        b, pg, *_ = abrir(pw, L, f"http://127.0.0.1:{s.server_port}/video/v5-pt/motor/filme.html")
+        b, pg, *_ = abrir(pw, L, f"http://127.0.0.1:{s.server_port}/motor/filme.html")
         (AQUI / f"eventos-{L}.json").write_text(json.dumps(pg.evaluate("window.eventos"), indent=0))
         b.close()
     print("ok", final)

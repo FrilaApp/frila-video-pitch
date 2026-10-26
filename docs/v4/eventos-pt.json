@@ -1,0 +1,347 @@
+[
+{
+"t": 0.3,
+"tipo": "swish",
+"forca": 0.5
+},
+{
+"t": 2.05,
+"tipo": "pop",
+"forca": 0.6
+},
+{
+"t": 5.4102,
+"tipo": "pop",
+"forca": 0.8
+},
+{
+"t": 8.1153,
+"tipo": "roll",
+"forca": 1
+},
+{
+"t": 9.0989,
+"tipo": "tick",
+"forca": 0.5
+},
+{
+"t": 9.2219,
+"tipo": "tick",
+"forca": 0.5
+},
+{
+"t": 9.3449,
+"tipo": "tick",
+"forca": 0.5
+},
+{
+"t": 9.4678,
+"tipo": "tick",
+"forca": 0.5
+},
+{
+"t": 9.5908,
+"tipo": "tick",
+"forca": 0.5
+},
+{
+"t": 9.7137,
+"tipo": "tick",
+"forca": 0.5
+},
+{
+"t": 9.8367,
+"tipo": "tick",
+"forca": 0.5
+},
+{
+"t": 12.7877,
+"tipo": "tick",
+"forca": 0.6
+},
+{
+"t": 12.9107,
+"tipo": "tick",
+"forca": 0.6
+},
+{
+"t": 13.0336,
+"tipo": "tick",
+"forca": 0.6
+},
+{
+"t": 13.1566,
+"tipo": "tick",
+"forca": 0.6
+},
+{
+"t": 13.2795,
+"tipo": "tick",
+"forca": 0.6
+},
+{
+"t": 13.4025,
+"tipo": "tick",
+"forca": 0.6
+},
+{
+"t": 13.5255,
+"tipo": "tick",
+"forca": 0.6
+},
+{
+"t": 13.6484,
+"tipo": "tick",
+"forca": 0.6
+},
+{
+"t": 17.6061,
+"tipo": "swish",
+"forca": 0.7
+},
+{
+"t": 20.4112,
+"tipo": "swish",
+"forca": 0.4
+},
+{
+"t": 21.0312,
+"tipo": "pop",
+"forca": 0.7
+},
+{
+"t": 22.2444,
+"tipo": "swish",
+"forca": 0.6
+},
+{
+"t": 24.272,
+"tipo": "clique",
+"forca": 1
+},
+{
+"t": 24.4688,
+"tipo": "tick",
+"forca": 0.5
+},
+{
+"t": 24.692,
+"tipo": "clique",
+"forca": 0.6
+},
+{
+"t": 24.8562,
+"tipo": "tick",
+"forca": 0.35
+},
+{
+"t": 24.9812,
+"tipo": "tick",
+"forca": 0.35
+},
+{
+"t": 25.1687,
+"tipo": "tick",
+"forca": 0.35
+},
+{
+"t": 25.5645,
+"tipo": "tick",
+"forca": 0.35
+},
+{
+"t": 25.792,
+"tipo": "clique",
+"forca": 1
+},
+{
+"t": 26.312,
+"tipo": "ok",
+"forca": 1
+},
+{
+"t": 26.682,
+"tipo": "tick",
+"forca": 0.5
+},
+{
+"t": 26.982,
+"tipo": "aviso",
+"forca": 1
+},
+{
+"t": 29.6331,
+"tipo": "tick",
+"forca": 0.5
+},
+{
+"t": 31.4035,
+"tipo": "clique",
+"forca": 1
+},
+{
+"t": 31.4635,
+"tipo": "ok",
+"forca": 0.7
+},
+{
+"t": 32.3382,
+"tipo": "tick",
+"forca": 0.5
+},
+{
+"t": 33.061,
+"tipo": "ok",
+"forca": 0.8
+},
+{
+"t": 33.661,
+"tipo": "clique",
+"forca": 1
+},
+{
+"t": 34.7921,
+"tipo": "swish",
+"forca": 0.6
+},
+{
+"t": 35.904,
+"tipo": "swish",
+"forca": 0.5
+},
+{
+"t": 38.4213,
+"tipo": "pop",
+"forca": 0.6
+},
+{
+"t": 43.2415,
+"tipo": "grave",
+"forca": 1
+},
+{
+"t": 47.2162,
+"tipo": "roll",
+"forca": 1
+},
+{
+"t": 49.6753,
+"tipo": "roll",
+"forca": 0.7
+},
+{
+"t": 56.7529,
+"tipo": "grave",
+"forca": 0.8
+},
+{
+"t": 58.4054,
+"tipo": "tick",
+"forca": 0.3
+},
+{
+"t": 58.5898,
+"tipo": "tick",
+"forca": 0.3
+},
+{
+"t": 58.7743,
+"tipo": "tick",
+"forca": 0.3
+},
+{
+"t": 58.9587,
+"tipo": "tick",
+"forca": 0.3
+},
+{
+"t": 59.1432,
+"tipo": "tick",
+"forca": 0.3
+},
+{
+"t": 59.3276,
+"tipo": "tick",
+"forca": 0.3
+},
+{
+"t": 59.8809,
+"tipo": "tick",
+"forca": 0.35
+},
+{
+"t": 59.9424,
+"tipo": "tick",
+"forca": 0.35
+},
+{
+"t": 60.0039,
+"tipo": "tick",
+"forca": 0.35
+},
+{
+"t": 60.0653,
+"tipo": "tick",
+"forca": 0.35
+},
+{
+"t": 60.1268,
+"tipo": "tick",
+"forca": 0.35
+},
+{
+"t": 60.1883,
+"tipo": "tick",
+"forca": 0.35
+},
+{
+"t": 60.2498,
+"tipo": "tick",
+"forca": 0.35
+},
+{
+"t": 60.3113,
+"tipo": "tick",
+"forca": 0.35
+},
+{
+"t": 60.3727,
+"tipo": "tick",
+"forca": 0.35
+},
+{
+"t": 60.4342,
+"tipo": "tick",
+"forca": 0.35
+},
+{
+"t": 61.0309,
+"tipo": "clique",
+"forca": 1
+},
+{
+"t": 61.0909,
+"tipo": "ok",
+"forca": 0.8
+},
+{
+"t": 62.9549,
+"tipo": "ok",
+"forca": 0.6
+},
+{
+"t": 64.6763,
+"tipo": "pop",
+"forca": 0.6
+},
+{
+"t": 66.5977,
+"tipo": "swish",
+"forca": 0.5
+},
+{
+"t": 69.645,
+"tipo": "pouso",
+"forca": 1
+}
+]

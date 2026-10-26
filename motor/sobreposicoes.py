@@ -94,7 +94,7 @@ def main():
     L = sys.argv[1]
     passo = float(sys.argv[2]) if len(sys.argv) > 2 else 1 / 15
     s = servidor()
-    url = f"http://127.0.0.1:{s.server_port}/video/v5-pt/motor/filme.html"
+    url = f"http://127.0.0.1:{s.server_port}/motor/filme.html"
     achados = {}
     with sync_playwright() as pw:
         b, pg, tempos, info, erros = abrir(pw, L, url)

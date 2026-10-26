@@ -1,0 +1,159 @@
+{
+ "_nota": "RASCUNHO da v5 (26/10/2026), 14 momentos, ~100 s. Fonte: NARRATIVA-v5-100s.md. NÃO substitui o roteiro.json (v4) até o Cauê aprovar o texto. 'fala' vai para a voz (números por extenso); 'legenda' é o texto na tela e no .srt. Frases se separam em . ? !  e fala e legenda precisam ter o mesmo número de frases por cena. 'janela_s' é planejamento, não medida. Campos extras (tela, dado_e_fonte, janela_s, legenda_queimada) são documentação; o motor lê só id, pt.fala e pt.legenda.",
+ "cenas": [
+  {
+   "id": "v01-gancho",
+   "pt": {
+    "fala": "Hoje, dezenove horas. Faltou gente no turno.",
+    "legenda": "Hoje, 19h. Faltou gente no turno."
+   },
+   "janela_s": 4.0,
+   "legenda_queimada": false,
+   "tela": "Cartão 'Garçom · hoje, 19h' cai; o ponto vira o '?'. Tag 'Exemplo'",
+   "dado_e_fonte": "Cena ilustrativa"
+  },
+  {
+   "id": "v02-dor1",
+   "pt": {
+    "fala": "Segundo a Abrasel, nove em cada dez empresários de bares e restaurantes acham difícil contratar.",
+    "legenda": "Segundo a Abrasel, 9 em cada 10 empresários de bares e restaurantes acham difícil contratar."
+   },
+   "janela_s": 6.0,
+   "legenda_queimada": true,
+   "tela": "'9 em 10': 9 pontos laranja e 1 grafite",
+   "dado_e_fonte": "Abrasel, 30/04/2025 (90% 'difícil ou muito difícil')"
+  },
+  {
+   "id": "v03-dor2",
+   "pt": {
+    "fala": "E quem se candidata, dá para contar? Uma plataforma declara um milhão e meio de cadastrados. Cadastro não é turno.",
+    "legenda": "E quem se candidata, dá para contar? Uma plataforma declara 1,5 milhão de cadastrados. Cadastro não é turno."
+   },
+   "janela_s": 9.0,
+   "legenda_queimada": true,
+   "tela": "Fundo escuro; janela eStaff: 1,5 milhão cadastrados · 533 mil disponíveis, 'como a empresa declara, acesso em 22/10/2026'",
+   "dado_e_fonte": "Site da eStaff, declarado pela empresa; 'cadastro não é turno' é leitura nossa (inferência)"
+  },
+  {
+   "id": "v04-dor3",
+   "pt": {
+    "fala": "E a equipe não fica: nos bares e restaurantes, a rotatividade passou de setenta por cento em um ano.",
+    "legenda": "E a equipe não fica: nos bares e restaurantes, a rotatividade passou de 70% em um ano."
+   },
+   "janela_s": 7.5,
+   "legenda_queimada": true,
+   "tela": "73,49% enorme; 'dez/2024 a nov/2025'; cartões de escala mudam e a vaga nova reaparece",
+   "dado_e_fonte": "Abrasel, dez/2024 a nov/2025"
+  },
+  {
+   "id": "v05-virada",
+   "pt": {
+    "fala": "Mapeamos essas dores. O Frila conecta quem precisa de gente a profissionais perto.",
+    "legenda": "Mapeamos essas dores. O Frila conecta quem precisa de gente a profissionais perto."
+   },
+   "janela_s": 6.0,
+   "legenda_queimada": true,
+   "tela": "A vaga do gancho vira o mockup; marcas das três dores",
+   "dado_e_fonte": "Descrição do produto"
+  },
+  {
+   "id": "v06-solucao1",
+   "pt": {
+    "fala": "Você publica a vaga. O Frila avisa quem está perto, até quinze quilômetros.",
+    "legenda": "Você publica a vaga. O Frila avisa quem está perto, até 15 km."
+   },
+   "janela_s": 6.5,
+   "legenda_queimada": true,
+   "tela": "Mockup em foco (zoom + parallax): Nova vaga → publicada → aviso → candidatura; mapa 15 km",
+   "dado_e_fonte": "Produto: despacho até 15 km"
+  },
+  {
+   "id": "v07-solucao2",
+   "pt": {
+    "fala": "Antes de escolher, você vê o histórico. No local, o profissional faz check-in.",
+    "legenda": "Antes de escolher, você vê o histórico. No local, o profissional faz check-in."
+   },
+   "janela_s": 7.0,
+   "legenda_queimada": true,
+   "tela": "Mockup em foco: cartão do candidato (tag 'Exemplo') → escolha → check-in a 200 m",
+   "dado_e_fonte": "Produto: histórico e check-in a 200 m"
+  },
+  {
+   "id": "v08-teaser",
+   "pt": {
+    "fala": "Há um número que não achamos em pesquisa pública: quantas vezes falta alguém no turno.",
+    "legenda": "Há um número que não achamos em pesquisa pública: quantas vezes falta alguém no turno."
+   },
+   "janela_s": 6.0,
+   "legenda_queimada": true,
+   "tela": "Pergunta grande; contador vazio '— vezes por ano'",
+   "dado_e_fonte": "Lacuna registrada: nenhuma fonte pública encontrada mede a frequência"
+  },
+  {
+   "id": "v09-solucao3",
+   "pt": {
+    "fala": "Depois do turno, os dois lados avaliam: chamaria de novo? O histórico ajuda na próxima escolha.",
+    "legenda": "Depois do turno, os dois lados avaliam: chamaria de novo? O histórico ajuda na próxima escolha."
+   },
+   "janela_s": 7.5,
+   "legenda_queimada": true,
+   "tela": "Mockup em foco: avaliação Sim/Não → histórico ilustrativo",
+   "dado_e_fonte": "Produto: avaliação dos dois lados"
+  },
+  {
+   "id": "v10-dado",
+   "pt": {
+    "fala": "Cada turno com check-in vira dado. Dos vinte e dois apps que estudamos, nenhum mostra comparecimento medido.",
+    "legenda": "Cada turno com check-in vira dado. Dos 22 apps que estudamos, nenhum mostra comparecimento medido."
+   },
+   "janela_s": 7.5,
+   "legenda_queimada": true,
+   "tela": "22 pontos cinza; só o do Frila ganha o check. Rodapé: 'Pesquisa interna de 22 concorrentes, 01/10/2026'",
+   "dado_e_fonte": "Pesquisa interna de 01/10/2026 (frila-docs, repositório privado)"
+  },
+  {
+   "id": "v11-meta",
+   "pt": {
+    "fala": "Meta do piloto: oito semanas, cinquenta vagas por semana e nove em cada dez profissionais presentes.",
+    "legenda": "Meta do piloto: 8 semanas, 50 vagas por semana e 9 em cada 10 profissionais presentes."
+   },
+   "janela_s": 7.5,
+   "legenda_queimada": true,
+   "tela": "Três contadores com a tag 'Meta do piloto · hipótese a calibrar'",
+   "dado_e_fonte": "Metas [H] do Modelo 1 (frila-docs); são hipóteses, não resultados"
+  },
+  {
+   "id": "v12-estrategia",
+   "pt": {
+    "fala": "Núcleo de quinze quilômetros, com âncoras em eventos e buffets. Depois, bares e restaurantes. Depois, o Distrito Federal.",
+    "legenda": "Núcleo de 15 km, com âncoras em eventos e buffets. Depois, bares e restaurantes. Depois, o Distrito Federal."
+   },
+   "janela_s": 9.0,
+   "legenda_queimada": true,
+   "tela": "Mapa da cena de 15 km: três pontos-âncora, pontos menores, o círculo cresce até o DF. Só na tela: '23.271 empresas ativas no DF' e '~1.300 restaurantes e bares com 10+ pessoas · IBGE 2024'",
+   "dado_e_fonte": "frila-docs (privado): CNPJs ativos no DF e cadastro IBGE 2024; ordem da prospecção em 02-O-NEGOCIO §10.3"
+  },
+  {
+   "id": "v13-fecho",
+   "pt": {
+    "fala": "Menos tempo procurando gente. Mais tempo no seu negócio. Deixa que o Frila cuida. Foque no essencial.",
+    "legenda": "Menos tempo procurando gente. Mais tempo no seu negócio. Deixa que o Frila cuida. Foque no essencial."
+   },
+   "janela_s": 8.0,
+   "legenda_queimada": false,
+   "tela": "Off-white, calmo; o relógio do gancho volta sem pressa",
+   "dado_e_fonte": "Promessa de produto, não resultado medido"
+  },
+  {
+   "id": "v14-assinatura",
+   "pt": {
+    "fala": "Frila. Turno combinado, regra clara.",
+    "legenda": "Frila. Turno combinado, regra clara."
+   },
+   "janela_s": 6.0,
+   "legenda_queimada": false,
+   "tela": "Logo A1; 'frila.org@gmail.com' discreto embaixo (só na tela); 'Narração com voz sintética (IA)'",
+   "dado_e_fonte": "—"
+  }
+ ]
+}

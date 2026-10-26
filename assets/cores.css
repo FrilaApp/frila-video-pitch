@@ -1,0 +1,14 @@
+/* Frila · cores da combinação C (brand book v1, 22/10/2026) */
+:root {
+  --frila-laranja-frila: #EA5A36;
+  --frila-laranja-queimado: #C2410C;
+  --frila-grafite: #18191C;
+  --frila-areia: #F7F3EE;
+  --frila-branco: #FFFFFF;
+  --frila-cinza-texto: #5B6068;
+  --frila-estado-ok: #007A33;
+  --frila-estado-aviso-texto: #9E5C00;
+  --frila-estado-erro: #D82020;
+  --frila-fonte-titulo: "Plus Jakarta Sans", system-ui, sans-serif; /* par 1, ainda a confirmar */
+  --frila-fonte-texto: "Atkinson Hyperlegible Next", system-ui, sans-serif;
+}

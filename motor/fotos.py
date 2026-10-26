@@ -2,7 +2,7 @@
 import json, sys, os, pathlib, threading, functools, http.server
 from playwright.sync_api import sync_playwright
 AQUI = pathlib.Path(__file__).resolve().parent
-RAIZ = AQUI.parent.parent.parent  # "Pesquisa Brading"
+RAIZ = AQUI.parent  # raiz do repositório (o filme.html carrega ../assets/)
 os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", str(AQUI / "browsers"))
 
 def servidor():

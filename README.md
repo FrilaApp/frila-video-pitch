@@ -1,30 +1,38 @@
 # Frila · vídeo-pitch v5 (PT-BR)
 
-Documentação e código de produção do vídeo-pitch do Frila: narrativa, design, plano de áudio e o motor que gera o vídeo quadro a quadro (HTML calculado por `seek(t)`, 60 fps, voz sintética).
+Narrativa, design, plano de áudio e motor de produção do vídeo-pitch do Frila: HTML calculado quadro a quadro (60 fps) + FFmpeg, com voz sintética em PT-BR.
 
-> Trabalho em andamento. O vídeo **ainda não foi renderizado** na v5; aqui está o que já foi decidido e preparado.
+> **Quem vai continuar: comece pelo [`HANDOFF.md`](HANDOFF.md).** Ele tem o estado, o que falta, o plano de trabalho, o aceite e as armadilhas.
 
-## O que há aqui
+## Documentos
 
 | Arquivo | O que é |
 |---|---|
-| `NARRATIVA-v5-100s.md` | Roteiro atual (14 momentos, ~100 s): três dores, soluções em mockup, dado, meta do piloto, estratégia e fecho |
-| `NARRATIVA-v5-aprovada.md`, `NARRATIVA-v5.md`, `REVISAO-CODEX.md` | Histórico: proposta inicial, versão aprovada e a revisão de narrativa |
-| `DESIGN.md` | Design do vídeo: tokens, tipografia, componentes, movimento, som, ritmo e regras |
-| `PLANO-AUDIO.md` | Plano de engenharia sonora: trilhas separadas, ducking, política contra cortes de fala, critérios de aceite |
-| `BRIEFING.md` | Estado, decisões e comandos da v5 |
-| `roteiro.json` | Falas e legendas por cena (ainda é o texto da v4) |
-| `motor/` | Motor de imagem e som (Python + Chromium headless + FFmpeg) |
-| `vozes/eleven.py` | Geração da voz e conferência por transcrição (ElevenLabs) |
+| [`HANDOFF.md`](HANDOFF.md) | Estado, pendências, plano de trabalho e definição de pronto |
+| [`NARRATIVA-v5-100s.md`](NARRATIVA-v5-100s.md) | Roteiro atual (14 momentos, ~100 s) e o lastro de cada dado |
+| [`DESIGN.md`](DESIGN.md) | Design do vídeo: tokens, componentes, movimento, som, ritmo e regras |
+| [`PLANO-AUDIO.md`](PLANO-AUDIO.md) | Plano de engenharia sonora: trilhas separadas, ducking, cortes de fala, QA |
+| [`AGENTS.md`](AGENTS.md) | Regras do repositório |
+| `docs/v4/`, `docs/historico/` | Referências da v4 e histórico de decisões |
+
+## Começo rápido
+
+```sh
+scripts/setup.sh      # venv, numpy, playwright e Chromium
+scripts/trilha.sh     # baixa a trilha (não está no repositório) e confere o arquivo
+export ELEVENLABS_API_KEY=...   # ou ~/.config/elevenlabs/chave
+scripts/pipeline.sh   # lista as etapas: voz, conferir, tempos, quadros, imagem, audio, mux, tudo
+```
+
+Requisitos: macOS (Apple Silicon testado), FFmpeg, Python 3.12.
 
 ## O que não está aqui (de propósito)
 
-- **Trilha musical, áudios e vídeos** (`.mp3`, `.wav`, `.mp4`): a música é "Talent in the Air" (Diego Nava, Mixkit) e sua licença não permite redistribuir o arquivo; os demais são pesados e gerados.
-- **Fontes e logo** da marca (`../../assets/`): o `motor/filme.html` os carrega de lá. Sem eles o motor não renderiza.
-- **Chaves e credenciais**: a chave do ElevenLabs fica em `~/.config/elevenlabs/chave` ou em `ELEVENLABS_API_KEY`, nunca no repositório.
+- **Trilha musical, áudios, vídeos e caches** (`.mp3`, `.wav`, `.mp4`, `motor/cache/`): a trilha é "Talent in the Air" (Diego Nava, Mixkit) e a licença não permite redistribuir o arquivo; o resto é pesado e gerado.
+- **Chaves e credenciais.** Nunca no repositório.
 
 ## Aviso
 
-A narração é feita por **voz sintética (IA)** e o vídeo traz esse aviso. Os números do roteiro vêm de fontes citadas na própria narrativa; as metas do piloto são **hipóteses a calibrar**, não resultados.
+A narração é **voz sintética (IA)** e o vídeo traz esse aviso. Os números do roteiro vêm de fontes citadas na narrativa; as metas do piloto são **hipóteses a calibrar**, não resultados. Fontes: Abrasel, site da eStaff (como a empresa declara) e pesquisa interna do Frila.
 
 Contato: frila.org@gmail.com

@@ -1,6 +1,6 @@
 # Narrativa da v5 — versão única, ~100 s (26/10/2026)
 
-**Esta é a fonte da narrativa a partir de agora.** Junta `NARRATIVA-v5-aprovada.md` (dores e soluções) com o módulo de potencial e prospecção de `NARRATIVA-v5-investidor.md`, condensado para caber em ~100 s. As outras duas ficam como histórico.
+**Esta é a fonte da narrativa a partir de agora.** Junta `docs/historico/NARRATIVA-v5-aprovada.md` (dores e soluções) com o módulo de potencial e prospecção de `NARRATIVA-v5-investidor.md`, condensado para caber em ~100 s. As outras duas ficam como histórico.
 **Status:** proposta consolidada, **ainda não aplicada** no `roteiro.json`, `filme.html` ou voz.
 
 ## Decisões do Cauê (26/10/2026)
@@ -10,7 +10,7 @@
 - **Duração-alvo:** em torno de 100 s.
 - **Metas do piloto (8 semanas, 50 vagas, 90%):** mantidas como meta, com a tag "hipótese a calibrar". Interpretei "4. pode ignorar" como "sem objeção"; se era para cortar, a cena P2 sai e o vídeo encurta ~7,5 s.
 
-## Roteiro (14 momentos, 199 palavras faladas)
+## Roteiro (14 momentos, 204 palavras faladas (contagem por espaços))
 
 | # | Momento | Fala (voz da Fernanda) | Tela | Janela |
 |---|---|---|---|---|
