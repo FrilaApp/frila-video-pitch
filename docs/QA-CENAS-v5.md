@@ -39,7 +39,7 @@ As 13 ocorrências geométricas pertencem aos seguintes grupos; todas foram exam
 
 A escala inicial **1,20** mediu 902,40 px de altura, de y=3,80 a y=906,20: invadia **16,20 px** da faixa reservada. A redução prevista em DESIGN §14 foi aplicada e documentada antes de alterar o motor: escala **1,10**, centro visual y=430, altura 827,20 px (~77% do quadro). Os fatores permanecem: mapa/fundo 0,6; passos 0,85; aparelho 1; cursor/ponto 1,1. Deslocamentos de parallax limitados a 30 px; lista esmaece e sai lateralmente durante o foco; câmera volta antes do corte.
 
-**O Cauê ainda precisa aprovar as capturas D1.** A referência inicial de aparelho com ~90% da altura cedeu à faixa da legenda. Nenhuma nova decisão de conteúdo ficou bloqueada; as pendências editoriais do HANDOFF §2 continuam com o Cauê.
+**Escala D1 1,10 aprovada pelo Fabrício em 26/10/2026.** A referência inicial de aparelho com ~90% da altura cedeu à faixa da legenda. Nenhuma nova decisão de conteúdo ficou bloqueada; as pendências editoriais do HANDOFF §2 continuam com o Cauê.
 
 ## Capturas e evidências locais (não commitadas)
 

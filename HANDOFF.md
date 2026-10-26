@@ -45,7 +45,7 @@
 | Roteiro da v5 aplicado no `roteiro.json` | **Não** (rascunho em `roteiro-v5-100s.json`) | — |
 | Voz da v5 gerada | **Não** | — |
 | Cenas novas (v01–v14) no `filme.html` | **Montadas e conferidas em ensaio T6**, sem voz; régua provisória separada | `motor/filme.html`, `scripts/tempos-provisorios.py`, `docs/QA-CENAS-v5.md` |
-| D1 em v06, v07 e v09 (T7) | **Implementado para revisão visual**, escala 1,10 após medir invasão da faixa em 1,20; falta aprovação do Cauê | `DESIGN.md` §19 e capturas em `motor/cache/qa-v5/` |
+| D1 em v06, v07 e v09 (T7) | **Implementado e aprovado** (Fabrício, 26/10/2026): escala 1,10 após medir invasão da faixa em 1,20 | `DESIGN.md` §19 e capturas em `motor/cache/qa-v5/` |
 | Render, mix, QA, entrega | **Não** | — |
 
 **Pendências do Cauê** (o vídeo não pode ficar final sem elas):
