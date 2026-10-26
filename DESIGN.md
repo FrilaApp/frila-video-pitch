@@ -245,7 +245,7 @@ A numeração pula o 15, que era o pedido de piloto (saiu na v3).
 
 ## 14. Mapa da v5 (14 momentos; montagem visual aplicada, régua provisória)
 
-Fonte: `NARRATIVA-v5-100s.md` e `roteiro-v5-100s.json`. Marca o que reaproveita da v4, o que adapta e o que é novo. **Os ids das cenas mudam** (`v01` a `v14`): `NOCAP` e tema `th` já usam os ids novos no `filme.html`. `NO_COMPASSO`, `DURACAO_MIN`, `ENTRADA` e seções musicais de `tempos2.py` ficam para T5; não foram alterados por T6.
+Fonte: `NARRATIVA-v5-100s.md` e `roteiro.json`. Marca o que reaproveita da v4, o que adapta e o que é novo. **Os ids das cenas mudam** (`v01` a `v14`): `NOCAP` e tema `th` já usam os ids novos no `filme.html`. `NO_COMPASSO`, `DURACAO_MIN`, `ENTRADA` e seções musicais de `tempos2.py` ficam para T5; não foram alterados por T6.
 
 | v5 | Momento | Componentes | Origem |
 |---|---|---|---|
