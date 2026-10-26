@@ -1,12 +1,15 @@
-"""Auditoria offline A1–A5. Sinais do mix são suspeitas; ouvido decide.
+"""Auditoria offline A1–A5 e A8. Sinais do mix são suspeitas; ouvido decide.
 
 python motor/analisar_emendas.py ARQUIVO [--manifesto JSON] [--scribe JSON] --saida DIR
 Sem manifesto: descobre candidatos no sinal e no Scribe, sem alegar conhecer tomadas.
-Não acessa API. A saída técnica 2 bloqueia entrega; 0 significa apenas apto para escuta.
+Não acessa API. Saída 2: bloqueio objetivo; 0: sem bloqueio, podendo haver pendências.
+`--falas JSON` fornece o texto de origem para A8; aprovação artística é do Fabrício.
 """
 import argparse
+from difflib import SequenceMatcher
 import json
 from pathlib import Path
+import sys
 
 import numpy as np
 
@@ -14,6 +17,8 @@ try:
     from .audio_util import SR, db, gravar_json, hash_arquivo, ler, salvar
 except ImportError:
     from audio_util import SR, db, gravar_json, hash_arquivo, ler, salvar
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from vozes.manifesto import frases, normal
 
 PASSO = 480  # 10 ms, resolução declarada; não é precisão fonética.
 
@@ -32,8 +37,10 @@ def ler_scribe(caminho, arquivo):
     d = json.loads(caminho.read_text())
     if d.get('sha256') != hash_arquivo(arquivo):
         raise ValueError('Scribe: hash do arquivo diverge ou ausente')
-    if 'words' in d:
-        return [w for w in d['words'] if w.get('type', 'word') == 'word']
+    if 'words' in d or 'palavras' in d:
+        if d.get('resposta_scribe') and hash_arquivo(caminho.parent / d['resposta_scribe']) != d['scribe_sha256']:
+            raise ValueError('Scribe: hash da resposta bruta diverge')
+        return [w for w in d.get('words', d.get('palavras', [])) if w.get('type', 'word') == 'word']
     palavras = []
     for f in d['frases']:
         trecho = Path(f['trecho'])
@@ -54,6 +61,71 @@ def ler_scribe(caminho, arquivo):
                    abs(u['start'] - w['start']) < .08 for u in unicas[-8:]):
             unicas.append(w)
     return unicas
+
+
+def ler_falas(caminho):
+    """Texto de origem: roteiro, manifesto do pipeline ou metadata da tomada."""
+    d = json.loads(Path(caminho).read_text())
+    if d.get('cenas') and isinstance(d['cenas'][0], dict):
+        return [{'id': c['id'], 'fala': c['pt']['fala']} for c in d['cenas']]
+    if 'fala' in d:
+        return [{'id': d.get('bloco', d.get('id', 'tomada')), 'fala': d['fala']}]
+    return [{'id': f['id'], 'fala': f['fala']} for f in d.get('falas', d.get('frases', []))]
+
+
+def verificar_a8(falas, palavras):
+    """Fonte define a frase; pontuação ASR não pode esconder dois-pontos/pausas.
+
+    Limite inclusivo de 0,500 s para o '~0,5' do playbook, conforme §J do plano.
+    Alinhamento textual incompleto é pendência, nunca prova de ausência de falha.
+    """
+    esperado, etiquetas, falhas, textos = [], [], [], {}
+    for f in falas:
+        for i, texto in enumerate(frases(f['fala']), 1):
+            fid = f'{f["id"]}:{i}'
+            tokens = normal(texto)
+            esperado.extend(tokens); etiquetas.extend([fid] * len(tokens)); textos[fid] = texto
+            if ':' in texto:
+                falhas.append({'regra': 'A8_dois_pontos', 'frase': fid, 'fala': texto,
+                               'motivo': 'dois-pontos na fala', 'tempo': None})
+    ouvido, donos = [], []
+    for i, w in enumerate(palavras):
+        tokens = normal(w['text'])
+        ouvido.extend(tokens); donos.extend([i] * len(tokens))
+    matcher = SequenceMatcher(None, esperado, ouvido, autojunk=False)
+    rotulos = [None] * len(ouvido)
+    for a, b, n in matcher.get_matching_blocks():
+        rotulos[b:b + n] = etiquetas[a:a + n]
+    por_palavra = [[] for _ in palavras]
+    for dono, rotulo in zip(donos, rotulos):
+        por_palavra[dono].append(rotulo)
+    ids = [r[0] if r and None not in r and len(set(r)) == 1 else None for r in por_palavra]
+    pausas = []
+    for i, (a, b) in enumerate(zip(palavras, palavras[1:])):
+        dur = b['start'] - a['end']
+        tipo = ('indeterminada' if ids[i] is None or ids[i + 1] is None else
+                'interna' if ids[i] == ids[i + 1] else 'entre_frases')
+        pausa = {'ini': a['end'], 'fim': b['start'], 'duracao': dur,
+                 'tempo': (a['end'] + b['start']) / 2, 'tipo': tipo,
+                 'frase_antes': ids[i], 'frase_depois': ids[i + 1],
+                 'palavra_antes': a, 'palavra_depois': b}
+        pausas.append(pausa)
+        if tipo == 'interna' and dur >= .5 - 1e-9:
+            falhas.append({**pausa, 'regra': 'A8_pausa_interna', 'frase': ids[i],
+                           'fala': textos[ids[i]], 'motivo': 'pausa interna ≥0,500 s'})
+    completo = bool(esperado) and esperado == ouvido and all(ids)
+    pendencias = []
+    if not completo:
+        pendencias.append('fala/Scribe ausente ou alinhamento textual incompleto')
+    if any(w['end'] <= w['start'] for w in palavras):
+        pendencias.append('palavra sem duração positiva no Scribe')
+    if any(p['duracao'] < 0 for p in pausas):
+        pendencias.append('timestamps sobrepostos')
+    bloqueado = bool(falhas)
+    return {'regra': 'A8', 'limite_s': .5, 'limite_inclusivo': True,
+            'estado': 'falha' if bloqueado else 'inconclusivo' if pendencias else 'sem_falha',
+            'bloqueado': bloqueado, 'alinhamento_completo': bool(completo),
+            'falhas': falhas, 'pausas': pausas, 'pendencias': pendencias}
 
 
 def caracteristicas(x):
@@ -239,7 +311,7 @@ def analisar(x, palavras, manifesto=None):
     return sorted(saida, key=lambda c: (-c['confianca'], c['tempo']))
 
 
-def executar(arquivo, saida, scribe=None, manifesto=None):
+def executar(arquivo, saida, scribe=None, manifesto=None, falas=None):
     arquivo, saida = Path(arquivo).resolve(), Path(saida).resolve()
     x = ler(arquivo, 2)
     palavras = ler_scribe(scribe, arquivo) if scribe else []
@@ -247,28 +319,51 @@ def executar(arquivo, saida, scribe=None, manifesto=None):
     if m and m.get('sha256') != hash_arquivo(arquivo):
         raise ValueError('Manifesto sem hash correspondente ao arquivo auditado')
     emendas = analisar(x, palavras, m)
-    for i, c in enumerate(emendas, 1):
-        a, b = max(0, round((c['tempo'] - 2) * SR)), min(len(x), round((c['tempo'] + 2) * SR))
-        p = saida / 'trechos' / f'{i:03d}-{c["tempo"]:.3f}s.wav'
+    textos = ler_falas(falas) if falas else [f for f in (m or {}).get('frases', []) if 'fala' in f]
+    a8 = verificar_a8(textos, palavras)
+    def extrair(t, p):
+        a, b = max(0, round((t - 2) * SR)), min(len(x), round((t + 2) * SR))
         salvar(p, x[a:b])
-        c.update(trecho=str(p), trecho_ini=a / SR, trecho_fim=b / SR, trecho_sha256=hash_arquivo(p))
+        return {'trecho': str(p), 'trecho_ini': a / SR, 'trecho_fim': b / SR,
+                'trecho_sha256': hash_arquivo(p)}
+    for i, c in enumerate(emendas, 1):
+        p = saida / 'trechos' / f'{i:03d}-{c["tempo"]:.3f}s.wav'
+        c.update(extrair(c['tempo'], p))
+        c['bloqueia'] = c['frase_dividida_comprovada'] or (c['origem'] == 'manifesto' and bool(c['motivos']))
+    for i, falha in enumerate(a8['falhas'], 1):
+        if falha['tempo'] is not None:
+            p = saida / 'a8' / f'{i:03d}-{falha["tempo"]:.3f}s.wav'
+            falha.update(extrair(falha['tempo'], p))
+    bloqueado = a8['bloqueado'] or any(c['bloqueia'] for c in emendas)
+    completo = bool(m and m.get('emendas') is not None)
     r = {'arquivo': str(arquivo), 'sha256': hash_arquivo(arquivo), 'duracao': len(x) / SR,
          'metodo': 'heurísticas offline; confiança ordinal, não probabilidade; resolução de envelope 10 ms',
          'scribe': str(Path(scribe).resolve()) if scribe else None,
          'scribe_sha256': hash_arquivo(scribe) if scribe else None,
          'manifesto': str(Path(manifesto).resolve()) if manifesto else None,
          'manifesto_sha256': hash_arquivo(manifesto) if manifesto else None,
+         'falas': str(Path(falas).resolve()) if falas else None,
+         'falas_sha256': hash_arquivo(falas) if falas else None,
          'parametros': {'protecao_s': .12, 'pausa_min_s': .2, 'pausa_max_s': 1.2,
                         'fundo_delta_max_db': 3, 'energia_pendente_dbfs': -55,
                         'envelope_passo_s': .01, 'vala_limiar_dbfs': -55,
                         'vala_profundidade_min_db': 25, 'vala_duracao_min_s': .04,
                         'agrupamento_candidatos_s': .12},
-         'completude_comprovada': bool(m and m.get('emendas') is not None),
-         'aprovado': bool(m and m.get('emendas') is not None) and all(c['aprovado'] for c in emendas),
+         'completude_comprovada': completo,
+         'bloqueado': bloqueado, 'a8': a8,
+         'apto_para_escuta': not bloqueado and completo and a8['estado'] == 'sem_falha'
+                            and all(c['aprovado'] for c in emendas),
+         'aprovado': False,  # Aprovação artística é exclusiva do Fabrício (PLAYBOOK §5b).
          'aprovacao_ouvido': None, 'emendas': emendas}
     gravar_json(saida / 'emendas.json', r)
-    linhas = [f'{len(emendas)} candidatos; liberação técnica: {r["aprovado"]}; escuta pendente.',
-              'Confiança é ordinal. Sem manifesto, não se comprova completude nem tomada de origem.']
+    linhas = [f'{len(emendas)} candidatos; bloqueio objetivo: {bloqueado}; A8: {a8["estado"]}; escuta pendente.',
+              'Confiança é ordinal. Suspeita cega informa; regra objetiva bloqueia. Fabrício aprova.']
+    for falha in a8['falhas']:
+        linhas.append(f'{falha["regra"]} | {falha["tempo"]} s | {falha["motivo"]} | '
+                      f'{falha["frase"]} | {falha.get("trecho", "texto sem instante")}')
+        if falha.get('palavra_antes'):
+            linhas.append('  ' + ' | '.join(f'{w["text"]} [{w["start"]:.3f}–{w["end"]:.3f}]'
+                                           for w in (falha['palavra_antes'], falha['palavra_depois'])))
     for c in emendas:
         linhas.append(f'{c["tempo"]:.6f} s | {c["confianca"]:.2f} | {c["classe"]} | ' +
                       '; '.join(c['motivos'] + c['pendencias']) + f' | {c["trecho"]}')
@@ -284,12 +379,13 @@ def main():
     p.add_argument('--saida', type=Path, required=True)
     p.add_argument('--scribe', type=Path)
     p.add_argument('--manifesto', type=Path)
+    p.add_argument('--falas', type=Path, help='Texto de origem para A8: roteiro, manifesto ou metadata da tomada')
     a = p.parse_args()
     try:
-        r = executar(a.arquivo, a.saida, a.scribe, a.manifesto)
+        r = executar(a.arquivo, a.saida, a.scribe, a.manifesto, a.falas)
     except (ValueError, KeyError, OSError) as e:
         p.exit(2, f'Bloqueado: {e}\n')
-    return 0 if r['aprovado'] else 2
+    return 2 if r['bloqueado'] else 0
 
 
 if __name__ == '__main__':
