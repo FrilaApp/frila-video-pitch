@@ -1,0 +1,170 @@
+{
+ "_nota": "v4 (22/10): EN reescrito para soar nativo e lido pela Kokoro af_heart; PT igual à v3. fala = texto que vai para a voz (números por extenso; [palavra](/fonemas/) fixa a pronúncia na Kokoro); legenda = texto na tela e no .srt. Frases se separam em . ? ! Refinamento (22/10): c10 trocou Freela Serviços pela eStaff (números visíveis em estaff.com.br, acesso em 22/10/2026).",
+ "cenas": [
+  {
+   "id": "c01-gancho",
+   "pt": {
+    "fala": "Faltou gente no turno de hoje?",
+    "legenda": "Faltou gente no turno de hoje?"
+   },
+   "en": {
+    "fala": "Short on staff for today's shift?",
+    "legenda": "Short on staff for today’s shift?"
+   }
+  },
+  {
+   "id": "c02-promessa",
+   "pt": {
+    "fala": "O Frila encontra gente perto para cobrir o turno.",
+    "legenda": "O Frila encontra gente perto para cobrir o turno."
+   },
+   "en": {
+    "fala": "[Frila](/fɹˈilə/) finds people nearby to cover the shift.",
+    "legenda": "Frila finds people nearby to cover the shift."
+   }
+  },
+  {
+   "id": "c03-rotatividade",
+   "pt": {
+    "fala": "Em bar e restaurante, a rotatividade passa de setenta por cento em um ano.",
+    "legenda": "Em bar e restaurante, a rotatividade passa de 70% em um ano."
+   },
+   "en": {
+    "fala": "In bars and restaurants, staff turnover tops seventy percent a year.",
+    "legenda": "In bars and restaurants, staff turnover tops 70% a year."
+   }
+  },
+  {
+   "id": "c04-contratar",
+   "pt": {
+    "fala": "E nove em cada dez empresários acham difícil contratar.",
+    "legenda": "E 9 em cada 10 empresários acham difícil contratar."
+   },
+   "en": {
+    "fala": "And nine in ten owners say hiring is hard.",
+    "legenda": "And 9 in 10 owners say hiring is hard."
+   }
+  },
+  {
+   "id": "c05-o-que-e",
+   "pt": {
+    "fala": "O Frila liga quem precisa de gente hoje a quem quer trabalhar hoje.",
+    "legenda": "O Frila liga quem precisa de gente hoje a quem quer trabalhar hoje."
+   },
+   "en": {
+    "fala": "[Frila](/fɹˈilə/) connects businesses that need staff today with people who want to work today.",
+    "legenda": "Frila connects businesses that need staff today with people who want to work today."
+   }
+  },
+  {
+   "id": "c06-passos-a",
+   "pt": {
+    "fala": "São quatro passos. O contratante publica a vaga. Quem está perto recebe o aviso.",
+    "legenda": "São 4 passos. O contratante publica a vaga. Quem está perto recebe o aviso."
+   },
+   "en": {
+    "fala": "It takes four steps. The business posts a shift. Workers nearby get an alert.",
+    "legenda": "It takes 4 steps. The business posts a shift. Workers nearby get an alert."
+   }
+  },
+  {
+   "id": "c07-passos-b",
+   "pt": {
+    "fala": "O contratante vê o histórico e escolhe. Depois, check-in no local e um sim ou não.",
+    "legenda": "O contratante vê o histórico e escolhe. Depois, check-in no local e um sim ou não."
+   },
+   "en": {
+    "fala": "The business checks their track record and picks one. Then, an on-site check-in, and a simple yes or no.",
+    "legenda": "The business checks their track record and picks one. Then, an on-site check-in, and a simple yes or no."
+   }
+  },
+  {
+   "id": "c08-mapa",
+   "pt": {
+    "fala": "O aviso chega a até quinze quilômetros. A presença é conferida a duzentos metros do local.",
+    "legenda": "O aviso chega a até 15 km. A presença é conferida a 200 m do local."
+   },
+   "en": {
+    "fala": "Alerts reach people up to fifteen kilometers away. Check-in is verified within two hundred meters of the venue.",
+    "legenda": "Alerts reach people up to 15 km away. Check-in is verified within 200 m of the venue."
+   }
+  },
+  {
+   "id": "c09-cadastro",
+   "pt": {
+    "fala": "Cadastro não é turno.",
+    "legenda": "Cadastro não é turno."
+   },
+   "en": {
+    "fala": "Signing up isn't showing up.",
+    "legenda": "Signing up isn’t showing up."
+   }
+  },
+  {
+   "id": "c10-concorrente",
+   "pt": {
+    "fala": "No site da é-Staff: um milhão e meio de cadastrados, e quinhentos e trinta e três mil disponíveis.",
+    "legenda": "No site da eStaff: 1,5 milhão de cadastrados e 533 mil disponíveis."
+   },
+   "en": {
+    "fala": "On the [eStaff](/ˈiːstæf/) website: one point five million signed up, and five hundred thirty-three thousand available.",
+    "legenda": "On the eStaff website: 1.5 million signed up, 533,000 available."
+   }
+  },
+  {
+   "id": "c11-contraste",
+   "pt": {
+    "fala": "O Frila mede quem aparece, não quem se cadastra.",
+    "legenda": "O Frila mede quem aparece, não quem se cadastra."
+   },
+   "en": {
+    "fala": "[Frila](/fɹˈilə/) measures who shows up, not who signs up.",
+    "legenda": "Frila measures who shows up, not who signs up."
+   }
+  },
+  {
+   "id": "c12-confianca",
+   "pt": {
+    "fala": "Antes de escolher, o contratante vê quem aparece e quem chamaria de novo.",
+    "legenda": "Antes de escolher, o contratante vê quem aparece e quem chamaria de novo."
+   },
+   "en": {
+    "fala": "Before choosing, the business sees who shows up, and who'd get hired again.",
+    "legenda": "Before choosing, the business sees who shows up, and who’d get hired again."
+   }
+  },
+  {
+   "id": "c13-estagio",
+   "pt": {
+    "fala": "O app já está em teste no iPhone, com meta de App Store em novembro.",
+    "legenda": "O app já está em teste no iPhone, com meta de App Store em novembro."
+   },
+   "en": {
+    "fala": "The app is already in testing on iPhone, aiming for the App Store in November.",
+    "legenda": "The app is already in testing on iPhone, aiming for the App Store in November."
+   }
+  },
+  {
+   "id": "c14-gratis",
+   "pt": {
+    "fala": "No piloto, é grátis para os dois lados.",
+    "legenda": "No piloto, é grátis para os dois lados."
+   },
+   "en": {
+    "fala": "During the pilot, it's free for both sides.",
+    "legenda": "During the pilot, it’s free for both sides."
+   }
+  },
+  {
+   "id": "c16-logo",
+   "pt": {
+    "fala": "Frila. Turno combinado, regra clara.",
+    "legenda": "Frila. Turno combinado, regra clara."
+   },
+   "en": {
+    "fala": "[Frila](/fɹˈilə/). Shifts agreed, rules clear.",
+    "legenda": "Frila. Shifts agreed, rules clear."
+   }
+  }
+ ]
+}

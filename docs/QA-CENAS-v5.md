@@ -12,7 +12,7 @@ scripts/pipeline.sh quadros
 (cd motor && ../.venv/bin/python sobreposicoes.py pt)
 ```
 
-O primeiro comando lê `roteiro-v5-100s.json`, estima a fala em **2,3 palavras/s**, adiciona entrada/pausas/cauda e respeita `janela_s` como piso visual. Produz `motor/tempos-pt.json` ignorado, com `_provisorio: true`, **14 cenas, 28 frases e 107,4196 s**. `musica` fica vazia. Não usa os WAVs, não gera silêncio artificial nem importa `tempos2.py`. Não usar essa régua para mixagem ou entrega; T5 definirá pausas, duração e compassos a partir das tomadas aprovadas.
+O primeiro comando lê `roteiro.json`, estima a fala em **2,3 palavras/s**, adiciona entrada/pausas/cauda e respeita `janela_s` como piso visual. Produz `motor/tempos-pt.json` ignorado, com `_provisorio: true`, **14 cenas, 28 frases e 107,4196 s**. `musica` fica vazia. Não usa os WAVs, não gera silêncio artificial nem importa `tempos2.py`. Não usar essa régua para mixagem ou entrega; T5 definirá pausas, duração e compassos a partir das tomadas aprovadas.
 
 `filme.html` recusa uma régua que não contenha v01–v14 e informa como gerar o ensaio. A régua v4 produzida pelo `tempos2.py` atual não serve à nova montagem. Isso é uma dependência explícita de T5, não uma migração silenciosa do roteiro.
 

@@ -9,13 +9,13 @@
 ## 0. Em 1 minuto
 
 - **O que é:** um vídeo de ~100 s, 1920×1080, 60 fps, narração em PT-BR por voz sintética, que mostra três dores de quem contrata turno avulso, como o Frila resolve cada uma (mockups), e fecha com potencial, meta de prospecção e estratégia para quem acompanha como investidor. O fim **não vende**: é tempo e foco ("deixa que o Frila cuida").
-- **Onde estamos:** a **narrativa** está escrita (14 momentos), o **design da v4** está documentado, o **plano de áudio** está aprovado com ajustes e o **motor** (HTML calculado quadro a quadro + FFmpeg) roda. **Não há render final da v5.** As 14 cenas visuais já têm quadros de ensaio com régua provisória; ver `docs/QA-CENAS-v5.md`. O `roteiro.json` ainda é o texto da v4; o texto novo está em `roteiro-v5-100s.json` (rascunho).
-- **O que falta (em ordem):** Cauê aprova o texto → gerar a voz → adaptar a régua de tempos → montar as cenas novas no `filme.html` (com zoom + parallax nos mockups) → implementar o plano de áudio → renderizar → mixar → conferir → Cauê ouve e aprova → entregar.
-- **Quem decide:** o **Cauê** (produto, texto, ouvido final). Dúvida de conteúdo ou número: pergunte a ele; não decida sozinho.
+- **Onde estamos:** a **narrativa** está escrita (14 momentos), o **design da v4** está documentado, o **plano de áudio** está aprovado com ajustes e o **motor** (HTML calculado quadro a quadro + FFmpeg) roda. **Não há render final da v5.** Texto aprovado e aplicado no `roteiro.json`; infra de áudio (T4) e 14 cenas com D1 (T6/T7) prontas, conferidas com régua provisória (`docs/QA-CENAS-v5.md`).
+- **O que falta (em ordem):** gerar a voz → adaptar a régua de tempos → renderizar → mixar → conferir → Fabrício ouve e aprova → entregar.
+- **Quem decide:** o **Fabrício** (produto, texto, ouvido final), desde 26/10/2026. Dúvida de conteúdo ou número: pergunte a ele; não decida sozinho.
 
 ## 1. Entrega e definição de pronto
 
-**Entregáveis:** `frila-pitch-pt.mp4`, `frila-pitch-pt.srt`, os **stems** de áudio (voz, música, efeitos), o `mixagem.json` e um relatório curto de QA. Arquivos grandes **não vão para o git**: entregue por Drive (ou o canal que o Cauê indicar) e registre o link no PR.
+**Entregáveis:** `frila-pitch-pt.mp4`, `frila-pitch-pt.srt`, os **stems** de áudio (voz, música, efeitos), o `mixagem.json` e um relatório curto de QA. Arquivos grandes **não vão para o git**: entregue por Drive (ou o canal que o Fabrício indicar) e registre o link no PR.
 
 **Pronto quando todos forem verdade:**
 
@@ -24,37 +24,34 @@
 | 1 | MP4 1920×1080, 60 fps, H.264, áudio AAC 256 kbit/s 48 kHz estéreo, idioma `por`, comentário "Narração com voz sintética (IA)" |
 | 2 | Duração entre **95 e 105 s** (meta ~100 s), terminando no fim de um compasso da trilha |
 | 3 | Texto na tela = campo `legenda` do `roteiro.json`; `.srt` com o mesmo texto e tempos |
-| 4 | Todas as frases passam na conferência (`vozes/eleven.py conferir`) **ou** têm exceção registrada aprovada de ouvido pelo Cauê |
+| 4 | Todas as frases passam na conferência (`vozes/eleven.py conferir`) **ou** têm exceção registrada aprovada de ouvido pelo Fabrício |
 | 5 | Nenhuma palavra cortada no MP4 final (conferir o áudio final com o Scribe, com ~250 ms de contexto em cada lado) |
 | 6 | Mix conforme `PLANO-AUDIO.md` §E: voz/música ≥ 12 dB, voz/efeitos ≥ 15 dB na coexistência, −16 LUFS (±0,5) e pico real ≤ −1,5 dBTP no AAC final |
 | 7 | Mockups das cenas v06, v07 e v09 com zoom + parallax (diretriz D1 em `DESIGN.md` §14) |
 | 8 | `sobreposicoes.py` sem sobreposição inesperada; a faixa da legenda livre |
 | 9 | Contato `frila.org@gmail.com` só em texto na última cena, **nunca falado**; sem pedido de dinheiro, sem preço |
-| 10 | **O Cauê ouviu o vídeo inteiro e aprovou.** Conferência automática é pista, não aprovação |
+| 10 | **O Fabrício ouviu o vídeo inteiro e aprovou.** Conferência automática é pista, não aprovação |
 
 ## 2. Estado atual
 
 | Item | Estado | Onde |
 |---|---|---|
-| Narrativa de 100 s (14 momentos, 204 palavras faladas) | **Escrita. Falta aprovação final do Cauê** (a crítica de investidor do revisor Astra ainda não chegou) | `NARRATIVA-v5-100s.md`, `roteiro-v5-100s.json` |
+| Narrativa de 100 s (14 momentos, 204 palavras faladas) | **Aprovada** (Fabrício, 26/10/2026) | `NARRATIVA-v5-100s.md`, `roteiro.json` |
 | Design do vídeo (v4 documentada, mapa v4→v5, diretriz D1) | Pronto | `DESIGN.md` |
-| Plano de áudio (trilhas separadas, ducking, cortes de fala, QA) | T4 implementada e conferida offline com sinais sintéticos no branch `feat/audio-infra`; voz/mix v5 e escuta pendentes | `PLANO-AUDIO.md` §H, `motor/mixagem.json`, `motor/conferir_audio.py` |
+| Plano de áudio (trilhas separadas, ducking, cortes de fala, QA) | T4 implementada e conferida offline com sinais sintéticos (PR #1); voz/mix v5 e escuta pendentes | `PLANO-AUDIO.md` §H, `motor/mixagem.json`, `motor/conferir_audio.py` |
 | Motor (`motor/`) | Roda. Caminhos ajustados para este repositório. **Imagem com cenas v01–v14; `tempos2.py` ainda aguarda T5** | `motor/` |
 | `preparar` (preparação da voz) | Preserva bruto por padrão, sem fades; corte/padding auditáveis testados offline. Régua/IDs da T5 preservados | `motor/tempos2.py`, `PLANO-AUDIO.md` §H |
 | Voz ElevenLabs (script de geração e conferência) | Pronto e testado (2 frases + 20 frases de teste) | `vozes/eleven.py` |
-| Roteiro da v5 aplicado no `roteiro.json` | **Não** (rascunho em `roteiro-v5-100s.json`) | — |
+| Roteiro da v5 aplicado no `roteiro.json` | **Sim** (T2); v4 em `docs/v4/roteiro-v4.json` | `roteiro.json` |
 | Voz da v5 gerada | **Não** | — |
 | Cenas novas (v01–v14) no `filme.html` | **Montadas e conferidas em ensaio T6**, sem voz; régua provisória separada | `motor/filme.html`, `scripts/tempos-provisorios.py`, `docs/QA-CENAS-v5.md` |
 | D1 em v06, v07 e v09 (T7) | **Implementado e aprovado** (Fabrício, 26/10/2026): escala 1,10 após medir invasão da faixa em 1,20 | `DESIGN.md` §19 e capturas em `motor/cache/qa-v5/` |
 | Render, mix, QA, entrega | **Não** | — |
 
-**Pendências do Cauê** (o vídeo não pode ficar final sem elas):
-1. Aprovar o texto final de `roteiro-v5-100s.json` (após a crítica do Astra, se vier).
-2. **Estágio do app:** a nota "Frila em teste no iPhone" do rodapé da cena final continua como na v4? Se o TestFlight mudou, avisar.
-3. **Histórico de profissional novo:** o vídeo não mostra esse estado; confirmar que está bom assim.
-4. **Assinatura** "Turno combinado, regra clara": mantida; confirmar.
-5. **Metas do piloto em público** (8 semanas, 50 vagas, 90%): mantidas com a tag "hipótese a calibrar". Confirmar.
-6. **Licença do ElevenLabs:** presume-se que o plano usado permita uso comercial, **mas isso não foi conferido** na página de preços. Confirmar antes de usar em anúncio pago.
+**Decididas pelo Fabrício em 26/10/2026:** texto final aprovado; nota "Frila em teste no iPhone" mantida; histórico de profissional novo fora do vídeo; assinatura "Turno combinado, regra clara" mantida; metas do piloto em público com a tag "hipótese a calibrar".
+
+**Pendente** (o vídeo não pode ir para anúncio pago sem ela):
+1. **Licença do ElevenLabs:** presume-se que o plano usado permita uso comercial, **mas isso não foi conferido** na página de preços. Confirmar antes de usar em anúncio pago.
 
 ## 3. Mapa do repositório
 
@@ -62,8 +59,7 @@
 HANDOFF.md              este arquivo
 README.md               visão geral
 NARRATIVA-v5-100s.md    roteiro atual (fonte da narrativa)
-roteiro-v5-100s.json    o mesmo roteiro no formato do motor (rascunho)
-roteiro.json            roteiro da v4 (ainda ativo; será substituído)
+roteiro.json            o roteiro da v5 no formato do motor (aprovado)
 DESIGN.md               design do vídeo: tokens, componentes, movimento, som, ritmo, regras
 PLANO-AUDIO.md          plano de engenharia sonora
 AGENTS.md               regras do repositório
@@ -128,25 +124,25 @@ Esforço: **P** pequeno (≤ 2 h), **M** médio (meio dia), **G** grande (1 a 2 
 | # | Tarefa | O que mexe | Aceite | Esf. | Depende de |
 |---|---|---|---|---|---|
 | T1 | **Ambiente + teste de fumaça** (§4) | — | `setup.sh` e `trilha.sh` sem erro; `conferir c01 c02` com 2/2 ok. O teste de render só é possível depois de T3 (o `tempos2.py` precisa de todas as frases) | P | — |
-| T2 | **Aprovação do texto** e aplicar no `roteiro.json` | `git mv roteiro.json docs/v4/roteiro-v4.json`; `git mv roteiro-v5-100s.json roteiro.json` | Cauê aprova; contagem de frases fala=legenda ok | P | Cauê |
-| T3 | **Gerar a voz** (28 frases) e conferir | `vozes/eleven.py` | `conferir` sem divergência não resolvida; Cauê ouve cada frase. Frase com defeito: outra tomada com `SEED=n`; **dois defeitos iguais: pare e leve ao Cauê** | M | T2 |
+| T2 | **Aprovação do texto** e aplicar no `roteiro.json` | `git mv roteiro.json docs/v4/roteiro-v4.json`; `git mv roteiro-v5-100s.json roteiro.json` | Fabrício aprovou (26/10/2026); contagem de frases fala=legenda ok | P | Cauê |
+| T3 | **Gerar a voz** (28 frases) e conferir | `vozes/eleven.py` | `conferir` sem divergência não resolvida; Fabrício ouve cada frase. Frase com defeito: outra tomada com `SEED=n`; **dois defeitos iguais: pare e leve ao Fabrício** | M | T2 |
 | T4 | **Infra de áudio** do `PLANO-AUDIO.md` §F passos 1–3, 5–7: trilhas separadas, `mixagem.json`, `preparar` que preserva o bruto, ducking novo, QA por estágio, master em 2 passagens | `motor/tempos2.py`, `motor/audio2.py`, `vozes/eleven.py`, novo `motor/conferir_audio.py`, `mixagem.json` | Null test da soma dos stems; margens por frase medidas; `grave` não mascara palavra; LUFS/TP no alvo | G | pode começar já, em paralelo |
 | T5 | **Adaptar `tempos2.py` aos ids v01–v14**: `ENTRADA`, `NO_COMPASSO`, `DURACAO_MIN`, `secoes()` (seções da música). Pausas pela fala, não pela grade de cada frase (plano §D3) | `motor/tempos2.py` | `tempos-pt.json` com 14 cenas, total 95–105 s, termina em fim de compasso | M | T3 |
 | T6 | **Cenas novas no `filme.html`** (v01–v14), reaproveitando componentes da v4 conforme `DESIGN.md` §14: textos em `TX`, uma `planX/runX` por cena, sons com `ev(...)` | `motor/filme.html` | Cada cena confere nos quadros de teste; fonte e margens do `DESIGN.md` §3–5 | G | pode começar já |
-| T7 | **D1: zoom + parallax** nos mockups das cenas v06, v07, v09 | `motor/filme.html` (câmera `CAM`, camadas) | Aparelho ~90% da altura; lista de passos nunca cobre a tela; legenda livre; valores iniciais em `DESIGN.md` §14, **validar por captura com o Cauê** | M | T6 |
+| T7 | **D1: zoom + parallax** nos mockups das cenas v06, v07, v09 | `motor/filme.html` (câmera `CAM`, camadas) | Aparelho ~90% da altura; lista de passos nunca cobre a tela; legenda livre; valores iniciais em `DESIGN.md` §14, **aprovado em 1,10 pelo Fabrício** | M | T6 |
 | T8 | **Render** | `scripts/pipeline.sh imagem` | `cache/filme-pt.mp4` e `eventos-pt.json`; `sobreposicoes.py pt` limpo | M | T5, T6, T7 |
 | T9 | **Mix e master** | `scripts/pipeline.sh audio` (já com a infra de T4) | Critérios 4–6 da §1 | M | T4, T8 |
 | T10 | **Mux, legenda, metadados** | `scripts/pipeline.sh mux` | MP4 e `.srt` conforme a §1 | P | T9 |
-| T11 | **QA completo** e **escuta do Cauê** (voz isolada, mix, celular, notebook, fones, mono; o vídeo inteiro sem ler legenda) | relatório de QA | Critérios 1–10 da §1 | M | T10 |
-| T12 | **Entrega:** arquivos finais no Drive, PR com atualização deste `HANDOFF.md` (estado) e do `DESIGN.md` | — | PR aprovado pelo Cauê | P | T11 |
+| T11 | **QA completo** e **escuta do Fabrício** (voz isolada, mix, celular, notebook, fones, mono; o vídeo inteiro sem ler legenda) | relatório de QA | Critérios 1–10 da §1 | M | T10 |
+| T12 | **Entrega:** arquivos finais no Drive, PR com atualização deste `HANDOFF.md` (estado) e do `DESIGN.md` | — | PR aprovado pelo Fabrício | P | T11 |
 
-**Atualização T6 (26/10/2026):** montagem visual v01–v14 concluída para ensaio. `scripts/tempos-provisorios.py` gera uma régua marcada PROVISÓRIA, sem áudio, a 2,3 palavras/s (107,4196 s). `tempos2.py`, `aparar`, ducking e roteiros não foram alterados. D1 aplicado com redução documentada para 1,10, aguardando revisão das capturas pelo Cauê. Os 42 quadros, a varredura de sobreposições e a conferência de determinismo estão registrados em `docs/QA-CENAS-v5.md`. Após T2/T3/T5, repetir quadros, varredura e validação visual antes do render final.
+**Atualização T6 (26/10/2026):** montagem visual v01–v14 concluída para ensaio. `scripts/tempos-provisorios.py` gera uma régua marcada PROVISÓRIA, sem áudio, a 2,3 palavras/s (107,4196 s). `tempos2.py`, `aparar`, ducking e roteiros não foram alterados. D1 aplicado com redução documentada para 1,10, aprovada pelo Fabrício. Os 42 quadros, a varredura de sobreposições e a conferência de determinismo estão registrados em `docs/QA-CENAS-v5.md`. Após T2/T3/T5, repetir quadros, varredura e validação visual antes do render final.
 
 **Ordem sugerida:** T1 → (T2 em paralelo com T4 e T6) → T3 → T5 → T7 → T8 → T9 → T10 → T11 → T12. T4 e T6 não dependem do texto final; os ajustes de áudio e as cenas visuais podem andar antes da voz.
 
 **Mapa musical sugerido para T5** (proposta a validar de ouvido): tensão no começo até a virada (v01 a v04, incluindo o escuro v03); groove a partir da virada v05 até a solução 2 (v07); **respiro** (quebra) no teaser v08, que é a pergunta; groove de volta de v09 a v12; calma no fecho e na assinatura (v13 e v14, com −2 dB de música).
 
-## 7. Decisões já tomadas (não reabrir sem o Cauê)
+## 7. Decisões já tomadas (não reabrir sem o Fabrício)
 
 - **Uma versão só**, ~100 s. Sem versão curta separada.
 - **Narrativa:** três dores seguidas (urgência → confiança → rotatividade), uma virada, soluções na mesma ordem em mockup, teaser no meio, depois dado, meta, estratégia, fecho em tempo e foco. Sem pedido final, sem preço.
@@ -184,7 +180,7 @@ Esforço: **P** pequeno (≤ 2 h), **M** médio (meio dia), **G** grande (1 a 2 
 
 ## 11. Contato e referências
 
-- Decisões e aprovação: **Cauê** (representante do projeto). Contato público do Frila: frila.org@gmail.com.
+- Decisões e aprovação: **Fabrício** (desde 26/10/2026; antes, Cauê). Contato público do Frila: frila.org@gmail.com.
 - `DESIGN.md` (tudo sobre o visual e o som), `PLANO-AUDIO.md` (tudo sobre áudio), `NARRATIVA-v5-100s.md` (texto e lastro dos dados), `docs/v4/STORYBOARD.md` e `docs/v4/LEIA-ME.md` (como era a v4 e como refazer).
 - `docs/historico/`: como chegamos aqui (propostas, revisões e o diário de preparação, com caminhos do Mac do Cauê que **não** existem neste repositório).
 
@@ -205,6 +201,6 @@ Ensaio sintético: null 0,0; voz/música mínima 17,57 dB; voz/efeitos mínima
 mínima 14,60 dB; AAC −16,44 LUFS / −5,48 dBTP; atraso inicial medido 0 ms.
 O `grave` iniciado 285,5 ms antes recebe ducking na cauda; ataque dentro da
 borda é silenciado. Permanecem pendentes T3/T5, limites acústicos da voz real,
-QA do MP4 após mux e escuta do Cauê. A aprovação de palavras não é provada
+QA do MP4 após mux e escuta do Fabrício. A aprovação de palavras não é provada
 por seno/ruído. Não há ajuste automático de ducking para fazer números passarem:
 QA bloqueia e pede override explícito até o teto musical de 22 dB.

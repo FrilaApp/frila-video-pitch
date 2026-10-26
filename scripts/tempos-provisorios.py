@@ -20,7 +20,7 @@ def main():
     args = parser.parse_args()
     if not math.isfinite(args.palavras_s) or args.palavras_s <= 0:
         parser.error('--palavras-s deve ser positivo')
-    roteiro = json.loads((RAIZ / 'roteiro-v5-100s.json').read_text())['cenas']
+    roteiro = json.loads((RAIZ / 'roteiro.json').read_text())['cenas']
     cenas, falas, t = [], [], 0.0
     for c in roteiro:
         separar = lambda texto: re.split(r'(?<=[.?!])\s+', texto.strip())
