@@ -41,6 +41,10 @@ Cada papel trabalha no seu worktree e commita no seu branch, sem push. O Maestro
 
 **A7. Scribe é pista, não aprovação.** A escuta decide.
 
+**A8. Sem pausa interna longa.** A `fala` não leva dois-pontos (use vírgula ou ponto); a `legenda` pode manter. Pausa **dentro de uma frase** acima de ~0,5 s é falha (a voz do ElevenLabs deixa ~0,8 s depois de dois-pontos, e o ouvido lê isso como frase cortada: foi a causa dos "3 a 5 cortes" da v5, confirmada pela escuta do Fabrício). Verificação determinística pelos tempos de palavra do Scribe, sem depender de detecção cega.
+
+**A9. Locução.** Português do Brasil **neutro, formal, tom editorial e jornalístico, sem sotaque ou dialeto regional**. Voz aprovada pelo Fabrício em 26/10/2026: **Ana Dias** (`MZxV5lN3cv7hi1376O0m`), `eleven_multilingual_v2`, estabilidade 0,55, similaridade 0,75, estilo 0,10, velocidade 1,0, seed 1, com contexto vizinho. Trocar de voz ou de parâmetro só com o Fabrício.
+
 ## 4. Regras de imagem e motion (inegociáveis)
 
 **D1. A v4 (nota 8/10) é o piso e a base.** Cena nova parte dos componentes e das curvas da v4. Reescrever do zero exige justificativa registrada no `DESIGN.md` e aprovação do Fabrício. Cada bloco passa por **comparação lado a lado** com a mesma cena da v4 (mesmos instantes).
@@ -52,6 +56,13 @@ Cada papel trabalha no seu worktree e commita no seu branch, sem push. O Maestro
 **D4. Duração não é desculpa.** A cena não é esticada para caber na voz: a voz entra na cena, a cena respira no ritmo do design. Se a voz exigir mais tempo, o Diretor refaz a coreografia da cena (não só segura o quadro) e avisa o Maestro.
 
 **D5. Sem bloco novo antes do bloco anterior aprovado pelo Fabrício.**
+
+**D6. Todo texto visível vem de fonte conhecida.** Cada string na tela ou em proposta tem de estar no `roteiro.json` (`legenda` ou `tela`) ou ser texto de uma tela real do app (`docs/v4/`). Texto novo, mesmo em estudo, exige aprovação prévia do Fabrício. Proposta com texto inventado é reprovada.
+
+**D7. O aparelho é um objeto contínuo.** O celular atravessa os cortes como o mesmo objeto (como na v4); apagar o aparelho e reacendê-lo num corte (o "mergulho no vazio" da v5 em ~42,5 s) é defeito bloqueante. Close-up da tela só no momento da ação principal, com zoom contínuo, nunca como troca seca de enquadramento.
+
+## 5b. Gates: bloqueia, informa, aprova
+Detector automático só **bloqueia** quando a regra é objetiva e calibrada (margens, vazamento de chave, texto fora da lista). Caso contrário **informa** (pista ordenada). Toda ferramenta declara a recall contra casos conhecidos; sem calibração só informa. **Aprovar** é do olhar e da escuta do Fabrício.
 
 ## 5. Regras do Maestro
 
