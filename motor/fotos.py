@@ -28,7 +28,7 @@ def abrir(pw, L, url):
 if __name__ == "__main__":
     L = sys.argv[1]
     s = servidor()
-    url = f"http://127.0.0.1:{s.server_port}/video/motor2/filme.html"
+    url = f"http://127.0.0.1:{s.server_port}/motor/filme.html"
     out = AQUI / "cache/fotos" / L; out.mkdir(parents=True, exist_ok=True)
     with sync_playwright() as pw:
         b, pg, tempos, info, erros = abrir(pw, L, url)

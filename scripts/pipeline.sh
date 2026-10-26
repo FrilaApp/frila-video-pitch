@@ -11,15 +11,16 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 PY=${PY:-.venv/bin/python}
+case "$PY" in /*) ;; *) PY="$PWD/$PY" ;; esac   # caminho absoluto, para valer dentro de motor/
 etapa=${1:-}; shift || true
 case "$etapa" in
   voz)      "$PY" vozes/eleven.py gerar "$@" ;;
   conferir) "$PY" vozes/eleven.py conferir "$@" ;;
-  tempos)   (cd motor && "../$PY" tempos2.py) ;;
-  quadros)  (cd motor && "../$PY" fotos.py pt "${@:-cenas}") ;;
-  imagem)   (cd motor && "../$PY" render.py pt "$@") ;;
-  audio)    (cd motor && "../$PY" audio2.py pt) ;;
-  mux)      bash motor/mux.sh pt && (cd motor && "../$PY" legendas2.py) ;;
+  tempos)   (cd motor && "$PY" tempos2.py) ;;
+  quadros)  (cd motor && "$PY" fotos.py pt "${@:-cenas}") ;;
+  imagem)   (cd motor && "$PY" render.py pt "$@") ;;
+  audio)    (cd motor && "$PY" audio2.py pt) ;;
+  mux)      bash motor/mux.sh pt && (cd motor && "$PY" legendas2.py) ;;
   tudo)     "$0" tempos && "$0" imagem && "$0" audio && "$0" mux ;;
   *)        sed -n '2,12p' "$0"; exit 1 ;;
 esac
