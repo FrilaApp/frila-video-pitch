@@ -38,9 +38,9 @@
 |---|---|---|
 | Narrativa de 100 s (14 momentos, 204 palavras faladas) | **Escrita. Falta aprovação final do Cauê** (a crítica de investidor do revisor Astra ainda não chegou) | `NARRATIVA-v5-100s.md`, `roteiro-v5-100s.json` |
 | Design do vídeo (v4 documentada, mapa v4→v5, diretriz D1) | Pronto | `DESIGN.md` |
-| Plano de áudio (trilhas separadas, ducking, cortes de fala, QA) | Aprovado com ajustes; **nada implementado** | `PLANO-AUDIO.md` |
+| Plano de áudio (trilhas separadas, ducking, cortes de fala, QA) | T4 implementada e conferida offline com sinais sintéticos no branch `feat/audio-infra`; voz/mix v5 e escuta pendentes | `PLANO-AUDIO.md` §H, `motor/mixagem.json`, `motor/conferir_audio.py` |
 | Motor (`motor/`) | Roda. Caminhos ajustados para este repositório. **Ainda com as cenas da v4** | `motor/` |
-| `aparar` (corte de silêncio da voz) | Editado, **não validado**: o plano manda trocar por "preservar o bruto" | `motor/tempos2.py` |
+| `aparar` (preparação da voz) | Preserva bruto por padrão, sem fades; corte/padding auditáveis testados offline. Régua/IDs da T5 preservados | `motor/tempos2.py`, `PLANO-AUDIO.md` §H |
 | Voz ElevenLabs (script de geração e conferência) | Pronto e testado (2 frases + 20 frases de teste) | `vozes/eleven.py` |
 | Roteiro da v5 aplicado no `roteiro.json` | **Não** (rascunho em `roteiro-v5-100s.json`) | — |
 | Voz da v5 gerada | **Não** | — |
@@ -183,3 +183,24 @@ Esforço: **P** pequeno (≤ 2 h), **M** médio (meio dia), **G** grande (1 a 2 
 - Decisões e aprovação: **Cauê** (representante do projeto). Contato público do Frila: frila.org@gmail.com.
 - `DESIGN.md` (tudo sobre o visual e o som), `PLANO-AUDIO.md` (tudo sobre áudio), `NARRATIVA-v5-100s.md` (texto e lastro dos dados), `docs/v4/STORYBOARD.md` e `docs/v4/LEIA-ME.md` (como era a v4 e como refazer).
 - `docs/historico/`: como chegamos aqui (propostas, revisões e o diário de preparação, com caminhos do Mac do Cauê que **não** existem neste repositório).
+
+
+## 12. Retorno T4 — infraestrutura de áudio (26/10/2026)
+
+Implementada no branch `feat/audio-infra`, sem API, voz v5, alteração do
+`filme.html` ou dos IDs/`ENTRADA`/`NO_COMPASSO`/`secoes()` da régua. O plano e
+os desvios estão em `PLANO-AUDIO.md` §H. Reproduzir com:
+
+```sh
+.venv/bin/python -m unittest discover -s tests -v
+.venv/bin/python scripts/testar_audio.py
+```
+
+Ensaio sintético: null 0,0; voz/música mínima 17,57 dB; voz/efeitos mínima
+16,20 dB na coexistência (override do clique documentado); voz/fundo local
+mínima 14,60 dB; AAC −16,44 LUFS / −5,48 dBTP; atraso inicial medido 0 ms.
+O `grave` iniciado 285,5 ms antes recebe ducking na cauda; ataque dentro da
+borda é silenciado. Permanecem pendentes T3/T5, limites acústicos da voz real,
+QA do MP4 após mux e escuta do Cauê. A aprovação de palavras não é provada
+por seno/ruído. Não há ajuste automático de ducking para fazer números passarem:
+QA bloqueia e pede override explícito até o teto musical de 22 dB.

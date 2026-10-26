@@ -1,0 +1,73 @@
+{
+  "versao": 1,
+  "idioma": "pt",
+  "sessao": {
+    "sample_rate": 48000,
+    "interno": "float32",
+    "regua_travada": false
+  },
+  "voz": {
+    "rms_ativo_alvo_dbfs": -20,
+    "tolerancia_db": 2,
+    "ajuste_automatico_max_db": 6,
+    "ganho_bus_db": 0,
+    "aparar": false,
+    "diagnostico_pontas_dbfs": -60,
+    "protecao_inicio_ms": 80,
+    "protecao_fim_ms": 160,
+    "fade_em_fala": false,
+    "frases": {}
+  },
+  "musica": {
+    "rms_referencia_dbfs": -24,
+    "referencia_independe_da_voz": true,
+    "ganho_bus_db": 0,
+    "duck": {
+      "profundidade_db": 14,
+      "inicio_rampa_antes_ms": 200,
+      "atenuacao_completa_antes_ms": 50,
+      "segura_ms": 250,
+      "volta_ms": 450,
+      "extra_nas_bordas_db": 3,
+      "maximo_db": 22
+    }
+  },
+  "efeitos": {
+    "ajuste_sobre_referencia_legada_db": -6,
+    "duck_db": 10,
+    "duck_nas_bordas_db": 16,
+    "inicio_rampa_antes_ms": 200,
+    "atenuacao_completa_antes_ms": 50,
+    "segura_ms": 200,
+    "volta_ms": 250,
+    "por_tipo": {
+      "grave": {
+        "ajuste_sobre_referencia_legada_db": -9
+      }
+    }
+  },
+  "protecao": {
+    "inicio_frase_ms": 200,
+    "fim_frase_ms": 150,
+    "mesclar_pausas_ate_ms": 600,
+    "margem_voz_musica_min_db": 12,
+    "margem_voz_efeitos_min_db": 15,
+    "margem_voz_fundo_min_db": 10,
+    "fundo_nas_bordas_abaixo_ref_voz_db": 18,
+    "pico_efeito_nas_bordas_abaixo_ref_voz_db": 6
+  },
+  "master": {
+    "integrado_lufs": -16,
+    "true_peak_pcm_alvo_dbtp": -2,
+    "true_peak_aac_max_dbtp": -1.5,
+    "lra_parametro_lu": 11,
+    "limitador_extra": false
+  },
+  "cenas": {},
+  "eventos": {},
+  "qa": {
+    "lufs_tolerancia_lu": 0.5,
+    "janela_ms": 100,
+    "passo_ms": 10
+  }
+}

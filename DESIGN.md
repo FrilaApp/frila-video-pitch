@@ -211,6 +211,16 @@ Fonte dos gatilhos: chamadas `ev(...)` no `filme.html`. Os sons são sintetizado
 
 **Voz (v5):** ElevenLabs, voz Fernanda, `eleven_multilingual_v2`, 24 kHz mono por frase; conferência pelo Scribe. Aviso "Narração com voz sintética (IA)" na cena final e nos metadados.
 
+### Infraestrutura v5 autorizada (T4, 26/10/2026)
+
+A implementação segue `PLANO-AUDIO.md` §H e `motor/mixagem.json`: preservar o
+bruto por padrão, sem fades em fala; stems independentes de voz, música e efeitos;
+ducking dos dois fundos antes do primeiro som; `grave` subordinado à palavra.
+Premix é a soma exata dos stems ducked. Master em duas passagens, sem limiter
+fixo adicional, alvo −16 LUFS ±0,5 e pico real ≤−1,5 dBTP no AAC decodificado.
+A configuração e o QA acompanham cada sessão. A montagem musical/cenas ainda
+é a v4 até T5; esta infraestrutura não aprova voz, sincronismo ou escuta da v5.
+
 ## 13. Inventário de cenas da v4 (15 cenas, 76,7 s no PT)
 
 | # | Id | Função na narrativa | Imagem | Duração PT |

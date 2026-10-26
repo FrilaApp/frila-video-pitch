@@ -8,6 +8,13 @@ Uso: .venv/bin/python tempos2.py
 """
 import json, math, pathlib, re, subprocess
 import numpy as np
+import sys
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "vozes"))
+from manifesto import frases_do_roteiro
+try:
+    from .audio_util import gravar_json, hash_arquivo
+except ImportError:
+    from audio_util import gravar_json, hash_arquivo
 
 AQUI = pathlib.Path(__file__).resolve().parent
 VIDEO = AQUI.parent
@@ -36,19 +43,38 @@ def ler(p):
     return np.frombuffer(raw, dtype=np.float32)
 
 
-def aparar(x, limiar_db=-60, folga=0.06, folga_fim=0.12, rampa_ini=0.008, rampa_fim=0.04):
-    """v5: corta só o silêncio das pontas, sem comer a consoante fraca do começo nem a cauda do fim.
-    A v4 usava -45 dBFS, 30 ms antes e 70 ms depois; com a voz do ElevenLabs (quase sem silêncio antes) isso comia 40 a 60 ms
-    do início de 12 das 20 frases (ex.: 'Turno' virava 'termo'). Agora: limiar -60 dBFS, 60 ms antes, 120 ms depois,
-    entrada em 8 ms (sem estalo) e saída em 40 ms."""
-    env = np.convolve(np.abs(x), np.ones(240) / 240, mode="same")
-    vivo = np.nonzero(env > 10 ** (limiar_db / 20))[0]
-    a = max(0, vivo[0] - int(folga * SR))
-    b = min(len(x), vivo[-1] + int(folga_fim * SR))
-    y = x[a:b].copy()
-    n = min(len(y), int(rampa_fim * SR)); y[-n:] *= np.linspace(1, 0, n)
-    m = min(len(y), int(rampa_ini * SR)); y[:m] *= np.linspace(0, 1, m)
-    return y
+def preparar(x, limites=None, confirmado=False, cortar=False, aprovado=False):
+    """Conserva o bruto; corte exige limites e aprovação explícitos, sem fades."""
+    x = np.asarray(x, dtype=np.float32)
+    if x.ndim != 1 or not x.size or not np.isfinite(x).all():
+        raise ValueError("Frase vazia, não finita ou com canais inválidos")
+    if np.max(np.abs(x)) <= 1e-7:
+        raise ValueError("Frase sem atividade: revisão obrigatória")
+    if confirmado and limites is None:
+        raise ValueError("Limites confirmados ausentes")
+    ini, fim = limites if confirmado else (0, len(x))
+    if not 0 <= ini < fim <= len(x):
+        raise ValueError("Limites acústicos inválidos")
+    a, b = 0, len(x)
+    if cortar:
+        if not (confirmado and aprovado):
+            raise ValueError("Corte exige limites confirmados e aprovação")
+        a, b = max(0, ini - round(.08 * SR)), min(len(x), fim + round(.16 * SR))
+        retirado = np.r_[x[:a], x[b:]]
+        if retirado.size and np.max(np.abs(retirado)) > 10 ** (-60 / 20):
+            raise ValueError("Corte contém energia acima de −60 dBFS")
+    pi = max(0, round(.08 * SR) - (ini - a)) if confirmado else 0
+    pf = max(0, round(.16 * SR) - (b - fim)) if confirmado else 0
+    y = np.pad(x[a:b], (pi, pf))
+    return y, {"corte_ini": a, "corte_fim": len(x) - b, "padding_ini": pi,
+               "padding_fim": pf, "amostras_bruto": len(x), "amostras_preparado": len(y),
+               "fala_ini_amostra": pi + ini - a, "fala_fim_amostra": pi + fim - a,
+               "limites_confirmados": confirmado, "fades": [], "ganho_db": 0}
+
+
+def aparar(x):
+    """Compatibilidade: preserva todas as amostras; não corta nem aplica fade."""
+    return preparar(x)[0]
 
 
 def frases(texto):
@@ -78,21 +104,39 @@ def secoes(cenas, total):
 
 
 def main():
-    roteiro = json.loads((VIDEO / "roteiro.json").read_text())["cenas"]
+    documento = json.loads((VIDEO / "roteiro.json").read_text())
+    roteiro = documento["cenas"]
+    itens = {f["id"]: f for f in frases_do_roteiro(documento)}
+    config = json.loads((AQUI / "mixagem.json").read_text())
     for L in ("pt",):
         limpo = AQUI / "cache/voz" / L
         limpo.mkdir(parents=True, exist_ok=True)
         cenas, falas, t = [], [], 0.0
+        manifesto = []
         for c in roteiro:
             if c["id"] in NO_COMPASSO:
                 t = sobe(t, BAR)
             ini = t + ENTRADA.get(c["id"], ENTRADA_PADRAO)
             lista = []
             for k, leg in enumerate(frases(c[L]["legenda"]), 1):
-                x = aparar(ler(VOZES[L] / f"{c['id']}-{k}.wav"))
+                fid = f"{c['id']}-{k}"
+                bruto = VOZES[L] / f"{fid}.wav"
+                op = config['voz'].get('frases', {}).get(fid, {})
+                x, meta = preparar(ler(bruto), limites=op.get('limites_amostras'),
+                                   confirmado=op.get('limites_confirmados', False),
+                                   cortar=op.get('aparar', False), aprovado=op.get('corte_aprovado', False))
+                selecao = bruto.with_suffix('.json')
+                if selecao.exists():
+                    dados = json.loads(selecao.read_text())
+                    if dados.get('fala', itens[fid]['fala']) != itens[fid]['fala']:
+                        raise ValueError(f"Tomada e roteiro divergentes: {fid}")
+                    meta.update({chave: dados[chave] for chave in ('tomada', 'geracao', 'contexto', 'aprovada') if chave in dados})
+                meta.update(itens[fid], bruto=str(bruto), sha256=hash_arquivo(bruto), sample_rate=SR)
+                gravar_json(limpo / f"{fid}.json", meta)
+                manifesto.append(meta)
                 np.save(limpo / f"{c['id']}-{k}.npy", x)
                 d = len(x) / SR
-                lista.append({"cena": c["id"], "k": k, "ini": round(ini, 3), "fim": round(ini + d, 3), "legenda": leg})
+                lista.append({"cena": c["id"], "k": k, "ini": round(ini, 3), "fim": round(ini + d, 3), "legenda": leg, "id": fid, "fala": itens[fid]["fala"], "ini_amostra": round(ini * SR)})
                 ini = sobe(ini + d + PAUSA, P / 2)
             dur = max(sobe(lista[-1]["fim"] + CAUDA - t, P), sobe(DURACAO_MIN.get(c["id"], 0), P))
             if c is roteiro[-1]:
@@ -100,6 +144,7 @@ def main():
             cenas.append({"id": c["id"], "ini": round(t, 4), "dur": round(dur, 4)})
             falas += lista
             t += dur
+        gravar_json(limpo / "manifesto.json", manifesto)
         # a cena anterior a um corte de compasso estica até ele
         for i in range(len(cenas) - 1):
             cenas[i]["dur"] = round(cenas[i + 1]["ini"] - cenas[i]["ini"], 4)
@@ -114,4 +159,5 @@ def main():
         print(L, "total", total, " ".join(f'{c["id"][:3]}@{c["ini"]:.1f}' for c in cenas))
 
 
-main()
+if __name__ == "__main__":
+    main()

@@ -1,7 +1,7 @@
 """v5 (PT): voz e conferência pelo ElevenLabs, no lugar do OmniVoice e do Whisper CLI.
 
-  python3 eleven.py gerar [cena ...]     gera frases/pt/<cena>-<n>.wav (24 kHz, mono) a partir de ../../roteiro.json
-  python3 eleven.py conferir [cena ...]  transcreve cada frase no Scribe e confere se saiu inteira → conferencia.json
+  python3 eleven.py gerar [cena|id-frase ...]     gera frases/pt/<cena>-<n>.wav (24 kHz, mono) a partir de ../../roteiro.json
+  python3 eleven.py conferir [cena|id-frase ...]  transcreve cada frase no Scribe e confere se saiu inteira → conferencia.json
   python3 eleven.py vozes                lista as vozes PT-BR da conta
   python3 eleven.py saldo                caracteres usados no mês
 
@@ -10,7 +10,11 @@ Ajustes por variável de ambiente: VOZ (padrão: Fernanda), MODELO, VEL (0.7 a 1
 (SEED muda a tomada: frase que o Scribe aponta como diferente se regrava com `SEED=3 python3 eleven.py gerar <cena>` até passar).
 Uma frase por arquivo, como na v4: a legenda fica presa ao início de cada frase.
 """
-import json, os, re, subprocess, sys, unicodedata, urllib.request, urllib.error, wave
+import hashlib, json, os, re, subprocess, sys, unicodedata, urllib.request, urllib.error, wave
+try:
+    from .manifesto import frases, frases_do_roteiro, guardar_tomada
+except ImportError:
+    from manifesto import frases, frases_do_roteiro, guardar_tomada
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
@@ -53,32 +57,37 @@ def chamar(caminho, corpo=None, multipart=None):
         sys.exit(f"ElevenLabs {e.code} em {caminho}: {e.read().decode()[:300]}")
 
 
-def frases(texto):
-    return [f for f in re.split(r"(?<=[.?!])\s+", texto.strip()) if f]
-
-
 def pcm_para_wav(pcm, destino):
     with wave.open(str(destino), "wb") as w:
         w.setnchannels(1); w.setsampwidth(2); w.setframerate(24000); w.writeframes(pcm)
 
 
-def cenas_do_roteiro(filtro):
-    cenas = json.loads(ROTEIRO.read_text())["cenas"]
-    return [c for c in cenas if not filtro or c["id"] in filtro or c["id"].split("-")[0] in filtro]
+def lista_frases(filtro):
+    return frases_do_roteiro(json.loads(ROTEIRO.read_text()), filtro)
 
 
 def gerar(filtro):
     if not VOZ:
-        sys.exit("defina VOZ=<id da voz> (use: python3 eleven.py vozes)")  # só se alguém esvaziar o padrão
+        sys.exit("defina VOZ=<id da voz>")
     SAIDA.mkdir(parents=True, exist_ok=True)
-    for c in cenas_do_roteiro(filtro):
-        for k, f in enumerate(frases(c["pt"]["fala"]), 1):
-            pcm = chamar(f"/v1/text-to-speech/{VOZ}?output_format=pcm_24000",
-                         {"text": f, "model_id": MODELO, "language_code": "pt", "voice_settings": CONFIG,
-                          **({"seed": int(os.environ["SEED"])} if "SEED" in os.environ else {})})
-            destino = SAIDA / f"{c['id']}-{k}.wav"
-            pcm_para_wav(pcm, destino)
-            print(f"{c['id']}-{k}  {len(pcm) / 48000:.2f}s  {f[:60]}")
+    for item in lista_frases(filtro):
+        destino = SAIDA / f"{item['id']}.wav"
+        # Arquivar inclusive uma seleção anterior criada antes desta infraestrutura.
+        if destino.exists():
+            guardar_tomada(destino, AQUI / 'tomadas/pt', {'origem': 'seleção anterior'})
+        publicos = {"voice_id": VOZ, "model_id": MODELO, "language_code": "pt", "voice_settings": CONFIG,
+                    **({"seed": int(os.environ["SEED"])} if "SEED" in os.environ else {})}
+        pcm = chamar(f"/v1/text-to-speech/{VOZ}?output_format=pcm_24000",
+                     {"text": item['fala'], **{k: v for k, v in publicos.items() if k != 'voice_id'}})
+        # A seleção convencional continua compatível com tempos2; a tomada é imutável.
+        temporario = destino.with_suffix('.novo.wav')
+        pcm_para_wav(pcm, temporario)
+        temporario.replace(destino)
+        tomada = guardar_tomada(destino, AQUI / 'tomadas/pt', {**item, 'geracao': publicos, 'contexto': None})
+        destino.with_suffix('.json').write_text(json.dumps(
+            {**item, 'tomada': str(tomada.relative_to(AQUI)), 'geracao': publicos, 'aprovada': False},
+            ensure_ascii=False, indent=2) + '\n')
+        print(f"{item['id']}  {len(pcm) / 48000:.2f}s  {item['fala'][:60]}")
 
 
 def multipart(campos, arquivo):
@@ -125,27 +134,40 @@ def normal(t):
 
 
 def conferir(filtro):
-    rel = {}
-    for c in cenas_do_roteiro(filtro):
-        for k, f in enumerate(frases(c["pt"]["fala"]), 1):
-            wav = SAIDA / f"{c['id']}-{k}.wav"
-            if not wav.exists():
-                rel[wav.stem] = {"ok": False, "motivo": "arquivo não existe"}; continue
-            d = json.loads(chamar("/v1/speech-to-text", multipart=multipart(
-                {"model_id": "scribe_v2", "language_code": "por", "timestamps_granularity": "word"}, wav)))
-            esperado, ouvido = normal(f), normal(d["text"])
-            dur = wave.open(str(wav)).getnframes() / 24000
-            palavras = [w for w in d["words"] if w["type"] == "word"]
-            sobra = dur - palavras[-1]["end"] if palavras else dur
-            ok = esperado == ouvido
-            rel[wav.stem] = {"ok": ok, "esperado": " ".join(esperado), "ouvido": " ".join(ouvido),
-                             "duracao": round(dur, 2), "silencio_no_fim": round(sobra, 2)}
-            print(("ok     " if ok else "DIFERE ") + wav.stem + ("" if ok else f"  esperado: {' '.join(esperado)} | ouvido: {' '.join(ouvido)}"))
-    (AQUI / "conferencia.json").write_text(json.dumps(rel, ensure_ascii=False, indent=1))
-    falhas = [n for n, v in rel.items() if not v["ok"]]
-    print(f"\n{len(rel) - len(falhas)}/{len(rel)} frases conferidas; relatório em conferencia.json")
+    relpath = AQUI / "conferencia.json"
+    rel = json.loads(relpath.read_text()) if relpath.exists() else {}
+    ids = []
+    for item in lista_frases(filtro):
+        fid = item['id']; ids.append(fid)
+        wav = SAIDA / f"{fid}.wav"
+        if not wav.exists():
+            rel[fid] = {"ok": False, "motivo": "arquivo não existe"}; continue
+        digest = hashlib.sha256(wav.read_bytes()).hexdigest()
+        params = {"model_id": "scribe_v2", "language_code": "por", "timestamps_granularity": "word"}
+        chave_cache = hashlib.sha256((digest + json.dumps(params, sort_keys=True)).encode()).hexdigest()
+        cache = AQUI / 'cache/scribe' / f'{chave_cache}.json'
+        if cache.exists():
+            d = json.loads(cache.read_text())
+        else:
+            d = json.loads(chamar("/v1/speech-to-text", multipart=multipart(params, wav)))
+            cache.parent.mkdir(parents=True, exist_ok=True)
+            cache.write_text(json.dumps(d, ensure_ascii=False, indent=2) + '\n')
+        esperado, ouvido = normal(item['fala']), normal(d['text'])
+        with wave.open(str(wav)) as w:
+            dur = w.getnframes() / w.getframerate()
+        palavras = [w for w in d.get('words', []) if w.get('type') == 'word']
+        sobra = dur - palavras[-1]['end'] if palavras else dur
+        ok = esperado == ouvido
+        rel[fid] = {"ok": ok, "estagio": "geração", "sha256": digest, "parametros": params,
+                    "esperado": " ".join(esperado), "ouvido": " ".join(ouvido),
+                    "duracao": dur, "silencio_no_fim": sobra, "palavras": palavras,
+                    "resposta": str(cache.relative_to(AQUI)), "aprovacao_ouvido": None}
+        print(("ok     " if ok else "DIFERE ") + fid)
+    relpath.write_text(json.dumps(rel, ensure_ascii=False, indent=2) + '\n')
+    falhas = [n for n in ids if not rel[n]['ok']]
+    print(f"\n{len(ids) - len(falhas)}/{len(ids)} frases conferidas; relatório em conferencia.json")
     if falhas:
-        print("a regravar:", " ".join(falhas))
+        print("a revisar de ouvido:", " ".join(falhas))
 
 
 def listar_vozes():
