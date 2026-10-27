@@ -1,6 +1,6 @@
 # Plano de áudio — Frila v5, PT-BR
 
-**Estado atual (26/10/2026): Bloco A aprovado pelo Fabrício e preservado. B e D gerados, A8 sem falha; C bloqueado nas duas seeds autorizadas, sem tomada selecionada. Nenhuma nova geração está liberada. §K registra autorizações, medições e fronteiras locais; §§A–J preservam o histórico. Base visual: v4 de 76,7 s, nota 8/10. PLAYBOOK A1–A9 permanece vigente.**
+**Estado atual (26/10/2026): as quatro vozes estão aprovadas de ouvido pelo Fabrício. Seleção: A `b92c749b…`, B `43bbc466…`, C seed 1 `5e4184f8…` (pausa A8 de 0,600 s aceita como exceção de ouvido, mantendo a vírgula) e D `4acfe322…`. C seed 2 foi descartada, sem apagar ou modificar a tomada. Nenhuma regeneração autorizada. §L documenta a régua oficial T5; §§A–K preservam o histórico.**
 
 Prioridade: preservar a frase inteira, manter a voz inteligível e permitir ajustes independentes de voz, música e efeitos. A narrativa de referência é `docs/historico/NARRATIVA-v5-aprovada.md`; este plano não altera texto, imagem, voz escolhida ou trilha.
 
@@ -1054,3 +1054,166 @@ não têm recall validada e somente informam (§5b). Não houve nova escuta.
   Log local: `motor/cache/blocos-bcd/verificar-final.log`. `git diff --check`
   também passou. Isso valida a infraestrutura, não aprova o som de C nem
   libera as fronteiras.
+
+## L. T5 — seleção aprovada e régua oficial (plano antes do código)
+
+**Decisão do Fabrício, recebida em 26/10/2026:** A `b92c749be0314efea49558e467da3eb8`,
+B `43bbc4666c484358834e92131dad38ce`, C **seed 1**
+`5e4184f8bc7840f39acd9e74169417c1` e D
+`4acfe322e133423faa154465d85fc3cf` aprovados de ouvido. Em C, a pausa de
+**0,600 s**, entre “semanas,” [6,320–6,860] e “cinquenta”/Scribe “50”
+[7,460–7,660], foi **aceita como exceção de ouvido pelo Fabrício nessa data**.
+O resultado medido da A8 continua falha; registra-se a aceitação separada,
+vinculada ao hash da tomada e ao intervalo, sem aumentar o limite de 0,500 s.
+Vírgula e palavras permanecem. C seed 2 é descartada para seleção, imutável.
+Essa decisão substitui o estado histórico de bloqueio em §K6.
+
+### L1. Contrato e sequência
+
+1. Gravar a seleção em `vozes/selecao-blocos-pt.json`, versionada, com UUID,
+   hashes de WAV/metadata/Scribe, aprovador/data e exceção específica de C.
+   Nunca mudar `bruto.json` nem `scribe.json` para inserir aprovação retroativa.
+2. Testes de cortes na metade da pausa, preservação de tempos relativos,
+   detecção de texto/hash/seleção divergentes e exceção A8 restrita ao caso
+   autorizado; implementar gerador offline em `vozes/regua_blocos.py`.
+3. Escrever **A primeiro** em `motor/cache/blocos-regua/A.json`, validar e
+   rodar `./scripts/verificar.sh` antes de avisar o Diretor via Maestri.
+4. Completar B/C/D e `motor/tempos-pt.json` pelo caminho normal
+   `motor/tempos2.py`, sem gerar arquivos por frase. `falas` continua sendo
+   a lista de legendas/frases do motor; `audio_blocos` descreve quatro WAVs
+   inteiros com posições independentes. Não cortar voz para criar legendas.
+5. Mapear música: tensão A (v01–v04), groove B/C (v05–v07, v09–v12), calma D
+   (v13–v14), ganho −2 dB no fecho. Não gerar música nem mix. Adaptar somente
+   a leitura de eventos vocais do motor para usar os quatro blocos quando
+   presentes, preservando o contrato legado das réguas sem `audio_blocos`.
+6. Conferir limites, palavras, compassos, duração alvo 78–90 s, integridade
+   de todas as tomadas e `janela_s`; reportar cenas apertadas ao Diretor e
+   Maestro. Testes e gate final; commit local, sem push/PR; handoff.
+
+### L2. Relógios, cortes e pausas
+
+Os JSONs locais usam **tempo zero no início visual do bloco**, e informam
+`voz_ini` (deslocamento do início do WAV), `ini_global`, duração do bloco,
+cenas com início/fim locais e palavras com tempo local e tempo de origem.
+O áudio bruto continua inteiro e pode ter cauda não verbal além do corte
+visual; esse corte nunca implica cortar o WAV. Margens de transição de imagem
+ficam a cargo do Diretor, sem alterar a régua nem duplicar a voz.
+
+Dentro do bloco, a fronteira de cena é exatamente a média entre o fim Scribe
+da última palavra da cena anterior e o início da primeira da seguinte.
+Nenhuma frase é quantizada, recortada, reposicionada ou preenchida. A pausa
+interna aceita de C não recebe corte de cena. Posições vocais são calculadas
+em amostras a 48 kHz; tempos Scribe relativos são preservados.
+
+Grade existente medida da trilha: `P = 0,491835 s`, `bar = 1,967340 s`
+(~122 BPM; mantém a referência do motor, sem substituí-la por 1,967 arredondado).
+Somente cortes **entre blocos** e fim do vídeo são alinhados ao compasso.
+Escolher recuo inicial e posições dos WAVs de modo a manter ≥500 ms entre
+última/primeira palavras dos blocos, proteção temporal ±120 ms nos cortes e
+sem sobreposição dos WAVs completos. Folgas musicais não são inseridas dentro
+da tomada. Cauda final termina em fim de compasso e será informada como tempo
+para a animação da assinatura, sem presumir quadro congelado aprovado.
+
+`janela_s` é planejamento histórico da versão de ~100 s, conforme o próprio
+roteiro; registrar todas as janelas menores como pendências de design, sem
+esticar a voz nem alterar esses valores. Revisão audiovisual e emendas da
+montagem efetiva continuam pendentes até haver imagem/mix.
+
+### L3. Resultado calculado da T5
+
+Régua oficial: **78,693604167 s / 40 compassos**. Grade mantida do motor:
+P 0,491835 s e compasso 1,967340 s (~122 BPM); limites globais quantizados
+à amostra de 48 kHz, desvio máximo medido 9,167 µs. Nenhuma frase recebeu
+quantização ou alteração interna.
+
+Recuo do WAV A: **2,459166667 s** (cinco tempos, quantizados à amostra).
+Recuos locais de B/C/D: **0,080 / 0,340 / 0,240 s**. A combinação mantém
+os cortes de bloco na grade, pausas Scribe de 0,5–1,2 s e os WAVs completos
+sem sobreposição. Cauda após o WAV D: **4,568458333 s**, para o fecho animado
+da assinatura, terminando no compasso 40; não é autorização de quadro parado.
+
+| Bloco | Início global (s) | Fim global (s) | Duração visual (s) | Duração do WAV (s) |
+|---|---:|---:|---:|---:|
+| A | 0.000000000 | 25.575416667 | 25.575416667 | 22.894875000 |
+| B | 25.575416667 | 45.248812500 | 19.673395833 | 19.922708333 |
+| C | 45.248812500 | 64.922229167 | 19.673416667 | 19.551208333 |
+| D | 64.922229167 | 78.693604167 | 13.771375000 | 8.962916667 |
+
+As caudas dos WAVs inteiros B e C ultrapassam seus limites **visuais** em
+0,329312500 e 0,217791667 s, respectivamente, depois da última palavra
+Scribe. Nenhum WAV é cortado nessa passagem. As futuras emendas de áudio
+precisam ser auditadas no contexto da montagem e coincidir com os cortes de
+cena conforme A2/A5; a régua não aprova uma emenda acústica nem autoriza cortar
+respiração/fonema. Não houve mixagem ou montagem de stem nesta tarefa.
+
+#### Cortes por cena e planejamento histórico
+
+| Cena | Início global (s) | Fim global (s) | Duração (s) | janela_s | Déficit (s) |
+|---|---:|---:|---:|---:|---:|
+| v01-gancho | 0.000000000 | 6.039166667 | 6.039166667 | 4.000 | 0.000000000 |
+| v02-dor1 | 6.039166667 | 13.449166667 | 7.410000000 | 6.000 | 0.000000000 |
+| v03-dor2 | 13.449166667 | 19.399166667 | 5.950000000 | 9.000 | 3.050000000 |
+| v04-dor3 | 19.399166667 | 25.575416667 | 6.176250000 | 7.500 | 1.323750000 |
+| v05-virada | 25.575416667 | 29.895416667 | 4.320000000 | 6.000 | 1.680000000 |
+| v06-solucao1 | 29.895416667 | 35.515416667 | 5.620000000 | 6.500 | 0.880000000 |
+| v07-solucao2 | 35.515416667 | 41.225416667 | 5.710000000 | 7.000 | 1.290000000 |
+| v09-solucao3 | 41.225416667 | 45.248812500 | 4.023395833 | 7.500 | 3.476604167 |
+| v10-dado | 45.248812500 | 50.148812500 | 4.900000000 | 7.500 | 2.600000000 |
+| v11-meta | 50.148812500 | 57.318812500 | 7.170000000 | 7.500 | 0.330000000 |
+| v12-estrategia | 57.318812500 | 64.922229167 | 7.603416667 | 9.000 | 1.396583333 |
+| v13-fecho | 64.922229167 | 70.732229167 | 5.810000000 | 8.000 | 2.190000000 |
+| v14-assinatura | 70.732229167 | 78.693604167 | 7.961375000 | 6.000 | 0.000000000 |
+
+Dez cenas menores que o planejamento: **v03, v04, v05, v06, v07, v09,
+v10, v11, v12 e v13**. São pendências explícitas de coreografia, sem voz
+esticada. A informação foi disponibilizada nas janelas ao Diretor; aprovação
+visual segue por bloco. `janela_s` não foi tratado como duração já medida.
+
+A foi exportado primeiro. Seus cortes no relógio **do WAV** são 3,580 /
+10,990 / 16,940 s; no relógio **visual local**, 6,039166667 / 13,449166667 /
+19,399166667 s. O segundo corte provisório de 11,000 s foi corrigido para
+10,990 s pelo Scribe: fim de “contratar” em 10,660, início de “Uma” em 11,320.
+O JSON já continha a medição correta; a correção de 10 ms do aviso textual foi
+enviada ao Diretor via Maestri, sem mudar o arquivo. Gate antes da entrega A:
+60 testes passaram (17 + 16 + 27), log `verificar-A.log` no cache da régua.
+
+#### Fronteiras planejadas e música
+
+| Fronteira | Corte global (s) | Compasso | Última palavra fim (s) | Primeira palavra início (s) | Pausa Scribe (s) | Intervalo entre WAVs (s) |
+|---|---:|---:|---:|---:|---:|---:|
+| A→B | 25.575416667 | 13 | 24.719166667 | 25.775416667 | 1.056250000 | 0.301375000 |
+| B→C | 45.248812500 | 23 | 44.995416667 | 45.688812500 | 0.693395833 | 0.010687500 |
+| C→D | 64.922229167 | 33 | 64.608812500 | 65.222229167 | 0.613416667 | 0.022208333 |
+
+Proteção temporal Scribe ≥120 ms em todas as fronteiras planejadas. Pausa
+entre palavras não equivale a silêncio acústico; escuta de montagem pendente.
+A exceção interna de C continua dentro de v11, sem receber corte de cena.
+
+Receita musical global de quarenta compassos, sem gerar trilha: tensão em
+A/0–13; groove contínuo B+C/13–33 (nenhuma quebra de v08); calma D/33–40.
+`musica[]` conserva `v`/`src` do motor e documenta seção/ganho; ganho efetivo
+planejado de −2 dB em v13/v14 consta em `motor/mixagem.json`. O clima musical
+é planejamento a conferir no mix futuro, não resultado ouvido nesta tarefa.
+
+#### Artefatos e validação
+
+- `vozes/selecao-blocos-pt.json`: seleção versionada, aprovação e exceção por
+  hash; nenhum metadado original foi alterado.
+- `.venv/bin/python motor/tempos2.py`: gera `motor/tempos-pt.json` (13 cenas,
+  22 janelas de legenda, quatro eventos de voz) e `motor/cache/blocos-regua/`.
+  `--bloco A` gera somente a janela A; nunca chama API.
+- `{A,B,C,D}.json`: relógios local/global, deslocamento do WAV, palavras,
+  tempos de origem, cenas e déficits. `RELATORIO.md` e `verificacao.json`
+  no mesmo cache. JSONs de régua continuam gerados/ignorados pelo Git.
+- `motor/audio2.py` passa a ler `audio_blocos` quando existir, para inserir
+  quatro tomadas inteiras uma vez cada, sem tratar legendas como arquivos
+  de áudio. Checa o hash declarado; régua legada conserva o comportamento.
+  Validado com fontes sintéticas temporárias; nenhuma mixagem real executada.
+- Integridade: quinze arquivos das cinco tomadas, incluindo C seed 2
+  descartada, reconferidos contra o inventário anterior e intactos. Todas as
+  151 palavras Scribe selecionadas mantêm tempos relativos; cortes internos
+  no meio da pausa; cenas contíguas; 22 legendas contidas nas respectivas cenas.
+- Gate final: `./scripts/verificar.sh` **passou, código 0, com 61 testes**
+  (18 + 16 + 27), AST/dependências, roteiro/cópia e ausência de binários/chaves.
+  `git diff --check` também passou. Log: `motor/cache/blocos-regua/verificar-final.log`.
+  Aprovação audiovisual e de montagem pendentes; commit local sem push/PR.

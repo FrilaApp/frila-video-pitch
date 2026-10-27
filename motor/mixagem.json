@@ -63,7 +63,14 @@
     "lra_parametro_lu": 11,
     "limitador_extra": false
   },
-  "cenas": {},
+  "cenas": {
+    "v13-fecho": {
+      "musica_ganho_adicional_db": -2
+    },
+    "v14-assinatura": {
+      "musica_ganho_adicional_db": -2
+    }
+  },
   "eventos": {},
   "qa": {
     "lufs_tolerancia_lu": 0.5,

@@ -9,9 +9,10 @@ Narrativa, design, plano de áudio e motor de produção do vídeo-pitch do Fril
 | Arquivo | O que é |
 |---|---|
 | [`HANDOFF.md`](HANDOFF.md) | Estado, pendências, plano de trabalho e definição de pronto |
-| [`NARRATIVA-v5-100s.md`](NARRATIVA-v5-100s.md) | Roteiro atual (14 momentos, ~100 s) e o lastro de cada dado |
+| [`roteiro.json`](roteiro.json) | Texto enxuto aprovado: 13 cenas, sem v08, alvo ~80 s |
 | [`DESIGN.md`](DESIGN.md) | Design do vídeo: tokens, componentes, movimento, som, ritmo e regras |
 | [`PLANO-AUDIO.md`](PLANO-AUDIO.md) | Plano de engenharia sonora: trilhas separadas, ducking, cortes de fala, QA |
+| [`vozes/selecao-blocos-pt.json`](vozes/selecao-blocos-pt.json) | Quatro tomadas aprovadas de ouvido, hashes e exceção A8 de C seed 1 |
 | [`AGENTS.md`](AGENTS.md) | Regras do repositório |
 | `docs/v4/`, `docs/historico/` | Referências da v4 e histórico de decisões |
 
@@ -25,6 +26,13 @@ scripts/pipeline.sh   # lista as etapas: voz, conferir, tempos, quadros, imagem,
 ```
 
 Requisitos: macOS (Apple Silicon testado), FFmpeg, Python 3.12 ou 3.14.
+
+As quatro vozes já estão aprovadas; não regenerar. Com as tomadas imutáveis
+no disco, `.venv/bin/python motor/tempos2.py` gera a régua oficial de
+**78,693604 s** em `motor/tempos-pt.json` e as janelas locais em
+`motor/cache/blocos-regua/{A,B,C,D}.json`. `--bloco A` exporta somente A.
+Os arquivos gerados ficam ignorados; seleção e gerador são versionados.
+Render, mix e aprovação audiovisual continuam pendentes.
 
 ## O que não está aqui (de propósito)
 
