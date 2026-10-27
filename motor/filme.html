@@ -268,6 +268,125 @@ function runV13(t,s){base(t,s);let k=0;s.f.forEach((f,i)=>{if(t>=f.ini)k=i;});co
 function planV14(s){s.land=F(s.id,1).ini+.05;D(s.ini,{w:34,h:34,r:17});D(s.land-.2,{x:E.idot.x,y:E.idot.y},'move');ev(s.land,'pouso',.7);}
 function runV14(t,s){base(t,s);QA(s,'.lgl').forEach((g,k)=>{const a=s.land+.65+k*.13;$$('.lg',g).forEach(p=>p.style.strokeDashoffset=(1-eio(ramp(t,a,.62))).toFixed(4));st(g,{o:fade(t,a,.3),y:(1-spr(t-a,'ui'))*14});});io(Q(s,'.assinatura'),t,F(s.id,2).ini-.1,null,20);io(Q(s,'.contato'),t,F(s.id,2).ini+.3,null,12);io(Q(s,'.rodape'),t,s.ini+.5,null,10);}
 
+/* ---------- Bloco A: componentes v4 4efa75a, relógio oficial contínuo ---------- */
+const COPIA_A={rot:'Rotatividade em bares e restaurantes · 12 meses',sub:'cerca de 7 em cada 10',
+ fonte2:'Fonte: Abrasel, 30/04/2025.',fonte4:'Fonte: Abrasel, via Monitor Mercantil, 09/12/2025.',
+ fonte3:'Números do site estaff.com.br, como a empresa os declara. Acesso em 22/10/2026.',
+ web:{url:'estaff.com.br',k:'eStaff',n1:'1,5',l1:'milhão de cadastrados',n2:'533',l2:'mil disponíveis'}};
+function palavraA(id,tx,fallback){return (T.palavras||[]).find(w=>w.cena.slice(0,3)===id&&w.text.toLowerCase().replace(/[.,!?]/g,'')===tx)?.start??fallback;}
+function buildBlocoA(){
+ E.dot=add(W,'<div id="dot"></div>');
+ cena('v01',`
+  <div class="ab" id="a-pill" style="left:660px;top:488px;width:600px;height:104px;display:flex;align-items:center;justify-content:center;gap:22px;color:#fff;font-family:PJS;font-weight:700;font-size:36px"><span style="width:16px;height:16px;border-radius:50%;background:${C.o}"></span><span>Garçom · hoje, 19h</span></div>
+  <div class="ab h ctr" id="a-gancho1" style="top:250px;font-size:116px">Faltou gente</div>
+  <div class="ab h ctr" id="a-gancho2" style="top:370px;font-size:116px"><span id="a-turno">no turno</span><svg id="a-q" width="60" height="118" viewBox="0 0 56 112" style="display:inline-block;vertical-align:-24px;margin-left:6px;overflow:visible"><path id="a-qh" d="M11 32 A17.5 17.5 0 1 1 41 44.5 L29 55 V68" fill="none" stroke="${C.ink}" stroke-width="15" pathLength="1" stroke-dasharray="1 1"/></svg></div>
+  ${tag(1430,820,'Exemplo')}`,null,runAGancho);
+ cena('v02',`
+  <div class="ab h ctr" id="a-nove" style="top:236px;font-size:210px;letter-spacing:-.045em"><span id="a-nove-d"></span><span> em 10</span></div>
+  <div class="ab ctr" id="a-empresarios" style="top:470px;font-family:PJS;font-weight:700;font-size:46px">empresários de bares e restaurantes</div>
+  <div class="ab ctr" id="a-contratar" style="top:532px;font-family:PJS;font-weight:700;font-size:46px">acham difícil contratar</div>
+  ${Array.from({length:10},(_,i)=>`<div class="ab a-bola" data-i="${i}" style="border-radius:50%"></div>`).join('')}`,null,runANove);
+ cena('v03',`
+  <div class="ab" id="a-brw" style="left:410px;top:190px;width:1100px;height:560px;border-radius:26px;background:#222327;border:1.5px solid #34353A;overflow:hidden">
+   <div class="ab" style="left:0;top:0;width:1100px;height:64px;border-bottom:1.5px solid #34353A"></div>
+   ${[0,1,2].map(i=>`<div class="ab" style="left:${26+i*24}px;top:25px;width:14px;height:14px;border-radius:50%;background:#3A3B40"></div>`).join('')}
+   <div class="ab" style="left:300px;top:14px;width:500px;height:36px;border-radius:18px;background:#2C2D31;color:#9C9894;font-size:19px;display:flex;align-items:center;justify-content:center">${COPIA_A.web.url}</div>
+   <div class="ab" id="a-estaff" style="left:70px;top:116px;font-family:PJS;font-weight:800;font-size:30px;letter-spacing:-.01em;color:#9C9894">${COPIA_A.web.k}</div>
+   <div class="ab h" style="left:70px;top:196px;font-size:150px;color:${C.paper};letter-spacing:-.045em"><span id="a-n1"></span></div>
+   <div class="ab a-web-label" style="left:74px;top:372px;font-family:PJS;font-weight:700;font-size:36px;color:#9C9894;white-space:nowrap">${COPIA_A.web.l1}</div>
+   <div class="ab" id="a-divisor" style="left:620px;top:160px;width:2px;height:300px;background:#34353A"></div>
+   <div class="ab h" style="left:690px;top:196px;font-size:150px;color:${C.o};letter-spacing:-.045em"><span id="a-n2"></span></div>
+   <div class="ab a-web-label" style="left:694px;top:372px;font-family:PJS;font-weight:700;font-size:36px;color:#9C9894;white-space:nowrap">${COPIA_A.web.l2}</div>
+  </div>
+  <div class="ab h ctr" id="a-cadastro" style="top:300px;font-size:160px;color:${C.paper}">Cadastro</div>
+  <div class="ab h ctr" id="a-nao" style="top:470px;font-size:160px;color:${C.paper}">não é <span style="color:${C.o}">turno.</span></div>`,null,runACadastro);
+ cena('v04',`
+  <div class="ab k ctr" id="a-rot" style="top:226px">${COPIA_A.rot}</div>
+  <div class="ab h ctr" id="a-percentual" style="top:272px;font-size:236px;letter-spacing:-.045em"><span id="a-rot-n"></span></div>
+  <div class="ab ctr" id="a-sete" style="top:540px;font-family:PJS;font-weight:700;font-size:46px">${COPIA_A.sub}</div>
+  <div class="ab ctr mut" id="a-periodo" style="top:610px;font-size:24px">dez/2024 a nov/2025</div>
+  ${Array.from({length:10},(_,i)=>`<div class="ab a-ra" data-i="${i}" style="border-radius:50%;background:${C.ink}"></div><div class="ab a-rb" data-i="${i}" style="border-radius:50%;border:4px solid ${C.ink}"></div>`).join('')}
+  <div class="ab" id="a-vaga" style="left:660px;top:588px;width:600px;height:104px;border-radius:52px;background:${C.ink};display:flex;align-items:center;justify-content:center;gap:22px;color:#fff;font:700 36px PJS"><span style="width:16px;height:16px;border-radius:50%;background:${C.o}"></span><span>Garçom · hoje, 19h</span></div>
+  ${tag(1430,720,'Exemplo')}`,null,runARotatividade);
+ add(HUD,'<div id="a-hud"><div id="src"></div><div id="cap"></div></div>');
+}
+async function bootBlocoA(){
+ const esperados=['v01-gancho','v02-dor1','v03-dor2','v04-dor3'];
+ if(T.cenas.map(c=>c.id).join(',')!==esperados.join(','))throw new Error('O piloto A exige somente v01–v04.');
+ for(const c of T.cenas){const id=c.id.slice(0,3);S[id]={...c,id,end:c.ini+c.dur,f:T.falas.filter(f=>f.cena===c.id)};ORD.push(S[id]);}
+ buildBlocoA();await document.fonts.load('800 116px PJS');await document.fonts.load('700 50px PJS');await document.fonts.load('600 40px AHN');await document.fonts.load('400 40px AHN');await document.fonts.ready;
+ SC.forEach(sc=>{sc.root.style.display='block';S[sc.id].root=sc.root;});
+ const qr=$('#a-q').getBoundingClientRect();E.aq={x:qr.left+qr.width*29/56,y:qr.top+qr.height*86/112};
+ E.aWords=[...words($('#a-gancho1')),...words($('#a-turno'))];E.aEmp=words($('#a-empresarios'));E.aTese=[...words($('#a-cadastro')),...words($('#a-nao'))];E.aTese.at(-1).style.color=C.o;
+ E.aO2=mkOdo($('#a-nove-d'),'#');E.aN1=mkSlot($('#a-n1'),'1,5');E.aN2=mkSlot($('#a-n2'),'533');E.aO4=mkOdo($('#a-rot-n'),'##,##%',3);
+ const [a,b,c,d]=ORD,vo=T.voz_ini||0;
+ a.shrink=vo+2.05;a.pingo=vo+2.8;
+ b.fill=b.f[0].ini+.25;b.sub=palavraA('v02','empresários',b.f[0].ini+2.86);b.verbo=palavraA('v02','acham',b.f[0].ini+5.44);
+ c.n1=c.ini+.3;c.n2=c.n1+.55;c.tese=c.f[1].ini;c.janelaOut=c.tese-.5;
+ d.cnt=d.ini+.55;d.swap=palavraA('v04','rotatividade',d.ini+2.04);d.vaga=T.bloco_fim-1.25;
+ D(-9,{x:960,y:540,w:28,h:28,r:14,c:C.o,sh:0});
+ D(.24,{c:C.ink},'snap');D(.30,{w:600,h:104,r:52},'move');D(.95,{y:760},'move');
+ D(a.shrink,{w:28,h:28,r:14},'ui');D(a.shrink+.15,{c:C.o},'snap');D(a.shrink+.05,{x:E.aq.x},'move');D(a.pingo,{y:E.aq.y,w:21,h:21,r:10.5},'move');
+ D(b.ini+.05,{x:420,y:650,w:72,h:72,r:36},'move');
+ D(c.ini-.65,{x:960,y:820,w:28,h:28,r:14},'move');D(c.ini-.25,{x:1740},'soft');D(c.ini+.65,{y:210},'move');
+ D(d.ini-.7,{y:820},'move');D(d.ini-.3,{x:380},'soft');D(d.ini+.3,{y:238,w:18,h:18,r:9},'move');
+ D(T.bloco_fim-2.1,{y:820,w:28,h:28,r:14},'move');D(T.bloco_fim-1.35,{x:960,y:760},'move');
+ key('th',-9,0);key('th',c.ini-.2,1,'soft');key('th',d.ini-.15,0,'soft');
+ key('cnt9',-9,1);for(let i=1;i<9;i++)key('cnt9',b.fill+(i-1)*P/4,i+1,'ui');
+ for(const n in K)K[n].sort((x,y)=>x[0]-y[0]);
+ window.eventos=[];window.seek(0);return {bloco:'A',total:T.total,cenas:4,eventos:0};
+}
+function runAGancho(t,s){
+ const fal=s.f[1],nomes=['faltou','gente','no','turno'],preparo=t<s.shrink-.05;
+ E.aWords[0].textContent=preparo?'Hoje,':'Faltou';E.aWords[1].textContent=preparo?'19h.':'gente';
+ E.aWords.forEach((w,i)=>{const a=preparo&&i<2?palavraA('v01',i?'19h':'hoje',s.f[0].ini+i*.68):palavraA('v01',nomes[i],fal.ini+i*.22);wio([w],t,a-.04,0,preparo&&i<2?s.shrink-.15:s.end-.3,46)});
+ const qi=s.f[1].ini+.62;$('#a-qh').style.strokeDashoffset=(1-eo(ramp(t,qi,.35))).toFixed(4);$('#a-q').style.opacity=fade(t,qi,.1)*(1-fade(t,s.end-.18,.2));
+ st($('#a-pill'),{o:fade(t,.48,.2)*(1-fade(t,s.shrink-.15,.12)),y:val('dy',t)-540});
+ const tag=s.root.querySelector('.k');io(tag,t,.55,s.shrink-.15,12);
+}
+function runANove(t,s){
+ const out=s.end-.2;E.aO2.set(val('cnt9',t));io($('#a-nove'),t,s.ini-.05,out,30);
+ E.aEmp.forEach((w,i)=>wio([w],t,palavraA('v02',['empresários','de','bares','e','restaurantes'][i],s.sub+i*.28)-.04,0,out,20));io($('#a-contratar'),t,s.verbo-.05,out,20);
+ const merge=s.end-.65,m=cl(spr(t-merge,'move'));
+ $$('.a-bola').forEach((e,i)=>{const u=cl(spr(t-s.ini-.05-i*P/8,'pop')),x=960+(i-4.5)*120,sz=72*Math.pow(1-m,2.5),fo=i<9?spr(t-s.fill-Math.max(0,i-1)*P/4,'ui'):0;
+  box(e,lerp(x,960,m)-sz/2,lerp(650,760,m)-sz/2,sz,sz);e.style.background=mixc(C.ink,C.o,fo);st(e,{o:i===0?0:u*(1-fade(t,merge+.34,.06)),s:u});});
+}
+function runACadastro(t,s){
+ const a=s.ini-.15,b=$('#a-brw'),out=s.janelaOut;
+ st(b,{o:fade(t,a,.25)*(1-fade(t,out,.22)),y:(1-spr(t-a,'move'))*60,s:lerp(.96,1,spr(t-a,'move'))-.04*fade(t,out,.22)});
+ io($('#a-estaff'),t,a+.2,null,14);
+ [[s.n1,'#a-n1',E.aN1],[s.n2,'#a-n2',E.aN2]].forEach(([n,id,o],i)=>{o.set(t,n-.05);st($(id).parentElement,{o:fade(t,n-.12,.18),y:(1-spr(t-n+.12,'ui'))*24});io($$('.a-web-label')[i],t,n+.35,null,14);});
+ $('#a-divisor').style.opacity=fade(t,s.n2-.25,.25);
+ const ts=[s.tese,s.tese+.55,s.tese+.67,s.tese+.83];E.aTese.forEach((w,i)=>wio([w],t,ts[i]-.04,0,s.end-.22,50));
+}
+const A_SWAP=[0,1,3,4,6,7,9];
+function runARotatividade(t,s){
+ const nominal=T.bloco_fim,out=nominal-.55;
+ io($('#a-rot'),t,s.ini-.12,out,16);E.aO4.set(7349*Math.min(1,spr(t-s.cnt,'count')));
+ st($('#a-percentual'),{o:fade(t,s.cnt-.15,.2)*(1-fade(t,out,.22)),y:(1-spr(t-s.cnt+.15,'ui'))*30-fade(t,out,.22)*14,blur:fade(t,out,.22)*8});
+ io($('#a-sete'),t,s.cnt+1,s.vaga-.25,20);io($('#a-periodo'),t,s.cnt+1.25,s.vaga-.25,14);
+ const fimRow=s.vaga-.25;
+ for(let i=0;i<10;i++){
+  const x=960+(i-4.5)*80,sz=40,u=cl(spr(t-s.ini-.55-i*P/8,'pop')),k=A_SWAP.indexOf(i),ts=k<0?1e9:s.swap+k*P/4;
+  const ra=$$('.a-ra')[i],rb=$$('.a-rb')[i],end=1-fade(t,fimRow,.2);
+  box(ra,x-sz/2,722-sz/2,sz,sz);st(ra,{o:u*(1-fade(t,ts,.16))*end,y:k<0?0:spr(t-ts,'ui')*40,s:u});
+  box(rb,x-sz/2,722-sz/2,sz,sz);st(rb,{o:k<0?0:fade(t,ts+.08,.16)*end,y:(1-spr(t-ts-.08,'ui'))*-40});
+ }
+ st($('#a-vaga'),{o:fade(t,s.vaga,.2),y:(1-spr(t-s.vaga,'ui'))*26});io(s.root.querySelector('.k:last-child'),t,s.vaga+.1,null,12);
+}
+function seekBlocoA(tempo){
+ const t=cl(tempo,0,T.bloco_fim);E.t=t;
+ for(const sc of SC){const s=S[sc.id],on=t>=s.ini-1&&t<s.end+.9;sc.root.style.display=on?'block':'none';if(on)sc.run(t,s);}
+ W.style.transform='matrix(1,0,0,1,0,0)';
+ const x=val('dx',t),y=val('dy',t),w=val('dw',t),h=val('dh',t);box(E.dot,x-w/2,y-h/2,w,h);E.dot.style.opacity='1';E.dot.style.borderRadius=val('dr_',t)+'px';E.dot.style.background=`rgb(${['dr','dg','db'].map(n=>Math.round(val(n,t))).join(',')})`;
+ const th=val('th',t),ink=mixc(C.ink,C.paper,th);$('#stage').style.background=mixc(C.paper,C.ink,th);
+ const fl=T.falas.find(f=>t>=f.leg_ini&&t<f.leg_fim),cp=$('#cap');
+ if(fl&&!fl.cena.startsWith('v01')){cp.textContent=fl.legenda;cp.style.color=ink;st(cp,{o:fade(t,fl.leg_ini,.14)*(1-fade(t,fl.leg_fim-.14,.14)),y:(1-spr(t-fl.leg_ini,'ui'))*10});}else cp.style.opacity=0;
+ const s=ORD.find(s=>t>=s.ini&&t<s.end),src=$('#src'),fonte=s?.id==='v02'?COPIA_A.fonte2:s?.id==='v03'?COPIA_A.fonte3:s?.id==='v04'?COPIA_A.fonte4:'';
+ src.textContent=fonte;src.style.maxWidth='1776px';src.style.color=mixc(C.mut,'#8A8F96',th);st(src,{o:fonte?fade(t,s.ini+.3,.25)*(1-fade(t,Math.min(s.end-.35,T.bloco_fim-.5),.2)):0});
+ return {ponto:{x,y,w,h,r:val('dr_',t),cor:E.dot.style.background},camera:[1,0,0,1,0,0]};
+}
+
 /* ---------- HUD, câmera, ponto e cursor ---------- */
 const NOCAP=new Set(['v01','v13','v14']);
 function runHUD(t){const th=val('th',t);$('#stage').style.background=mixc(C.paper,C.ink,th);const ink=mixc(C.ink,C.paper,th),mut=mixc(C.mut,'#8A8F96',th);const cp=$('#cap');const fl=T.falas.find(f=>t>=f.leg_ini&&t<f.leg_fim);
@@ -281,6 +400,7 @@ function runCursor(t){const p=projetar(val('kx',t),val('ky',t),1.1);E.cur.style.
 window.boot=async function(tempos,lang='pt'){
   // É seguro montar de novo na mesma página (QA de diferentes réguas).
   T=tempos;L=lang;X=TX[L];if(!X)throw new Error('A v5 tem roteiro somente em português.');P=T.P;S={};ORD=[];SC.length=0;EV.length=0;for(const k of Object.keys(K))delete K[k];W.innerHTML=OV.innerHTML=HUD.innerHTML='';W.style.transform='none';
+  if(T.bloco==='A')return await bootBlocoA();
   const ids=T.cenas.map(c=>c.id.slice(0,3));if(ids.join(',')!==Array.from({length:14},(_,i)=>`v${String(i+1).padStart(2,'0')}`).join(','))throw new Error('A v5 exige uma régua com v01–v14. Para ensaio sem voz: scripts/tempos-provisorios.py.');
   for(const c of T.cenas){const id=c.id.slice(0,3),f=T.falas.filter(f=>f.cena===c.id);S[id]={id,ini:c.ini,dur:c.dur,end:c.ini+c.dur,f};ORD.push(S[id]);}
   build();await document.fonts.load('800 100px PJS');await document.fonts.load('700 100px PJS');await document.fonts.load('600 40px AHN');await document.fonts.load('700 40px AHN');await document.fonts.load('400 40px AHN');await document.fonts.ready;
@@ -293,5 +413,5 @@ window.boot=async function(tempos,lang='pt'){
   for(const sc of SC)sc.plan(S[sc.id]);for(const n in K)K[n].sort((a,b)=>a[0]-b[0]);EV.sort((a,b)=>a.t-b.t);window.eventos=EV;window.seek(0);
   return {total:T.total,cenas:SC.length,eventos:EV.length,provisorio:!!T._provisorio};
 };
-window.seek=function(t){E.t=t;for(const sc of SC){const s=S[sc.id],on=t>=s.ini&&t<s.end;sc.root.style.display=on?'block':'none';if(on)sc.run(t,s);}runCam(t);runDot(t);runCursor(t);runHUD(t);};
+window.seek=function(t){if(T.bloco==='A')return seekBlocoA(t);E.t=t;for(const sc of SC){const s=S[sc.id],on=t>=s.ini&&t<s.end;sc.root.style.display=on?'block':'none';if(on)sc.run(t,s);}runCam(t);runDot(t);runCursor(t);runHUD(t);};
 </script></body></html>

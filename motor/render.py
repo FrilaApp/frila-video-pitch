@@ -9,25 +9,136 @@ FPS, SUB = 60, 4
 N_TRAB = 6
 
 def trabalho(arg):
-    L, porta, q0, q1, saida = arg
+    L, porta, q0, q1, saida, *extra = arg
     from playwright.sync_api import sync_playwright
     from fotos import abrir
-    ff = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "image2pipe", "-framerate", str(FPS * SUB), "-c:v", "mjpeg", "-i", "-",
-                           "-vf", f"tmix=frames={SUB},select='not(mod(n+1\\,{SUB}))',setpts=N/{FPS}/TB",
-                           "-r", str(FPS), "-c:v", "libx264", "-preset", "medium", "-crf", "14", "-pix_fmt", "yuv420p",
-                           "-color_primaries", "bt709", "-color_trc", "bt709", "-colorspace", "bt709", str(saida)], stdin=subprocess.PIPE)
-    with sync_playwright() as pw:
-        b, pg, tempos, info, erros = abrir(pw, L, f"http://127.0.0.1:{porta}/motor/filme.html")
-        for q in range(q0, q1):
-            # o subquadro k do quadro final n cobre (n - 1 + (k+1)/4)/60: o quadro n é a média do intervalo que termina nele
-            t = (q + 1) / (FPS * SUB) - 1 / (FPS * SUB) * (SUB - 1) / 2
-            pg.evaluate(f"window.seek({t:.6f})")
-            ff.stdin.write(pg.screenshot(type="jpeg", quality=94))
-        b.close()
-    ff.stdin.close(); ff.wait()
+    regua = extra[0] if extra else None
+    filtro = ("scale=1920:1080:flags=lanczos," if regua else "")
+    filtro += f"tmix=frames={SUB},select='not(mod(n+1\\,{SUB}))',setpts=N/{FPS}/TB"
+    ff = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "image2pipe", "-framerate", str(FPS*SUB), "-c:v", "mjpeg", "-i", "-",
+        "-vf", filtro, "-r", str(FPS), "-an", "-c:v", "libx264", "-preset", "medium", "-crf", "14", "-pix_fmt", "yuv420p",
+        "-color_primaries", "bt709", "-color_trc", "bt709", "-colorspace", "bt709", str(saida)], stdin=subprocess.PIPE)
+    erros = []
+    try:
+        with sync_playwright() as pw:
+            if regua:
+                b = pw.chromium.launch(args=["--force-color-profile=srgb", "--disable-lcd-text"])
+                pg = b.new_page(viewport={"width":1920, "height":1080}, device_scale_factor=2)
+                pg.on('pageerror', lambda e: erros.append(str(e)))
+                pg.goto(f"http://127.0.0.1:{porta}/motor/filme.html")
+                pg.evaluate('r=>window.boot(r,"pt")', regua)
+            else:
+                b, pg, _, _, erros = abrir(pw, L, f"http://127.0.0.1:{porta}/motor/filme.html")
+            try:
+                for q in range(q0, q1):
+                    t = (q+1)/(FPS*SUB) - (SUB-1)/(2*FPS*SUB)
+                    pg.evaluate('(t)=>window.seek(t)', t)
+                    ff.stdin.write(pg.screenshot(type="jpeg", quality=94))
+                    if regua and (q-q0) % 480 == 0:
+                        print(f'{saida.name}: {q-q0}/{q1-q0} subquadros', flush=True)
+            finally:
+                b.close()
+    finally:
+        ff.stdin.close()
+        retorno = ff.wait()
+    if retorno: raise RuntimeError(f'FFmpeg falhou no trecho {saida}')
     return saida, erros
 
+
+def preparar_bloco(regua, margem_quadros=15):
+    """Conserva o relógio oficial e acrescenta apenas margem de imagem no fim."""
+    import copy
+    import math
+    if regua.get('bloco') != 'A':
+        raise ValueError('Somente o piloto A foi autorizado nesta etapa.')
+    if margem_quadros < 12:
+        raise ValueError('A margem de transição exige pelo menos 12 quadros.')
+    r = copy.deepcopy(regua)
+    nomes = ['v01-gancho', 'v02-dor1', 'v03-dor2', 'v04-dor3']
+    if [c['id'] for c in r['cenas']] != nomes:
+        raise ValueError('Régua do A deve conter exatamente v01–v04, em ordem.')
+    fim = 0.
+    for c in r['cenas']:
+        if not all(math.isfinite(c[k]) for k in ('ini', 'dur')) or c['dur'] <= 0 or abs(c['ini']-fim) > 1e-6:
+            raise ValueError('Régua com lacuna, sobreposição ou duração inválida.')
+        fim = c['ini'] + c['dur']
+    nominal = r.get('duracao', r.get('total'))
+    if nominal is None or abs(fim-nominal) > 1e-6:
+        raise ValueError('Cenas não cobrem a duração oficial.')
+    for f in r['falas']:
+        c = next((c for c in r['cenas'] if c['id'] == f['cena']), None)
+        if not c or not c['ini'] <= f['ini'] < f['fim'] <= c['ini']+c['dur']:
+            raise ValueError('Fala fora de sua janela oficial.')
+    r.update(total=(math.ceil(nominal*FPS-1e-7)+margem_quadros)/FPS,
+             bloco_fim=nominal, voz_duracao=r.get('duracao_voz', nominal),
+             P=regua.get('P', .491835), margem_quadros=margem_quadros)
+    r['cenas'][-1]['dur'] = r['total']-r['cenas'][-1]['ini']
+    r['cenas'][-1]['fim'] = r['total']
+    return r
+
+
+def render_bloco(args):
+    import hashlib
+    import math
+    from fotos import servidor
+    regua_original = json.loads(args.regua.read_text())
+    if args.bloco != regua_original.get('bloco'):
+        raise ValueError('Bloco solicitado difere da régua fornecida.')
+    regua = preparar_bloco(regua_original, args.margem_quadros)
+    pasta = args.saida or AQUI/'cache/bloco-a-imagem'
+    pasta.mkdir(parents=True, exist_ok=True)
+    (pasta/'regua-oficial.json').write_text(json.dumps(regua_original, ensure_ascii=False, indent=2)+'\n')
+    (pasta/'tempos.json').write_text(json.dumps(regua, ensure_ascii=False, indent=2)+'\n')
+    fonte = (AQUI/'filme.html').read_text()
+    (pasta/'filme.html').write_text(fonte.replace('<head>', '<head><base href="/motor/">', 1))
+    contrato = dict(presenca=[dict(id='ponto', selector='#dot', de=0, ate=regua['total'], opacidade_min=.999)],
+        movimento=[dict(de=a, ate=b) for a,b in [( .24,1.7), (regua.get('voz_ini',0)+1.87,regua['cenas'][1]['ini']+.8),
+            (regua['cenas'][1]['ini']+.5,regua['cenas'][1]['ini']+1.8),
+            (regua['cenas'][2]['ini']-.5,regua['cenas'][2]['ini']+2.57),
+            (regua['falas'][-2]['ini']-.5,regua['cenas'][3]['ini']+.4),
+            (regua['cenas'][3]['ini']+.4,regua['cenas'][3]['ini']+3.45),
+            (regua['bloco_fim']-2.1,regua['bloco_fim']-.2)]])
+    (pasta/'contrato.json').write_text(json.dumps(contrato, indent=2)+'\n')
+    s = servidor()
+    final = pasta/'bloco-a-sem-audio.mp4'
+    partes = pasta/'partes'; partes.mkdir(exist_ok=True)
+    n = round(regua['total']*FPS)
+    passo = math.ceil(n/args.trabalhadores)
+    tarefas = [(args.idioma, s.server_port, a*SUB, min(a+passo, n)*SUB,
+                partes/f'p{i:02d}.mp4', regua) for i, a in enumerate(range(0, n, passo))]
+    try:
+        with mp.get_context('spawn').Pool(len(tarefas)) as pool:
+            res = pool.map(trabalho, tarefas)
+        for _, erros in res:
+            if erros: raise RuntimeError('Erros na fonte do bloco: '+str(erros))
+        lista = partes/'lista.txt'
+        lista.write_text(''.join(f"file '{r[0].resolve()}'\n" for r in res))
+        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', str(lista), '-c', 'copy', str(final)], check=True)
+    finally:
+        s.shutdown(); s.server_close()
+    manifesto = dict(bloco='A', arquivo=str(final.resolve()), frames=n, fps=FPS, subquadros=SUB,
+        deviceScaleFactor=2, reducao='Lanczos 3840×2160 → 1920×1080 antes da mistura temporal',
+        duracao_render=regua['total'], fim_nominal=regua['bloco_fim'],
+        margem_quadros=regua['margem_quadros'], regua_origem=str(args.regua.resolve()),
+        regua_sha256=hashlib.sha256(args.regua.read_bytes()).hexdigest(),
+        html_sha256=hashlib.sha256(fonte.encode()).hexdigest(), camera='identidade no ancestral comum #world',
+        audio=False, voz_arquivo=regua_original.get('arquivo'), voz_sha256=regua_original.get('sha256'))
+    (pasta/'manifesto-render.json').write_text(json.dumps(manifesto, ensure_ascii=False, indent=2)+'\n')
+    print('ok', final, flush=True)
+
+
 if __name__ == "__main__":
+    if '--bloco' in sys.argv:
+        import argparse
+        parser = argparse.ArgumentParser(description='Imagem por bloco com régua oficial e margem de transição.')
+        parser.add_argument('idioma', choices=['pt'])
+        parser.add_argument('--bloco', choices=['A'], required=True)
+        parser.add_argument('--regua', type=pathlib.Path, required=True)
+        parser.add_argument('--saida', type=pathlib.Path)
+        parser.add_argument('--margem-quadros', type=int, default=15)
+        parser.add_argument('--trabalhadores', type=int, default=N_TRAB, choices=range(1, N_TRAB+1))
+        render_bloco(parser.parse_args())
+        raise SystemExit(0)
     L = sys.argv[1]
     tempos = json.loads((AQUI / f"tempos-{L}.json").read_text())
     t0, t1 = (float(sys.argv[2]), float(sys.argv[3])) if len(sys.argv) > 3 else (0, tempos["total"])
