@@ -1,6 +1,6 @@
 # Mapa narrativo: emoção e intenção da locução
 
-**Status:** proposta do Maestro, **aguarda aprovação do Fabrício** (nada abaixo muda o texto aprovado do `roteiro.json`; só a direção de interpretação).
+**Status:** **aprovado pelo Fabrício em 26/10/2026** (nada abaixo muda o texto aprovado do `roteiro.json`; só a direção de interpretação). Ajustes de intensidade só com pedido dele.
 **Origem:** escuta da prévia de 26/10/2026. A voz é boa em dialeto e junções, mas a interpretação ficou **neutra demais** nos momentos que importam (virada, features, fecho).
 
 ## 1. Princípios
