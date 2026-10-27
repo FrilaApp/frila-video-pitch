@@ -60,13 +60,14 @@ def preparar_bloco(regua, margem_quadros=15):
     import copy
     import math
     bloco = regua.get('bloco')
-    if bloco not in ('A', 'B'):
-        raise ValueError('Somente os blocos A e B foram autorizados nesta etapa.')
+    if bloco not in ('A', 'B', 'C'):
+        raise ValueError('Somente os blocos A, B e C foram autorizados nesta etapa.')
     if margem_quadros < 12:
         raise ValueError('A margem de transição exige pelo menos 12 quadros.')
     r = copy.deepcopy(regua)
     nomes = (['v01-gancho', 'v02-dor1', 'v03-dor2', 'v04-dor3'] if bloco == 'A'
-             else ['v05-virada', 'v06-solucao1', 'v07-solucao2', 'v09-solucao3'])
+             else ['v05-virada', 'v06-solucao1', 'v07-solucao2', 'v09-solucao3'] if bloco == 'B'
+             else ['v10-dado', 'v11-meta', 'v12-estrategia'])
     if [c['id'] for c in r['cenas']] != nomes:
         raise ValueError(f'Régua do {bloco} deve conter exatamente {nomes}, em ordem.')
     fim = 0.
@@ -103,20 +104,28 @@ def render_bloco(args):
     (pasta/'tempos.json').write_text(json.dumps(regua, ensure_ascii=False, indent=2)+'\n')
     fonte = (AQUI/'filme.html').read_text()
     (pasta/'filme.html').write_text(fonte.replace('<head>', '<head><base href="/motor/">', 1))
-    contrato = dict(presenca=[dict(id='ponto', selector='#dot', de=0, ate=regua['total'], opacidade_min=.999)],
-        movimento=[dict(de=a, ate=b) for a,b in [( .24,1.7), (regua.get('voz_ini',0)+1.87,regua['cenas'][1]['ini']+.8),
-            (regua['cenas'][1]['ini']+.5,regua['cenas'][1]['ini']+1.8),
-            (regua['cenas'][2]['ini']-.5,regua['cenas'][2]['ini']+2.57),
-            (regua['falas'][-2]['ini']-.5,regua['cenas'][3]['ini']+.4),
-            (regua['cenas'][3]['ini']+.4,regua['cenas'][3]['ini']+3.45),
-            (regua['bloco_fim']-2.1,regua['bloco_fim']-.2)]])
-    if args.bloco == 'B':
+    if args.bloco == 'A':
+        contrato = dict(presenca=[dict(id='ponto', selector='#dot', de=0, ate=regua['total'], opacidade_min=.999)],
+            movimento=[dict(de=a, ate=b) for a,b in [( .24,1.7), (regua.get('voz_ini',0)+1.87,regua['cenas'][1]['ini']+.8),
+                (regua['cenas'][1]['ini']+.5,regua['cenas'][1]['ini']+1.8),
+                (regua['cenas'][2]['ini']-.5,regua['cenas'][2]['ini']+2.57),
+                (regua['falas'][-2]['ini']-.5,regua['cenas'][3]['ini']+.4),
+                (regua['cenas'][3]['ini']+.4,regua['cenas'][3]['ini']+3.45),
+                (regua['bloco_fim']-2.1,regua['bloco_fim']-.2)]])
+    elif args.bloco == 'B':
         contrato = dict(presenca=[
             dict(id='chassi', selector='#dot', de=0, ate=regua['total'], opacidade_min=.999),
             dict(id='tela', selector='#scr', de=2.2, ate=regua['total'], opacidade_min=.999)],
             movimento=[dict(de=a,ate=b) for a,b in [(.12,2.2),(2.5,3.65),(4.45,5.6),
                 (6.16,7.2),(8.42,9.2),(10.14,11.04),(12.74,13.44),
                 (14.1,15.4),(16.05,16.8),(17.1,17.4),(18.45,19.62)]])
+    elif args.bloco == 'C':
+        contrato = dict(presenca=[
+            dict(id='ponto', selector='#dot', de=0, ate=regua['total'], opacidade_min=.999)],
+            movimento=[dict(de=a, ate=b) for a,b in [(.1, 1.8), (2.5, 3.5), (4.8, 6.2),
+                (6.8, 7.8), (9.2, 10.5), (12.0, 14.5), (14.8, 17.0), (17.2, 19.5)]])
+    else:
+        contrato = {}
     (pasta/'contrato.json').write_text(json.dumps(contrato, indent=2)+'\n')
     s = servidor()
     final = pasta/f'bloco-{args.bloco.lower()}-sem-audio.mp4'
@@ -133,7 +142,7 @@ def render_bloco(args):
         lista = partes/'lista.txt'
         lista.write_text(''.join(f"file '{r[0].resolve()}'\n" for r in res))
         subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', str(lista), '-c', 'copy', str(final)], check=True)
-        if args.bloco == 'B':
+        if args.bloco in ('B', 'C'):
             from playwright.sync_api import sync_playwright
             with sync_playwright() as pw:
                 b = pw.chromium.launch()
@@ -141,9 +150,9 @@ def render_bloco(args):
                 pg.goto(f"http://127.0.0.1:{s.server_port}/motor/filme.html")
                 pg.evaluate('r=>window.boot(r,"pt")', regua)
                 pg.evaluate('t=>window.seek(t)', regua['bloco_fim'])
-                fim = pg.evaluate('()=>window.estadoBlocoB()')
+                fim = pg.evaluate(f'()=>window.estadoBloco{args.bloco}()')
                 b.close()
-            (pasta/'estado-fim-B.json').write_text(json.dumps(fim, ensure_ascii=False, indent=2)+'\n')
+            (pasta/f'estado-fim-{args.bloco}.json').write_text(json.dumps(fim, ensure_ascii=False, indent=2)+'\n')
     finally:
         s.shutdown(); s.server_close()
     manifesto = dict(bloco=args.bloco, arquivo=str(final.resolve()), frames=n, fps=FPS, subquadros=SUB,
@@ -153,7 +162,8 @@ def render_bloco(args):
         regua_sha256=hashlib.sha256(args.regua.read_bytes()).hexdigest(),
         html_sha256=hashlib.sha256(fonte.encode()).hexdigest(),
         camera=('identidade no ancestral comum #world' if args.bloco == 'A'
-                else 'matriz única em #b-camera, chassi+tela+ilha+UI'),
+                else 'matriz única em #b-camera, chassi+tela+ilha+UI' if args.bloco == 'B'
+                else 'identidade no mundo (#world); transformações e mapa vetoriais (#c-mapa, #dot)'),
         audio=False, voz_arquivo=regua_original.get('arquivo'), voz_sha256=regua_original.get('sha256'))
     (pasta/'manifesto-render.json').write_text(json.dumps(manifesto, ensure_ascii=False, indent=2)+'\n')
     print('ok', final, flush=True)
@@ -164,7 +174,7 @@ if __name__ == "__main__":
         import argparse
         parser = argparse.ArgumentParser(description='Imagem por bloco com régua oficial e margem de transição.')
         parser.add_argument('idioma', choices=['pt'])
-        parser.add_argument('--bloco', choices=['A', 'B'], required=True)
+        parser.add_argument('--bloco', choices=['A', 'B', 'C'], required=True)
         parser.add_argument('--regua', type=pathlib.Path, required=True)
         parser.add_argument('--saida', type=pathlib.Path)
         parser.add_argument('--margem-quadros', type=int, default=15)

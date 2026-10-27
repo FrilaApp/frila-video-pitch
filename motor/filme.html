@@ -275,7 +275,7 @@ const COPIA_A={rot:'Rotatividade em bares e restaurantes · 12 meses',sub:'cerca
  web:{url:'estaff.com.br',k:'eStaff',n1:'1,5',l1:'milhão de cadastrados',n2:'533',l2:'mil disponíveis'}};
 function palavraA(id,tx,fallback){return (T.palavras||[]).find(w=>w.cena.slice(0,3)===id&&w.text.toLowerCase().replace(/[.,!?]/g,'')===tx)?.start??fallback;}
 function buildBlocoA(){
- E.dot=add(W,'<div id="dot"></div>');
+ E.dot=add(W,'<div id="dot" style="z-index:10"></div>');
  cena('v01',`
   <div class="ab" id="a-pill" style="left:660px;top:488px;width:600px;height:104px;display:flex;align-items:center;justify-content:center;gap:22px;color:#fff;font-family:PJS;font-weight:700;font-size:36px"><span style="width:16px;height:16px;border-radius:50%;background:${C.o}"></span><span>Garçom · hoje, 19h</span></div>
   <div class="ab h ctr" id="a-gancho1" style="top:250px;font-size:116px">Faltou gente</div>
@@ -584,6 +584,132 @@ window.estadoBlocoB=()=>{
   progresso:$('#b-progresso').textContent,avaliacao:$('#b-avaliacao').style.opacity,resposta:$('#sim').style.color};
 };
 
+/* ==================== BLOCO C ==================== */
+const COPIA_C={
+ v10:{k:'Pesquisa interna de 22 concorrentes, 01/10/2026',t:'Dos 22 apps que estudamos,',sub:'nenhum mostra comparecimento medido.',frila:'Frila'},
+ v11:{tag:'Meta do piloto · hipótese a calibrar [H]',alvos:[8,50,9],rotulos:['semanas','vagas por semana','em cada 10 profissionais presentes']},
+ v12:{k:'Estratégia de expansão',fases:['Núcleo de 15 km','Bares e restaurantes','Distrito Federal'],n1:'23.271',l1:'empresas ativas no DF',n2:'~1.300',l2:'restaurantes e bares com 10+ pessoas · IBGE 2024',fonte:'Dados · CNPJs ativos no DF; IBGE 2024.'}
+};
+
+function buildBlocoC(){
+ const c=COPIA_C;
+ add(W,`<div class="ab" id="c-phone" style="left:484px;top:104px;width:352px;height:752px;border-radius:50px;background:${C.paper};overflow:hidden;opacity:0">
+   <div class="ab" style="left:26px;top:62px;font-family:PJS;font-weight:700;font-size:20px;color:${C.ob}">Os dois lados</div>
+   <div class="ab" style="left:16px;top:578px;width:320px;height:68px;border-radius:34px;background:${C.soft}"></div>
+   <div class="ab" style="left:20px;top:584px;width:152px;height:56px;border-radius:28px;background:${C.o}"></div>
+   <div class="ab" style="left:16px;top:578px;width:160px;height:68px;display:flex;align-items:center;justify-content:center;font-family:PJS;font-weight:700;font-size:24px;color:#fff">Sim</div></div>`);
+ 
+ E.dot=add(W,'<div id="dot" style="z-index:10"></div>');
+ E.checkDado=add(E.dot,`<div class="ab check" style="inset:0;display:flex;align-items:center;justify-content:center;color:white;opacity:0"><span style="width:36px;height:36px">${ICO.check}</span></div>`);
+
+ add(W,`<div class="ab" id="c-v10" style="inset:0;opacity:0">
+   <div class="ab k ctr" style="left:0;top:146px;width:1920px;font-size:22px;letter-spacing:.08em;color:${C.ob}">${c.v10.k}</div>
+   <div class="ab h ctr" style="left:0;top:216px;width:1920px;font-size:72px;font-weight:800">${c.v10.t}</div>
+   <div class="ab ctr mut" style="left:0;top:326px;width:1920px;font-size:36px;color:${C.mut}">${c.v10.sub}</div>
+   <div class="ab grade" style="left:275px;top:490px;width:1000px;height:190px;display:grid;grid-template-columns:repeat(11,52px);gap:52px 36px">${Array.from({length:22},()=>`<div class="c-ponto-concorrente" style="width:44px;height:44px;border-radius:50%;background:#8A8F96;opacity:0"></div>`).join('')}</div>
+   <div class="ab" style="left:1440px;top:440px;width:170px;text-align:center;font-family:PJS;font-weight:800;font-size:32px;color:${C.ink}">${c.v10.frila}</div></div>`);
+
+ add(W,`<div class="ab" id="c-v11" style="inset:0;opacity:0">
+   <div class="ab k ctr" style="left:0;top:164px;width:1920px;font-size:22px;letter-spacing:.08em;color:${C.ob}">${c.v11.tag}</div>
+   <div class="ab" style="left:160px;top:300px;width:1600px;display:flex;justify-content:space-between">
+     <div class="c-col-meta" style="width:460px;text-align:center"><div class="h c-num" id="c-num1" style="font-size:160px;font-weight:800;height:180px"></div><div style="margin-top:35px;font-family:PJS;font-weight:700;font-size:32px;color:${C.ink}">${c.v11.rotulos[0]}</div></div>
+     <div class="c-col-meta" style="width:460px;text-align:center"><div class="h c-num" id="c-num2" style="font-size:160px;font-weight:800;height:180px"></div><div style="margin-top:35px;font-family:PJS;font-weight:700;font-size:32px;color:${C.ink}">${c.v11.rotulos[1]}</div></div>
+     <div class="c-col-meta" style="width:460px;text-align:center"><div class="h c-num" id="c-num3" style="font-size:160px;font-weight:800;height:180px"></div><div style="margin-top:35px;font-family:PJS;font-weight:700;font-size:32px;color:${C.ink}">${c.v11.rotulos[2]}</div></div>
+   </div></div>`);
+
+ add(W,`<div class="ab" id="c-v12" style="inset:0;opacity:0">
+   <div class="ab k" style="left:130px;top:105px;font-size:22px;letter-spacing:.08em;color:${C.ob}">${c.v12.k}</div>
+   <div class="ab h" id="c-fase" style="left:130px;top:180px;width:680px;font-size:56px;font-weight:800;line-height:1.15">${c.v12.fases[0]}</div>
+   <div class="ab" style="left:130px;top:400px;width:650px">
+     <div class="h" style="font-size:60px;font-weight:800;color:${C.ink}">${c.v12.n1}</div>
+     <div class="mut" style="font-size:26px;color:${C.mut};margin-top:6px">${c.v12.l1}</div>
+     <div class="h" style="font-size:60px;font-weight:800;color:${C.ink};margin-top:36px">${c.v12.n2}</div>
+     <div class="mut" style="font-size:26px;color:${C.mut};margin-top:6px">${c.v12.l2}</div>
+   </div>
+   <div class="ab" id="c-mapa-box" style="left:870px;top:235px;width:900px;height:515px">
+     ${mapa('c-mapa',0,0,900,515)}
+   </div>
+   <div class="ab mut" style="left:130px;top:870px;font-size:20px;color:#8A8F96">${c.v12.fonte}</div></div>`);
+
+ add(HUD,'<div id="cap" style="bottom:28px"></div>');
+}
+
+const ESTADO_B_C={x:660,y:480,w:380,h:780,r:64};
+async function bootBlocoC(){
+ const ids=['v10-dado','v11-meta','v12-estrategia'];
+ if(T.cenas.map(c=>c.id).join(',')!==ids.join(','))throw new Error('C exige v10/v11/v12, em ordem.');
+ for(const c of T.cenas){const id=c.id.slice(0,3);S[id]={...c,id,end:c.ini+c.dur,f:T.falas.filter(f=>f.cena===c.id)};ORD.push(S[id]);}
+ buildBlocoC();
+ E.cO1=mkOdo($('#c-num1'),'#');
+ E.cO2=mkOdo($('#c-num2'),'##');
+ E.cO3=mkOdo($('#c-num3'),'#');
+ await document.fonts.load('800 100px PJS');await document.fonts.load('700 40px PJS');await document.fonts.load('800 32px PJS');
+ await document.fonts.load('700 40px AHN');await document.fonts.load('600 40px AHN');await document.fonts.load('400 40px AHN');await document.fonts.ready;
+ 
+ D(-9,{...ESTADO_B_C,c:C.ink,sh:0});
+ D(0,{...ESTADO_B_C,c:C.ink},'move');
+ D(0.48,{x:1525,y:540,w:72,h:72,r:36,c:C.o},'move');
+ D(S.v11.ini,{x:1525,y:540,w:72,h:72,r:36,c:C.o},'move');
+ D(S.v11.ini+0.5,{x:960,y:250,w:28,h:28,r:14,c:C.o},'move');
+ D(S.v12.ini,{x:960,y:250,w:28,h:28,r:14,c:C.o},'move');
+ D(S.v12.ini+0.6,{x:1258,y:515,w:24,h:24,r:12,c:C.o},'move');
+ D(T.bloco_fim,{x:1258,y:515,w:24,h:24,r:12,c:C.o},'move');
+ 
+ for(const n in K)K[n].sort((a,b)=>a[0]-b[0]);
+ window.eventos=[];window.seek(0);return {bloco:'C',total:T.total,cenas:3,eventos:0};
+}
+
+function seekBlocoC(tempo){
+ const t=Math.max(0,Math.min(tempo,T.bloco_fim));E.t=t;
+ $('#stage').style.background=C.paper;W.style.transform='none';
+ 
+ const d=E.dot.style,x=val('dx',t),y=val('dy',t),w=val('dw',t),h=val('dh',t);
+ box(E.dot,x-w/2,y-h/2,w,h);d.borderRadius=val('dr_',t)+'px';
+ d.background=`rgb(${Math.round(val('dr',t))},${Math.round(val('dg',t))},${Math.round(val('db',t))})`;
+ d.opacity='1';d.transform='none';
+ 
+ $('#c-phone').style.opacity=1-fade(t,0.08,0.28);
+ 
+ const in10=fade(t,0.12,0.3)*(1-fade(t,S.v11.ini-0.25,0.22));
+ $('#c-v10').style.opacity=in10;
+ $$('.c-ponto-concorrente').forEach((el,i)=>{
+  el.style.opacity=fade(t,0.2+i*0.02,0.15)*in10;
+ });
+ const tCheck=palavraA('v10','nenhum',2.68);
+ E.checkDado.style.opacity=fade(t,tCheck,0.18)*in10;
+ 
+ const in11=fade(t,S.v11.ini,0.25)*(1-fade(t,S.v12.ini-0.25,0.22));
+ $('#c-v11').style.opacity=in11;
+ const tOito=palavraA('v11','oito',6.42),tCinq=palavraA('v11','50',palavraA('v11','cinquenta',7.8)),tNove=palavraA('v11','nove',9.44);
+ E.cO1.set(8*cl(spr(t-tOito,'count')));
+ E.cO2.set(50*cl(spr(t-tCinq,'count')));
+ E.cO3.set(9*cl(spr(t-tNove,'count')));
+ 
+ const in12=fade(t,S.v12.ini,0.28);
+ $('#c-v12').style.opacity=in12;
+ const f1=S.v12.f[1]?.ini||(S.v12.ini+2.5),f2=S.v12.f[2]?.ini||(S.v12.ini+5.0);
+ $('#c-fase').textContent=t>=f2?COPIA_C.v12.fases[2]:t>=f1?COPIA_C.v12.fases[1]:COPIA_C.v12.fases[0];
+ const a=cl(spr(t-S.v12.ini-0.6,'soft')),b=cl(spr(t-f1-0.2,'soft')),c=cl(spr(t-f2-0.2,'soft'));
+ const raioEl=$('#c-mapa .raio');if(raioEl)raioEl.setAttribute('r',136*a+190*c);
+ $$('#c-mapa .ancora').forEach((el,i)=>st(el,{o:fade(t,S.v12.ini+0.8+i*0.18,0.2)}));
+ const menores=$('#c-mapa .menores');if(menores)menores.style.opacity=b;
+ 
+ const cp=$('#cap'),f=T.falas.find(f=>t>=f.leg_ini&&t<f.leg_fim);
+ if(f){cp.textContent=f.legenda;st(cp,{o:fade(t,f.leg_ini,.14)*(1-fade(t,f.leg_fim-.14,.14)),y:(1-spr(t-f.leg_ini,'ui'))*10});}
+ else cp.style.opacity=0;
+}
+
+window.estadoBlocoC=()=>{
+ return {
+  instante:E.t,
+  ponto:{x:val('dx',E.t),y:val('dy',E.t),w:val('dw',E.t),h:val('dh',E.t),r:val('dr_',E.t),cor:getComputedStyle(E.dot).backgroundColor},
+  camera:[1,0,0,1,0,0],
+  fundo:getComputedStyle($('#stage')).backgroundColor,
+  cena:E.t>=S.v12.ini?S.v12.id:E.t>=S.v11.ini?S.v11.id:S.v10.id,
+  progresso:$('#c-fase')?.textContent||''
+ };
+};
+
 /* ---------- HUD, câmera, ponto e cursor ---------- */
 const NOCAP=new Set(['v01','v13','v14']);
 function runHUD(t){const th=val('th',t);$('#stage').style.background=mixc(C.paper,C.ink,th);const ink=mixc(C.ink,C.paper,th),mut=mixc(C.mut,'#8A8F96',th);const cp=$('#cap');const fl=T.falas.find(f=>t>=f.leg_ini&&t<f.leg_fim);
@@ -599,6 +725,7 @@ window.boot=async function(tempos,lang='pt'){
   T=tempos;L=lang;X=TX[L];if(!X)throw new Error('A v5 tem roteiro somente em português.');P=T.P;S={};ORD=[];SC.length=0;EV.length=0;for(const k of Object.keys(K))delete K[k];W.innerHTML=OV.innerHTML=HUD.innerHTML='';W.style.transform='none';
   if(T.bloco==='A')return await bootBlocoA();
   if(T.bloco==='B')return await bootBlocoB();
+  if(T.bloco==='C')return await bootBlocoC();
   const ids=T.cenas.map(c=>c.id.slice(0,3));if(ids.join(',')!==Array.from({length:14},(_,i)=>`v${String(i+1).padStart(2,'0')}`).join(','))throw new Error('A v5 exige uma régua com v01–v14. Para ensaio sem voz: scripts/tempos-provisorios.py.');
   for(const c of T.cenas){const id=c.id.slice(0,3),f=T.falas.filter(f=>f.cena===c.id);S[id]={id,ini:c.ini,dur:c.dur,end:c.ini+c.dur,f};ORD.push(S[id]);}
   build();await document.fonts.load('800 100px PJS');await document.fonts.load('700 100px PJS');await document.fonts.load('600 40px AHN');await document.fonts.load('700 40px AHN');await document.fonts.load('400 40px AHN');await document.fonts.ready;
@@ -611,5 +738,5 @@ window.boot=async function(tempos,lang='pt'){
   for(const sc of SC)sc.plan(S[sc.id]);for(const n in K)K[n].sort((a,b)=>a[0]-b[0]);EV.sort((a,b)=>a.t-b.t);window.eventos=EV;window.seek(0);
   return {total:T.total,cenas:SC.length,eventos:EV.length,provisorio:!!T._provisorio};
 };
-window.seek=function(t){if(T.bloco==='A')return seekBlocoA(t);if(T.bloco==='B')return seekBlocoB(t);E.t=t;for(const sc of SC){const s=S[sc.id],on=t>=s.ini&&t<s.end;sc.root.style.display=on?'block':'none';if(on)sc.run(t,s);}runCam(t);runDot(t);runCursor(t);runHUD(t);};
+window.seek=function(t){if(T.bloco==='A')return seekBlocoA(t);if(T.bloco==='B')return seekBlocoB(t);if(T.bloco==='C')return seekBlocoC(t);E.t=t;for(const sc of SC){const s=S[sc.id],on=t>=s.ini&&t<s.end;sc.root.style.display=on?'block':'none';if(on)sc.run(t,s);}runCam(t);runDot(t);runCursor(t);runHUD(t);};
 </script></body></html>
