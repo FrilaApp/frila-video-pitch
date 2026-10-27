@@ -29,6 +29,18 @@ fi
 
 echo "✓ Interpretador: $PYTHON_EXEC"
 
+# 1b. Navegadores do Playwright: ficam fora do git (motor/browsers). Em worktree, vincula ao checkout principal.
+if [ ! -e "$ROOT_DIR/motor/browsers" ]; then
+    BASE_DIR="$(git worktree list --porcelain | awk '/^worktree /{print $2; exit}')"
+    if [ -n "$BASE_DIR" ] && [ -d "$BASE_DIR/motor/browsers" ] && [ "$BASE_DIR" != "$ROOT_DIR" ]; then
+        ln -sfn "$BASE_DIR/motor/browsers" "$ROOT_DIR/motor/browsers"
+        echo "✓ motor/browsers vinculado ao checkout principal ($BASE_DIR)"
+    else
+        echo "❌ [F1] motor/browsers ausente e sem checkout principal com navegadores. Execute 'scripts/setup.sh'."
+        exit 1
+    fi
+fi
+
 # 2. Conferência de Dependências e Imports (AST check contra requirements.txt)
 echo "--- [1/5] Verificando paridade de dependências..."
 "$PYTHON_EXEC" "$ROOT_DIR/scripts/check_dependencies.py"
