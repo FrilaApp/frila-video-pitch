@@ -882,3 +882,60 @@ Manifesto e pranchas arquivados em `motor/cache/bloco-b-imagem/comparacao-v4/`.
 ### 5. O que ficou apertado
 - **v05 (4,32 s vs 6,0 s no roteiro conceitual):** a virada precisa ocorrer exatamente na palavra "conecta" (0,74 s) para que o chassi do telefone já esteja formado quando a locução atinge "profissionais perto" (3,0 s).
 - **v09 (4,02 s vs 7,5 s no roteiro conceitual):** a locução da pergunta "chamaria de novo?" conclui aos 19,42 s, restando apenas 0,253 s até o corte nominal oficial (19,673 s). A alternância do botão para "Sim" foi sincronizada imediatamente após a pergunta, estabilizando-se perfeitamente antes da margem de 30 frames reservada para o Bloco C.
+
+## §27. Bloco C de imagem (cenas v10 dado, v11 meta, v12 estratégia)
+
+Entrega planejada pelo Prisma (sucessor temporário de Motion) com base na aprovação do Fabrício
+em 26/10/2026. A régua oficial inicial é `/Users/fabriciotosta/dev/video-frila/fvp-audio-blocos/motor/cache/blocos-regua/C.json`,
+composta por 3 cenas (v10: 4,90 s; v11: 7,17 s; v12: 7,60 s; total nominal: 19,673417 s; margem: 30 quadros = 20,173417 s).
+
+### 1. Diretrizes de narrativa e design
+- **v10-dado (PICO 2 do Mapa Narrativo):** descoberta moderada onde "nenhum mostra comparecimento medido". Transição a partir de `estado-fim-B.json`: o aparelho de B conclui seu ciclo e o ponto laranja se destaca, navegando para (1525, 540) com tamanho 72×72 px. Uma grade de 22 pontos neutros (cinza `#8A8F96`) em disposição 11×2 surge para representar os concorrentes estudados. O 23º ponto (o ponto do Frila) recebe o check branco (`ICO.check`), simbolizando a verificação real de presença. Rodapé formal: `Pesquisa interna de 22 concorrentes, 01/10/2026`.
+- **v11-meta (Confiança e Objetivo):** a grade de concorrentes dá lugar a 3 contadores com os números do piloto:
+  1. `8` semanas
+  2. `50` vagas por semana
+  3. `9` em cada 10 profissionais presentes
+  Tag no topo: `Meta do piloto · hipótese a calibrar [H]`. Contadores sobem com animação fluida baseada em `mkOdo`.
+- **v12-estrategia (Expansão e Ambição):** o mapa da c08 da v4 é revisitado com o núcleo de 15 km, 3 pontos-âncora e expansão gradual até o Distrito Federal.
+  Textos SÓ na tela autorizados: `23.271 empresas ativas no DF` e `~1.300 restaurantes e bares com 10+ pessoas · IBGE 2024`.
+  Rodapé formal: `Dados · CNPJs ativos no DF; IBGE 2024.` (sem citar arquivos internos do repositório).
+- **Sem cursor (D8):** ausência absoluta de `#cur` em todo o bloco.
+- **Saída para o Bloco D:** `estado-fim-C.json` gerado na marcação de 19,673417 s e mantido congelado por 30 frames para a entrada de v13 no Bloco D ("o relógio do gancho volta sem pressa").
+
+### 2. Plano de implementação e evidências
+
+- [x] `motor/render.py`: adicionar suporte ao `--bloco C` na função `render_bloco` e `preparar_bloco` (validar v10/v11/v12 e exportar `estado-fim-C.json`).
+- [x] `docs/v4/COPIA-BLOCO-C.md`: inventário estrito de cópia (Regra D6).
+- [x] `motor/filme.html`: implementar `buildBlocoC()`, `bootBlocoC()`, `seekBlocoC(t)` e `window.estadoBlocoC()`, reaproveitando odômetros e mapa da v4.
+- [x] `motor/tests/test_bloco_c.py`: testes unitários em Chromium headless para continuidade B→C, transição dos 22 pontos, 3 contadores, mapa e ausência de cursor.
+- [x] Exportar `motor/cache/bloco-c-imagem/bloco-c-sem-audio.mp4`, 1920×1080, 60 fps, yuv420p/tv/BT.709 completo.
+- [x] Rodar análise de vídeo com D9: faixas 12 fps, cortes ±0,5 s, `achados.json`, `metricas.json`, presença raster do ponto.
+- [x] Comparações lado a lado com a referência v4 (v10 vs c11, v12 vs c08).
+- [x] Executar `./scripts/verificar.sh`, commit no branch `feat/bloco-c-imagem` sem push e notificar o Maestro via `maestri ask`.
+
+### 3. Medições de render e encode (conformidade técnica)
+- **Clipe:** `motor/cache/bloco-c-imagem/bloco-c-sem-audio.mp4`
+- **Duração e quadros:** 1211 quadros a 60 fps = 20,183333 s (19,673417 s nominais + 30 quadros de margem para o Bloco D).
+- **Parâmetros de encode:** `yuv420p`, color range `tv`, color space/transfer/primaries `bt709` completos.
+- **Resolução e escala:** renderizado a 3840×2160 com `deviceScaleFactor: 2` no Chromium headless e redimensionado via filtro Lanczos de alta precisão para 1920×1080 (D9).
+- **Sem cursor (D8):** verificação estrita em todo o bloco (zero instâncias de `#cur`).
+- **Continuidade do ponto:** herdado de `estado-fim-B.json` no instante 0 (repouso em 660, 480) e mantido até o centro do mapa (1258, 515) em `estado-fim-C.json` (congelado por 30 quadros).
+
+### 4. Análise de vídeo D2 e D9
+- **Cintilação de borda D9:** zero alertas. Valores de HF MAD máximo medidos:
+  - `v10-dado`: média 2,98; máximo 7,27 (limiar de alerta: 22,0).
+  - `v11-meta`: média 1,71; máximo 9,06 (limiar de alerta: 22,0).
+  - `v12-estrategia`: média 2,14; máximo 6,91 (limiar de alerta: 22,0).
+- **Verificação física de croma laranja do ponto nos cortes (`conferir-ponto.py`):**
+  - 181 quadros amostrados em janelas de ±0,5 s em torno dos cortes (4,90 s, 12,07 s e saída nominal 19,67 s).
+  - Amostras com ausência do ponto: 0 (100% de presença). Média de pixels: 1.781,6 px (mínimo de 512 px na escala reduzida do mapa).
+- **Pausas editoriais:** 7 pausas de assentamento registradas em `achados.json`, correspondentes aos momentos de leitura do check em v10, leitura dos contadores em v11 e observação dos marcos de expansão no mapa do DF em v12.
+
+### 5. Comparações lado a lado com a v4 (mesmos segundos relativos)
+- `v10-c11` (3,92 s): revelação dos 22 concorrentes neutros e destaque exclusivo do Frila com checkmark vs grade "Quem aparece..." da c11 da v4.
+- `v12-c08` (7,60 s): mapa do DF com o núcleo de 15 km, expansão de pontos e dados de CNPJs ativos e restaurantes IBGE vs mapa esquemático da c08 da v4.
+Manifesto e pranchas arquivados em `motor/cache/bloco-c-imagem/comparacao-v4/`.
+
+### 6. O que ficou apertado
+- **v10-dado (4,90 s vs 7,5 s no roteiro conceitual):** a frase "Dos vinte e dois apps que estudamos, nenhum mostra comparecimento medido." consome 4,18 s de voz (início aos 0,44 s, término aos 4,62 s). A palavra "nenhum" surge aos 2,68 s, restando apenas 1,94 s para que o espectador assimile o check verde no ponto do Frila e o contraste com os 22 concorrentes cinzas antes da transição para a cena de metas aos 4,90 s. O ritmo respirou ajustando o fade dos 22 pontos em cascata rápida (20 ms por item).
+- **v12-estrategia (7,60 s nominal vs 9,0 s no roteiro conceitual):** a cena abriga 3 fases sucessivas de expansão da fala ("Começamos por um núcleo de 15 km" aos 12,42 s; "Depois, bares e restaurantes" aos 15,34 s; "Depois, o Distrito Federal" aos 17,74 s). A locução se encerra aos 19,36 s, restando apenas 0,313 s antes do corte nominal de 19,673 s. A transição dos raios de expansão e ativação dos pontos foi distribuída em molas suaves para assentar visualmente a tempo da margem de 30 frames de congelamento para o Bloco D.
