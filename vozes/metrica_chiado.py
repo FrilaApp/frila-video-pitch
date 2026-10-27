@@ -10,6 +10,12 @@ Fonética acústica:
 
 A métrica realiza triagem espectral das fricativas de coda (/s/ em final de palavra e antes
 de consoante) isoladas a partir dos timestamps de palavras do Scribe.
+
+Calibração e limiares:
+Os limiares de triagem (taxa <= 25.0% para 'limpo' e taxa >= 35.0% para 'chiado_carioca')
+foram calibrados preliminarmente sobre 3 blocos da Ana (Bloco A aprovado com 11,1% e Bloco C
+reprovado com 46,7%). Servem exclusivamente como ferramenta de triagem prévia de segurança;
+o ouvido do Fabrício decide soberanamente a aprovação estética e fonética de cada tomada.
 """
 import json
 from pathlib import Path

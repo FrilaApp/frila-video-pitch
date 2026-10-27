@@ -1977,6 +1977,10 @@ Para evitar gastos cegos de API e identificar objetivamente a presença de sotaq
   - **Bloco A (aprovado):** Taxa de chiado = **11,1%** (1/9 palavras), Pico mediano = **6.040 Hz**, Veredito = `limpo`.
   - **Bloco D (aprovado):** Razão mediana limpo/chiado = **46,57**, Centroide mediano = **7.035 Hz**, Veredito = `limpo`.
   - **Bloco C Tomada 1 (reprovado pelo Fabrício):** Taxa de chiado = **46,7%** (7/15 palavras com polo forte em 3.680–4.400 Hz: *"Dos"*, *"semanas"*, *"profissionais"*, *"presentes"*, *"restaurantes"*), Veredito = `chiado_carioca`.
+- **Limiares de Triagem e Soberania Auditiva:**
+  - Os limiares de triagem espectral (taxa $\le 25,0\%$ para `limpo` e $\ge 35,0\%$ para `chiado_carioca`) foram calibrados preliminarmente sobre os 3 blocos da Ana (Bloco A aprovado com 11,1% e Bloco C reprovado com 46,7%);
+  - Constituem exclusivamente ferramenta de triagem prévia técnica e proteção de orçamento/iterações;
+  - Conforme diretriz soberana do projeto (AGENTS.md), o ouvido do Fabrício decide soberanamente a aprovação estética e fonética de cada tomada.
 
 ### O15. Regeneração do Bloco C, Resultados Técnicos e Atualização do Kit de Escuta
 
