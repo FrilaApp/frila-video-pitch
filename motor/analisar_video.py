@@ -1,4 +1,4 @@
-"""Revisão D2 do MP4 real, sem aprovação artística automática.
+"""Revisão D2 e D9 do MP4 real, sem aprovação artística automática.
 
 Uso: python motor/analisar_video.py VIDEO --tempos REGUA --saida PASTA
      [--html FONTE --raiz RAIZ] [--contrato CONTRATO] [--emendas 12.3 24.5]
@@ -7,6 +7,8 @@ Playwright/Chromium apenas com --html. Não modifica as entradas.
 Contrato: {"movimento":[{"de":1,"ate":2}],
  "presenca":[{"id":"ponto","selector":"#dot","de":1,"ate":2,"exclusivo":true}]}.
 Sem contrato, uma pausa é pista editorial, nunca travada confirmada.
+D9: Cintilação de borda em resolução nativa durante movimento com
+compensação afim de câmera. Modo somente informativo (§5b, PLAYBOOK).
 """
 import argparse
 from collections import Counter
@@ -29,7 +31,11 @@ from PIL import Image, ImageDraw
 PARAMETROS = dict(pausa_mad=.06, pausa_fracao=.0005, pausa_min_s=.60,
                   pixel_alterado=4, flash_mad=8, flash_retorno=1.5,
                   flash_luz=6, salto_mad=5, salto_fracao=.18,
-                  salto_fluxo_px=90, texto_opacidade=.5, texto_intersecao_px=6)
+                  salto_fluxo_px=90, texto_opacidade=.5, texto_intersecao_px=6,
+                  d9_limiar_gradiente=30.0, d9_min_borda_px=100,
+                  d9_hf_mad_alerta=22.0, d9_osc_ratio_alerta=0.12,
+                  d9_hf_mad_coadjuvante=12.0, d9_frac_ruim_alerta=0.40,
+                  d9_movimento_min_px=0.25)
 
 
 def gravar(path, obj):
@@ -94,6 +100,96 @@ def analisar_quadros(quadros, fps):
         achados.append(ocorrencia('pausa_a_revisar', pausa, metricas[-1]['t'],
             'Baixa alteração do quadro inteiro até o fim; não comprova defeito.'))
     return achados, metricas
+
+
+def medir_cintilacao_borda(quadros, fps, parametros=None):
+    """Mede variação de alta frequência nas bordas e oscilação temporal entre quadros consecutivos.
+
+    Opera na resolução nativa durante movimento, com compensação afim de câmera (escala e translação).
+    Modo somente informativo (§5b, PLAYBOOK D9).
+    """
+    p = {**PARAMETROS, **(parametros or {})}
+    achados = []
+    metricas_borda = []
+    f_retrasado = f_anterior = None
+
+    for i, f_atual in enumerate(quadros):
+        t = round(i / fps, 6)
+        h, w = f_atual.shape[:2]
+        metrica_q = dict(t=t, movimento=False, n_borda=0, hf_mad=0.0,
+                         lap_mad=0.0, frac_ruim=0.0, osc_ratio=0.0, shift_px=0.0, escala=1.0)
+
+        if f_anterior is not None:
+            # Amostragem rápida a cada 4 pixels para detecção preliminar de repouso
+            diff_sub = cv2.absdiff(f_anterior[::4, ::4], f_atual[::4, ::4])
+            mad_sub = float(np.mean(diff_sub))
+
+            if mad_sub >= 0.20:
+                gx = cv2.Sobel(f_atual, cv2.CV_32F, 1, 0, ksize=3)
+                gy = cv2.Sobel(f_atual, cv2.CV_32F, 0, 1, ksize=3)
+                mag = cv2.magnitude(gx, gy)
+                borda = mag >= p['d9_limiar_gradiente']
+                borda_dil = cv2.dilate(borda.astype(np.uint8), np.ones((3, 3), np.uint8)) > 0
+                n_borda = int(np.sum(borda_dil))
+                metrica_q['n_borda'] = n_borda
+
+                if n_borda >= p['d9_min_borda_px']:
+                    metrica_q['movimento'] = True
+                    escala_lk = max(1, w // 480)
+                    s_ant = cv2.resize(f_anterior.astype(np.uint8), (w // escala_lk, h // escala_lk))
+                    s_atu = cv2.resize(f_atual.astype(np.uint8), (w // escala_lk, h // escala_lk))
+
+                    pts = cv2.goodFeaturesToTrack(s_ant, 200, 0.01, 10)
+                    M = inliers = None
+                    if pts is not None and len(pts) >= 8:
+                        pts2, st, _ = cv2.calcOpticalFlowPyrLK(s_ant, s_atu, pts, None)
+                        g1 = pts[st == 1] * float(escala_lk)
+                        g2 = pts2[st == 1] * float(escala_lk)
+                        if len(g1) >= 8:
+                            M, inliers = cv2.estimateAffinePartial2D(g1, g2, method=cv2.RANSAC, ransacReprojThreshold=2.0)
+
+                    if M is not None and inliers is not None and inliers.sum() >= 6:
+                        escala = float(np.sqrt(M[0, 0]**2 + M[0, 1]**2))
+                        shift = float(np.sqrt(M[0, 2]**2 + M[1, 2]**2))
+                        warped = cv2.warpAffine(f_anterior, M, (w, h), flags=cv2.INTER_LINEAR)
+                        res = np.abs(f_atual.astype(np.float32) - warped.astype(np.float32))
+                    else:
+                        escala = 1.0
+                        shift = 0.0
+                        res = np.abs(f_atual.astype(np.float32) - f_anterior.astype(np.float32))
+
+                    res_smooth = cv2.GaussianBlur(res, (5, 5), 1.0)
+                    hf = np.abs(res - res_smooth)
+                    lap = np.abs(cv2.Laplacian(res, cv2.CV_32F, ksize=3))
+
+                    hf_mad = float(np.mean(hf[borda_dil]))
+                    lap_mad = float(np.mean(lap[borda_dil]))
+                    frac_ruim = float(np.mean(hf[borda_dil] > 12.0))
+
+                    osc_ratio = 0.0
+                    if f_retrasado is not None:
+                        d1 = f_anterior.astype(np.float32) - f_retrasado.astype(np.float32)
+                        d2 = f_atual.astype(np.float32) - f_anterior.astype(np.float32)
+                        osc = (d1 * d2 < -25.0) & borda_dil
+                        osc_ratio = float(np.sum(osc) / max(1, n_borda))
+
+                    metrica_q.update(hf_mad=round(hf_mad, 3), lap_mad=round(lap_mad, 3),
+                                     frac_ruim=round(frac_ruim, 4), osc_ratio=round(osc_ratio, 4),
+                                     shift_px=round(shift, 3), escala=round(escala, 5))
+
+                    ativo = shift > p['d9_movimento_min_px'] or abs(escala - 1.0) > 0.0003
+                    if ativo and (hf_mad >= p['d9_hf_mad_alerta'] or (hf_mad >= 15.0 and frac_ruim >= p['d9_frac_ruim_alerta']) or (osc_ratio >= p['d9_osc_ratio_alerta'] and hf_mad >= p['d9_hf_mad_coadjuvante'])):
+                        evidencia = dict(hf_mad=round(hf_mad, 3), osc_ratio=round(osc_ratio, 4),
+                                         frac_ruim=round(frac_ruim, 4), shift_px=round(shift, 3),
+                                         escala=round(escala, 5), n_borda=n_borda,
+                                         observacao='Variação de alta frequência na borda durante movimento; informativo (§5b).')
+                        achados.append(ocorrencia('cintilacao_borda', t, t, evidencia, 'informativo'))
+
+        metricas_borda.append(metrica_q)
+        f_retrasado = f_anterior
+        f_anterior = f_atual
+
+    return agrupar(achados, fps=fps), metricas_borda
 
 
 def colisoes_texto(textos):
@@ -188,6 +284,28 @@ def pixels(video, fps):
             yield np.frombuffer(raw,np.uint8).reshape(270,480)
         if proc.wait():
             raise RuntimeError('ffmpeg falhou ao ler o vídeo.')
+    finally:
+        proc.stdout.close()
+        if proc.poll() is None:
+            proc.terminate()
+            proc.wait()
+
+
+def pixels_nativos(video, largura=1920, altura=1080):
+    cmd = ['ffmpeg','-v','error','-i',str(video),'-an',
+           '-pix_fmt','gray','-f','rawvideo','-']
+    proc = subprocess.Popen(cmd,stdout=subprocess.PIPE)
+    tamanho = largura * altura
+    try:
+        while True:
+            raw = proc.stdout.read(tamanho)
+            if not raw:
+                break
+            if len(raw) != tamanho:
+                raise RuntimeError('Quadro nativo incompleto na decodificação.')
+            yield np.frombuffer(raw,np.uint8).reshape(altura,largura)
+        if proc.wait():
+            raise RuntimeError('ffmpeg falhou ao ler o vídeo nativo.')
     finally:
         proc.stdout.close()
         if proc.poll() is None:
@@ -448,6 +566,12 @@ def main():
     args.saida.mkdir(parents=True,exist_ok=True)
     contrato=json.loads(args.contrato.read_text()) if args.contrato else {}
     achados,metricas=analisar_quadros(pixels(args.video,meta['fps']),meta['fps'])
+    achados_d9,metricas_d9=medir_cintilacao_borda(pixels_nativos(args.video,meta['width'],meta['height']),meta['fps'])
+    achados+=achados_d9
+    for m, md9 in zip(metricas, metricas_d9):
+        m['cintilacao_borda'] = dict(hf_mad=md9['hf_mad'], lap_mad=md9['lap_mad'],
+                                     osc_ratio=md9['osc_ratio'], frac_ruim=md9['frac_ruim'],
+                                     shift_px=md9['shift_px'], escala=md9['escala'])
     gravar(args.saida/'metricas.json',metricas)
     quadros=[];origem=None
     if args.html:
@@ -465,15 +589,21 @@ def main():
         ms=[m for m in metricas if c['ini']<=m['t']<c['ini']+c['dur']]
         pausas=[a for a in achados if a['tipo']=='pausa_a_revisar']
         estatico=sum(max(0,min(c['ini']+c['dur'],a['ate'])-max(c['ini'],a['de'])) for a in pausas)
+        hfs=[m.get('cintilacao_borda',{}).get('hf_mad',0.0) for m in ms if m.get('cintilacao_borda',{}).get('hf_mad',0.0)>0]
         cenas.append(dict(**c,pausa_s=round(estatico,3),fracao_pausa=round(estatico/c['dur'],4),
-            mad_mediana=round(float(np.median([m['mad'] for m in ms])),5)))
+            mad_mediana=round(float(np.median([m['mad'] for m in ms])),5),
+            cintilacao_hf_media=round(float(np.mean(hfs or [0.0])),3),
+            cintilacao_hf_max=round(float(np.max(hfs or [0.0])),3)))
     relatorio=dict(video=str(args.video.resolve()),regua=str(args.tempos.resolve()),metadados=meta,
-        parametros=PARAMETROS,amostragem=dict(raster_fps=meta['fps'],geometria_fps=12,faixas_fps=12),
+        parametros=PARAMETROS,amostragem=dict(raster_fps=meta['fps'],geometria_fps=12,faixas_fps=12,
+            resolucao_nativa=[meta['width'],meta['height']]),
         fonte=origem,contrato=contrato,cobertura=dict(raster=True,texto=bool(args.html),
-            horario_semantico=bool(contrato),limites=[
+            horario_semantico=bool(contrato),cintilacao_borda_d9=True,limites=[
                 'Pixels não revelam intenção. Pausas e saltos são pistas, não reprovação.',
                 'Sem contrato não se confirma nascimento/sumiço fora de hora nem movimento esperado.',
                 'Geometria da fonte exige conferência contra o MP4; odômetros recortados não entram no teste de texto.',
+                'Cintilação de borda D9 opera em resolução nativa durante movimento com compensação afim de câmera. Modo somente informativo (§5b); não bloqueia artisticamente nem substitui a avaliação do Fabrício.',
+                'Cenas com múltiplos planos em parallax ou deformações não-rígidas podem apresentar resíduo localizado de alta frequência que reflete movimento relativo entre camadas.',
                 'Não detecta cortes de voz, qualidade artística ou todo erro local de movimento.']),
         resumo=dict(Counter(a['tipo'] for a in achados)),cenas=cenas,achados=sorted(achados,key=lambda a:a['de']))
     gravar(args.saida/'achados.json',relatorio)
