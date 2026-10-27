@@ -698,6 +698,36 @@ Reprodução do piloto:
 ./scripts/verificar.sh
 ```
 
+### Correção de encode do A aprovado — 26/10/2026
+
+O Fabrício aprovou a imagem; coreografia e fonte ficam congeladas. O ffprobe do
+clipe e das partes aponta `yuvj420p`, range `pc`, sem transferência/primárias,
+apesar das opções de saída existentes. Corrigir a conversão do JPEG full-range
+para vídeo limited-range explicitamente no filtro e no encoder: `yuv420p`,
+`tv`, matriz, transferência e primárias `bt709`. Regravar os mesmos subquadros,
+com a mesma régua, fonte, mistura temporal e Lanczos; não reinterpretar range
+por simples troca de etiqueta. Regressão deve exercitar o encoder real e ler
+o MP4 com ffprobe, rejeitando `yuvj420p`, `pc` e metadados incompletos. Conferir
+também duração, contagem de frames e diferenças visuais contra o encode anterior.
+
+**Resultado:** seis partes e clipe conferidos com ffprobe: `yuv420p`, `tv`,
+`color_space/color_transfer/color_primaries=bt709`, 1550 frames, 60/1 fps,
+25,833333 s, sem áudio. Fonte e régua mantêm os hashes do piloto aprovado.
+SSIM sobre RGB decodificado dos 1550 pares: **0,999327**; não é identidade
+bit a bit (há conversão de range e novo encode). Comparativo em
+`motor/cache/bloco-a-imagem/comparacao-encode.png` e log homônimo. Regenerados
+faixas, cortes e comparativos v4 a partir do novo MP4. D2 agora informa seis
+pausas e sete registros de salto: mesmos episódios deliberados; a troca de
+range acrescentou uma amostra heurística em **19,316667 s** e retirou a pausa
+antes registrada em 22,866667–23,483333 s, sem mudança de gesto. Zero travada
+contratual, sumiço, nascimento, cintilação global ou colisão de texto.
+
+A primeira parte falhou antes de capturar imagem com `ERR_SOCKET_NOT_CONNECTED`
+no servidor local; reexecutada isoladamente (1036 subquadros), seguida de
+validação de todas as partes e nova concatenação. Não alterado limiar ou
+coreografia. Regressão real falhou por `yuvj420p` antes da correção e passou
+depois. Gate completo: **67 testes** (18 gerais, 22 de motor, 27 de áudio).
+
 O modo completo legado da v5 não foi usado nem promovido; o piloto tem inicialização e régua parciais explícitas. Nenhum arquivo de voz/mixagem foi alterado. Sem produção de B/C/D antes da aprovação da imagem A pelo Fabrício.
 
 **Gate final após rebase na main `038fe3b`:** `./scripts/verificar.sh` passou com **66 testes** (18 gerais, 21 de motor, 27 de áudio/emendas/blocos), dependências/cópia/roteiro e varredura de arquivos proibidos sem erro; `git diff --check` limpo. Regressões novas cobrem régua parcial/margem, cena fora de janela, ponto visível pela pilha de pintura, não cruzar o percentual, cor da tese, estado no fim e seek reversível. Artefatos em cache não entram no commit. Isso torna o piloto revisável; não substitui a auditoria independente do Maestro ou a aprovação visual do Fabrício.

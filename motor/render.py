@@ -13,11 +13,15 @@ def trabalho(arg):
     from playwright.sync_api import sync_playwright
     from fotos import abrir
     regua = extra[0] if extra else None
-    filtro = ("scale=1920:1080:flags=lanczos," if regua else "")
+    # JPEG do Chromium é full-range. Converter amostras antes de sinalizar tv;
+    # pix_fmt sozinho não elimina a sinalização full-range herdada do decoder.
+    filtro = ("scale=1920:1080:flags=lanczos:in_range=pc:out_range=tv:out_color_matrix=bt709,"
+              if regua else "scale=iw:ih:in_range=pc:out_range=tv:out_color_matrix=bt709,")
     filtro += f"tmix=frames={SUB},select='not(mod(n+1\\,{SUB}))',setpts=N/{FPS}/TB"
+    filtro += ",format=yuv420p,setparams=range=limited:color_primaries=bt709:color_trc=bt709:colorspace=bt709"
     ff = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "image2pipe", "-framerate", str(FPS*SUB), "-c:v", "mjpeg", "-i", "-",
         "-vf", filtro, "-r", str(FPS), "-an", "-c:v", "libx264", "-preset", "medium", "-crf", "14", "-pix_fmt", "yuv420p",
-        "-color_primaries", "bt709", "-color_trc", "bt709", "-colorspace", "bt709", str(saida)], stdin=subprocess.PIPE)
+        "-color_range", "tv", "-color_primaries", "bt709", "-color_trc", "bt709", "-colorspace", "bt709", str(saida)], stdin=subprocess.PIPE)
     erros = []
     try:
         with sync_playwright() as pw:
