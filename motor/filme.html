@@ -779,12 +779,12 @@ async function bootBlocoD(){
 
  const idotX=610+(117.5+4)*700/245; // ~957.14
  const idotY=291+(10.49+6)*700/245; // ~338.11
+ const tFrila=palavraA('v14','frila',11.52);
 
  D(-9,{...ESTADO_C_D,c:C.o,sh:0});
  D(0,{...ESTADO_C_D,c:C.o},'move');
  D(0.55,{x:960,y:546,w:28,h:28,r:14,c:C.o},'move');
- D(S.v14.ini,{x:960,y:546,w:28,h:28,r:14,c:C.o},'move');
- D(S.v14.ini+0.85,{x:idotX,y:idotY,w:34,h:34,r:17,c:C.o},'move');
+ D(tFrila-0.52,{x:idotX,y:idotY,w:34,h:34,r:17,c:C.o},'move');
  D(T.bloco_fim,{x:idotX,y:idotY,w:34,h:34,r:17,c:C.o},'move');
 
  for(const n in K)K[n].sort((a,b)=>a[0]-b[0]);
@@ -800,16 +800,16 @@ function seekBlocoD(tempo){
  d.background=C.o;d.opacity='1';d.transform='none';
 
  // v13
- const in13=fade(t,0,0.18)*(1-fade(t,S.v14.ini-0.3,0.25));
+ const in13=fade(t,0,0.18)*(1-fade(t,S.v14.ini-0.24,0.22));
  $('#d-v13').style.opacity=in13;
- $('#d-relogio').style.opacity=fade(t,0.2,0.35)*(1-fade(t,S.v14.ini-0.35,0.25));
+ $('#d-relogio').style.opacity=fade(t,0.2,0.35)*(1-fade(t,S.v14.ini-0.24,0.25));
  const rot=(t*36).toFixed(2);
  $('#d-ponteiro').setAttribute('transform',`rotate(${rot} 106 106)`);
 
  // Frases espelho v13
- const f1=S.v13.f[0]||{ini:0.3,fim:1.78};
- const f2=S.v13.f[1]||{ini:2.22,fim:3.52};
- const f3=S.v13.f[2]||{ini:4.06,fim:5.54};
+ const f1=S.v13.f[0]||{ini:0.26,fim:2.24};
+ const f2=S.v13.f[1]||{ini:2.78,fim:4.74};
+ const f3=S.v13.f[2]||{ini:5.60,fim:6.80};
 
  // F1: descendente
  const op1=fade(t,f1.ini-0.08,0.22)*(1-fade(t,f1.fim+0.25,0.2));
@@ -820,24 +820,27 @@ function seekBlocoD(tempo){
  st($('#d-f2'),{o:op2,y:(1-spr(t-f2.ini+0.05,'soft'))*20});
 
  // F3: repouso central acolhedor
- const op3=fade(t,f3.ini-0.08,0.22)*(1-fade(t,S.v14.ini-0.25,0.2));
+ const op3=fade(t,f3.ini-0.08,0.22)*(1-fade(t,S.v14.ini-0.24,0.2));
  st($('#d-f3'),{o:op3,y:0});
 
  // v14
  const in14=fade(t,S.v14.ini,0.25);
  $('#d-v14').style.opacity=in14;
 
- // Traços do logo A1
+ // Locução v14 entra primeiro: tag de assinatura com a fala ("Combinou?...")
+ const fIni=S.v14.f[0]?.ini||7.28;
+ st($('#d-tag'),{o:fade(t,fIni-0.1,0.25),y:(1-spr(t-fIni+0.05,'ui'))*12});
+
+ // Logo A1 vem por último (surge a partir de 10.85s e completa antes de 11.52s)
+ const tLogo=palavraA('v14','frila',11.52)-0.67;
  $$('#d-logo .lgl').forEach((g,k)=>{
-  const a=S.v14.ini+0.35+k*0.12;
-  $$('.lg',g).forEach(p=>p.style.strokeDashoffset=(1-eio(ramp(t,a,0.5))).toFixed(4));
-  st(g,{o:fade(t,a,0.25),y:(1-spr(t-a,'ui'))*10});
+  const a=tLogo+k*0.10;
+  $$('.lg',g).forEach(p=>p.style.strokeDashoffset=(1-eio(ramp(t,a,0.45))).toFixed(4));
+  st(g,{o:fade(t,a,0.2),y:(1-spr(t-a,'ui'))*10});
  });
 
- // Locução v14
- const fTag=S.v14.f[1]||{ini:7.0,fim:8.8};
- st($('#d-tag'),{o:fade(t,fTag.ini-0.1,0.35),y:(1-spr(t-fTag.ini+0.05,'ui'))*12});
- st($('#d-contato'),{o:fade(t,fTag.ini+0.7,0.4),y:(1-spr(t-fTag.ini-0.65,'ui'))*8});
+ // Contato e rodapé assentam com a marca
+ st($('#d-contato'),{o:fade(t,tLogo+0.85,0.35),y:(1-spr(t-tLogo-0.85,'ui'))*8});
  st($('#d-rodape'),{o:fade(t,S.v14.ini+0.6,0.4)});
 
  $('#cap').style.opacity=0;

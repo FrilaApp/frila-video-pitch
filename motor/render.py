@@ -132,7 +132,7 @@ def render_bloco(args):
         contrato = dict(presenca=[
             dict(id='ponto', selector='#dot', de=0, ate=regua['total'], opacidade_min=.999)],
             movimento=[dict(de=a, ate=b) for a,b in [(.1, 1.8), (2.0, 3.4), (3.8, 5.4),
-                (5.8, 7.5), (7.8, 9.2)]])
+                (5.6, 7.0), (10.8, 11.8)]])
     else:
         contrato = {}
     (pasta/'contrato.json').write_text(json.dumps(contrato, indent=2)+'\n')
@@ -150,7 +150,7 @@ def render_bloco(args):
             if erros: raise RuntimeError('Erros na fonte do bloco: '+str(erros))
         lista = partes/'lista.txt'
         lista.write_text(''.join(f"file '{r[0].resolve()}'\n" for r in res))
-        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', str(lista), '-c', 'copy', str(final)], check=True)
+        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', str(lista), '-c', 'copy', '-video_track_timescale', str(FPS), str(final)], check=True)
         if args.bloco in ('A', 'B', 'C', 'D'):
             from playwright.sync_api import sync_playwright
             with sync_playwright() as pw:
