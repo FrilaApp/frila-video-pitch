@@ -2,7 +2,7 @@
 
 **Para que serve.** Ser a fonte única de verdade do design do vídeo: tokens, componentes, movimento, som, ritmo e regras. Toda mudança de design da v5 começa aqui e só depois vai para o `motor/filme.html`.
 
-**Status (26/10/2026).** Retomada da v4 por blocos. Roteiro enxuto aprovado em main; regras D6/D7/D8 vigentes. Tarefa 1 e calibração em §§20–23. **Proposta corrente do aparelho em §24**, com estudos anteriores substituídos. Nenhuma cena do bloco montada nesta tarefa; avaliação visual do Fabrício pendente.
+**Status (26/10/2026).** Piloto de imagem do Bloco A em §25, com base na v4 (§§20–23), voz e régua oficiais aprovadas. Avaliação visual do A pendente do Fabrício. Estudo do aparelho integrado pelo PR #16; ajustes posteriores ficam em tarefa separada.
 
 **Levantamento original (histórico; a medição desta tarefa está no §20).** Lidos: `motor/filme.html` (CSS, tokens, textos, cenas, HUD), `motor/tempos2.py`, `motor/audio2.py`, `docs/v4/STORYBOARD.md`, `docs/v4/LEIA-ME.md`, `assets/cores.json`, e a revisão de narrativa. **Não verificado:** posições e tamanhos de cada elemento por captura (só os que o código declara); níveis de volume ouvindo o MP4. Onde o texto diz "Inferência", é leitura minha.
 
@@ -586,3 +586,148 @@ Clipe e três comparativos entregues em `motor/cache/mockup-aparelho-d6-d7/`: `z
 **Falha encontrada e corrigida na validação:** a primeira análise com fonte falhou porque o wrapper chamava `seek` antes de aguardar o `boot` assíncrono v4. Corrigido com `await`; o teste agora inicializa o HTML exportado com uma régua de estudo, exercita o mesmo caminho usado pelo analisador e percorre os 216 estados. Regressões cobrem câmera comum (incluindo ilha), posição normalizada dos campos, botão/confirmação dentro da tela, cursor ausente e seek reversível. O teste contra o código rejeitado falhou por cursor visível e limite de zoom antigo, antes da correção. Não foi necessário mexer no filme de produção.
 
 **Verificação:** `./scripts/verificar.sh` passou no `.venv` compartilhado: 13 testes gerais, 19 de motor e 27 de áudio/emendas/blocos, **59 ao todo**. São verificações técnicas, sem aprovação artística implícita. Não foi montado bloco, gerado áudio nem implementada a passagem v06→v07; a especificação de continuidade acima segue pendente de implementação na fase autorizada. Recall continua limitado aos casos conhecidos, sem estimativa geral. Próximo passo: auditoria independente do Maestro e avaliação do vídeo pelo Fabrício.
+
+## 25. Piloto de imagem do Bloco A — direção antes do código (26/10/2026)
+
+**Escopo autorizado:** quatro cenas de imagem, sem áudio, no branch `feat/bloco-a-imagem`, a partir da main. Não altera o estudo aprovado do aparelho/PR #16, nem monta B/C/D. Voz A aprovada, tomada `b92c749b…`, duração fixa do WAV **22,894875 s**. A régua oficial `../fvp-audio-blocos/motor/cache/blocos-regua/A.json` usa **zero visual** e `voz_ini=2,459166667 s`: o WAV íntegro termina em 25,354041667 s. Cortes exatos: **6,039166667 / 13,449166667 / 19,399166667 s**, fim nominal **25,575416667 s**. A correção de 10 ms da mensagem do Áudio já estava no JSON. Não se recalcula, corta ou estica a voz. A exceção de ouvido de C não pertence a este piloto.
+
+### Mapa da v4 para as quatro cenas
+
+| Piloto | Base v4 e componentes preservados | Adaptação de coreografia à tomada fixa |
+|---|---|---|
+| v01 gancho, 0–6,039166667 s | c01: título em duas linhas 116 px, pílula de 600×104, ponto global virando o pingo do `?`, palavras por `wio`, curvas `ui/move/snap` | Pílula já apresenta “Garçom · hoje, 19h” durante “Hoje, 19h.”; sem preço, conforme roteiro. “Faltou gente / no turno” acompanha a segunda frase em 4,579166667–5,759166667 s; tag Exemplo. O trajeto vai por baixo da frase antes de subir na coluna do `?`, como na v4. |
+| v02 dor 1, 6,039166667–13,449166667 s | c04: 9 em 10 a 210 px, odômetro de unidades, dez círculos com o primeiro ocupado pelo mesmo ponto, nove laranja e um grafite; fonte Abrasel | Mantém o gesto de preenchimento em passos P/4, sem alongar a mola. Subtítulo se revela em duas partes durante “empresários de bares e restaurantes” e “acham difícil contratar”. Fileira converge por igual na saída, sem empilhar; ponto segue. Não esticar a contagem até o fim da fala. |
+| v03 dor 2, 13,449166667–19,399166667 s | c10: janela 1100×560 em (410,190), barra de endereço, divisor, slots 1,5 / 533, rótulos e rodapé de declaração; c09: “Cadastro / não é turno.” a 160 px, entrada por palavras | A primeira frase recebe a janela e os dois contadores com defasagem curta; a janela sai antes de 17,959166667 s. A segunda frase recebe a tese, sem sobrepor seus textos à janela. O fundo muda suavemente para grafite pela trilha de tema; o mesmo ponto fica laranja e visível na lateral. A expansão preta que ocupava todo o quadro em c09 é adaptada para preservar esse elo na nova ordem. |
+| v04 dor 3, 19,399166667–25,575416667 s | c03: título de rotatividade, odômetro 73,49% de 236 px, subtítulo “cerca de 7 em cada 10”, fileira original com sete substituições, fonte Abrasel | Retorno ao papel com o ponto contínuo; contador com `count`, sete trocas em P/4, período “dez/2024 a nov/2025”. A pílula da vaga reaparece após as trocas, enquanto a fileira sai, preparando o estado de entrada de B. Não reescrever como cartões novos: retoma a fileira documentada da v4 e o componente do gancho. |
+
+Isto reaproveita composição, componentes e curvas da v4; não é reescrita de quatro cenas. A combinação de c10/c09 e a nova ordem exigem gatilhos próprios, porque a voz aprovada já chegou ao zero local. Os gestos continuam curtos e separados por leitura e novas ações sem prolongar suas curvas. Câmera **fixa** nas quatro cenas, como nas respectivas composições v4; nenhuma deriva de câmera para preencher tempo. Se algum intervalo parecer parado demais na sequência, ajustar preparação/revelação/saída e registrar, não retimar a voz.
+
+### Continuidade, margem e D9
+
+Um único nó `#dot`, dentro de `#world`, acumula alvos nas trilhas globais; nenhuma função de cena o recria. Troca de cena não reseta posição/velocidade. As raízes ficam habilitadas de ini−1,0 a end+0,9, como na v4, e os filhos controlam suas entradas/saídas. Os três cortes são centros de pausas, sem troca seca de enquadramento. O primeiro círculo de v02 é o ponto global; a cópia local sai antes de coincidir com ele. No escuro de v03 o ponto permanece laranja na lateral; na volta a v04 ele liga a composição ao rótulo e depois à vaga.
+
+**Estado de entrega para B:** após 25,575416667 s, papel `#F7F3EE`, câmera identidade, vaga “Garçom · hoje, 19h” em pílula 600×104 centrada em (960,640), ponto laranja 28×28 centrado em (960,760), raio 14 e opacidade 1. O plano termina nesse estado; B deverá começar a partir dele, sem duplicar o objeto. O render inclui **15 quadros de margem final** além do primeiro limite de frame posterior à voz: `ceil(25,575416667×60)+15 = 1550 frames`, **25,833333333 s**. Nenhuma fala adicional é atribuída à margem. Capturar também o estado exato no fim nominal do bloco e as velocidades para o futuro encaixe.
+
+**D9, lido em `git show docs/d9-camera-sem-artefatos` (`ba42ff0`).** No A a câmera não se move: uma matriz identidade no ancestral comum `#world`; ponto, títulos e traços compartilham esse espaço. Sem escala/reposição independente para simular câmera. Movimentos intrínsecos das palavras, contadores e formas preservam as curvas da v4. Render com **deviceScaleFactor 2** (3840×2160), quatro subquadros por quadro de saída, redução **Lanczos** no FFmpeg e saída 1920×1080 a 60 fps. A medida nova de cintilação de borda e calibração v4/v5/aparelho será tarefa separada após o A, conforme adendo do Fabrício para bloco sem movimento de câmera. Até calibrar, informa; não criar veto automático por serrilhado heurístico.
+
+### D6: inventário de cópia
+
+Usar `roteiro.json` para legendas de v02/v03/v04, frases/tela do gancho, tag Exemplo, período da rotatividade. Rótulos históricos da janela eStaff, fontes e subtítulo da rotatividade ficam transcritos em `docs/v4/COPIA-BLOCO-A.md`, com campo da fonte `4efa75a:motor/filme.html` e referência visual. Nenhum título/pergunta inventado da v5 rejeitada entra no piloto. Atribuição de empresa e fonte não é resultado de pesquisa nova: preserva a referência aprovada, sem atualizar números históricos.
+
+| Strings visíveis | Origem |
+|---|---|
+| Faltou gente / no turno | recortes literais da segunda frase de v01.pt.legenda; componente de c01 |
+| Garçom · hoje, 19h; Exemplo | v01.tela |
+| ? (forma gráfica) | docs/v4/STORYBOARD.md, c01 |
+| 9 em 10 | v02.tela; contagem intermediária é odômetro gráfico |
+| empresários de bares e restaurantes / acham difícil contratar | recortes contínuos de v02.pt.legenda |
+| Cadastro / não é turno. | segunda frase de v03.pt.legenda; docs/v4, c09 |
+| estaff.com.br; eStaff; 1,5; milhão de cadastrados; 533; mil disponíveis | v03.tela e transcrição de c10 em docs/v4/COPIA-BLOCO-A.md |
+| Rotatividade em bares e restaurantes · 12 meses; cerca de 7 em cada 10 | transcrição c03 em docs/v4/COPIA-BLOCO-A.md |
+| 73,49%; dez/2024 a nov/2025 | v04.tela |
+| Fonte: Abrasel, 30/04/2025.; Fonte: Abrasel, via Monitor Mercantil, 09/12/2025.; Números do site estaff.com.br, como a empresa os declara. Acesso em 22/10/2026. | transcrição dos rodapés c04/c03/c10 em docs/v4/COPIA-BLOCO-A.md |
+| legendas inferiores | v02/v03/v04.pt.legenda; divididas apenas nos limites de frases/janelas oficiais, sem reescrever |
+
+### Implementação e provas previstas
+
+1. Adicionar modo explícito `render.py pt --bloco A --regua CAMINHO`, com validação de quatro IDs, ausência de lacunas e falas locais, margem final ≥12 frames, saída somente imagem; não criar régua provisória para o filme inteiro e não gerar eventos/áudio fora do cache do bloco.
+2. Em `filme.html`, montar somente esses quatro componentes no modo A e compartilhar as funções de molas/odômetros/entrada já existentes. A inicialização não exige v08 nem os blocos seguintes. Testar seek reversível, cópia, ponto no corte e na margem, ausência de cursor e de raízes futuras.
+3. Renderizar em cache/bloco-a-imagem com supersampling, analisar MP4 real a 60 fps + geometria/fonte a 12 fps; gerar faixas por cena e janelas ±0,5 s nos três cortes e no limite nominal do bloco. Revisar sequência e sincronismo contra voz aprovada em leitura, sem alterar o bruto.
+4. Comparar cada cena com a equivalente v4 em **iguais segundos relativos** para ver curvas/entradas; quando a duração nova exceder a cena v4, registrar essa falta de correspondência sem congelar ou esticar a referência. v03 tem duas bases (c10/c09); comparar cada fase separadamente. Diferenças de roteiro e alinhamento de fala serão explícitas.
+5. Rodar `./scripts/verificar.sh`, registrar achados por instante e limitações; rebase final na main antes do commit, sem push. Handoff ao Maestro para auditoria; só Fabrício aprova a imagem e libera B.
+
+**Decisão de aparelho recebida durante o A:** Fabrício pediu em 26/10/2026 retirar o título lateral repetido do aparelho, mantendo 01/04, traços e Exemplo. Será registrada em §24 e implementada/testada ao tocar o aparelho no B ou próximo branch pequeno; não altera o estudo nesta tarefa.
+
+**Preparação e pausas oficiais:** o recuo de cinco tempos recebe a transformação inicial da pílula em 0,24–0,95 s e leitura do cartão antes de “Hoje, 19h.”, que começa em 2,519166667 s. O gesto para o `?` se ancora na segunda frase, sem aumentar a duração das molas. v03 (5,950000 s) e v04 (6,176250 s) são janelas menores que o planejamento antigo do roteiro; a coreografia combina fases curtas, não comprime a fala nem importa durações da v5 rejeitada. O final conserva o estado nominal em toda a margem.
+
+**Correções após a primeira revisão temporal, antes do novo código:** o primeiro MP4 revelou o ponto encoberto pela janela eStaff em 13,50 s (dois registros do detector para um único episódio). Mudar o trajeto: convergir primeiro abaixo da janela, em y=820, seguir para a lateral x=1740 ainda abaixo e só então subir para y=210; nunca atravessar a superfície opaca da janela. Não resolver com alteração de limiar nem com ponto sobre texto. Acrescentar regressão por pilha de pintura na janela inteira da transição.
+
+A primeira abertura sustentava a pílula de 1,733 a 4,350 s. Para ocupar o recuo oficial com narrativa, o mesmo título de duas palavras da v4 mostra primeiro **“Hoje, 19h.”** (v01.pt.legenda, primeira frase) nos tempos dessas palavras e depois **“Faltou gente”**, durante o apagamento da primeira frase. A segunda linha continua “no turno”. Sem novo texto ou novo sistema visual. Em v02, o gesto de contagem começa em f.ini+0,25, como no gatilho original c04, e o subtítulo passa a entrar palavra por palavra conforme os tempos de “empresários de bares e restaurantes”, usando `wio` nativo; as larguras dos spans permanecem no layout. São fases adicionais de coreografia, não cenas esticadas nem câmera em deriva. “turno.” da tese mantém o laranja original; o subtítulo/período da rotatividade saem antes da pílula final para conservar respiro.
+
+**Ajuste final de trajetória, antes do código:** as faixas do segundo MP4 mostraram o ponto cruzando a área do percentual perto de 24 s. O teste texto↔texto não cobre ponto↔número. Alterar o percurso de saída para duas fases: descer pela lateral esquerda x=380, até y=820, em fim−2,10 s; seguir sob a fileira para (960,760) em fim−1,35 s. A moldura do número não é atravessada. Adicionar regressão geométrica ponto↔caixa real do odômetro. Só o último trecho de render (21,583333–25,833333 s) muda; os alvos novos são causais e ficam depois dos outros trechos. Regravar esse trecho a 2×/240 subquadros e concatenar novamente, sem alterar os demais frames. Reexecutar D2 sobre o MP4 inteiro.
+
+### Entrega do piloto A e revisão temporal
+
+Pasta local fora do git: `motor/cache/bloco-a-imagem/`. Clipe **bloco-a-sem-audio.mp4**, 1920×1080, 60/1 fps, **1550 frames / 25,833333333 s**, somente vídeo. Render: Chromium a 3840×2160 por deviceScaleFactor 2, quatro subquadros por frame, redução Lanczos e mistura temporal; nenhuma câmera variável. `index.html` reúne vídeo, faixas, cortes e comparativos. `manifesto-render.json` registra hashes de fonte/régua, formato e margem; `regua-oficial.json` preserva o arquivo recebido do Áudio (hash `d2e99faf…`). SHA do WAV inteiro conferido contra a régua: íntegro, sem alteração.
+
+**Revisão do movimento:** conferidas as **312 amostras a 12 fps**, em 11 páginas, as quatro janelas de ±0,5 s dos cortes/limite de A e os comparativos. As emendas dos seis trabalhadores do render também recebem contatos e clipes de ±0,5 s, em 4,316667 / 8,633333 / 12,950000 / 17,266667 / 21,583333 s; não são cortes criativos. O último trecho foi regravado após o ajuste de trajetória e o MP4 inteiro foi analisado outra vez. A avaliação perceptiva com a mixagem final ainda pertence ao fluxo de aprovação; esta tarefa entrega imagem e confere a sincronia pelos tempos de palavra, sem modificar a voz.
+
+**Achados finais do analisar_video.py:** sete alertas de baixa alteração, seis registros de salto; zero sumiços, nascimentos indevidos, cintilação global, sobreposição de texto ou travada nas janelas de gesto contratadas. Contrato de presença do ponto cobre o bloco inteiro com opacidade mínima 0,999. Contrato de movimento cobre transformação/queda, trocas de palavras e fileiras, contadores, transições e saída final; as janelas de leitura ficam fora da exigência de movimento, conforme a coreografia. Nenhum limiar raster foi alterado.
+
+| Instante local (s) | Achado e leitura editorial |
+|---|---|
+| 1,733333–2,466667 | Pausa de 0,733 s após a pílula assentar e antes de “Hoje”; recuo visual oficial. |
+| 3,433333–4,333333 | Pausa de leitura do horário; voz “19h.” termina em 4,199167. |
+| 7,850000–9,116667 | Contagem assentada durante “nove em cada dez”; prepara o subtítulo por palavras. |
+| 10,800000–11,700000 | Leitura de “empresários de bares e restaurantes”, antes do verbo. |
+| 11,966667–12,783333 | Leitura de “acham difícil contratar”; saída da fileira começa em 12,799167. |
+| 13,283333 / 13,316667 / 13,333333 / 13,350000 / 13,366667 | Cinco alertas de salto dentro da mesma transição papel→grafite. Contatos mostram luminância monotônica, sem corte seco; fluxo associa features em meio à mudança global. São pistas heurísticas, não cinco teletransportes. |
+| 16,016667–17,450000 | Leitura dos dois números declarados pela empresa; janela sai antes da segunda frase. |
+| 19,300000 | Alerta de salto no retorno contínuo grafite→papel; ponto conserva o percurso sob o conteúdo. |
+| 22,866667–23,483333 | Leitura do percentual e das sete trocas; saída do ponto pela margem esquerda começa em 23,475417. |
+| 24,325417–25,575417 | Pílula da vaga retorna; título, número, legenda e rodapé saem. Ponto termina abaixo da vaga, sem cruzar seu texto. |
+| 25,575417–25,833333 | Margem final de 15 frames completos após o primeiro frame posterior ao limite nominal; estado reservado ao início de B. |
+
+**Falhas que a revisão corrigiu:** primeira passagem ocultava o ponto atrás da janela em 13,50 s; o detector registrou dois achados para um único episódio. Regressão por pilha de pintura falhou em 13,4825 s antes da correção. A trajetória agora segue y=820 até a lateral e só então sobe. A segunda passagem cruzava a caixa do odômetro perto de 24 s; regressão geométrica reproduziu a interseção antes da mudança para a margem esquerda. A primeira abertura tinha 2,617 s de leitura contínua; o mesmo componente de título agora apresenta a primeira frase antes da segunda, sem esticar molas. O subtítulo de v02 segue as palavras, em vez de sustentar a linha inteira por toda a enumeração.
+
+**Conferência no raster:** `analise/ponto-raster.json` registra **225/225 frames** com croma laranja nas janelas de ±0,5 s dos três cortes e do fim de A, sem ausência. A primeira tentativa desse controle exigia RGB quase sólido e deu falso negativo em **6,133333 s**: o MP4 mostra o rastro laranja diluído pelo motion blur nativo de quatro subquadros. Inspecionado o frame e corrigido o método para contraste de croma (R−G>25, G−B>8), não o filme nem os limiares de D2; a limitação/método está registrada no JSON. Isso não estima recall geral do rastreador.
+
+**Estado para B:** `estado-fim-A.json`, no tempo exato 25,575416667 s: papel RGB(247,243,238), câmera identidade; ponto RGB(234,90,54), centro **(959,99838;760,00016)** e diâmetro **28,00000**, raio 14, opacidade 1; pílula em **(660,588), 600×104**, texto “Garçom · hoje, 19h”, opacidade 1. O pequeno resíduo da mola é preservado, não há snapping. O tempo da cena é congelado no limite nominal durante a margem, portanto o estado não deriva. B deve herdar esse estado observado antes de iniciar o próximo gesto; B não foi montado.
+
+### Comparação lado a lado com a v4
+
+`comparacao-v4/` contém cinco MP4 a 60 fps e cinco contatos PNG. V4 à esquerda, A à direita; iguais segundos relativos, sem retimar/congelar a referência. O manifesto informa o trecho comparável e o excedente sem equivalente.
+
+| Comparativo | O que permanece | Diferenças que devem ser avaliadas pelo Fabrício |
+|---|---|---|
+| v01-c01, relativos 0–3,433333 s | transformação e queda da pílula nos mesmos gatilhos iniciais, tipografia 116 px, cores e percurso para o `?` | sem preço; tag Exemplo; a régua nova tem recuo e duas frases, por isso em 3,3 s a v4 está saindo do gancho e A está em “Hoje, 19h.”. O gesto de “Faltou” acontece depois, nos tempos oficiais. Não são durações equivalentes. |
+| v02-c04, relativos 0–5,400000 s | título 210 px, mola de unidades, círculos de 72 px/intervalo 120 px, preenchimentos P/4 e convergência uniforme | a fileira entra nesta nova ordem; subtítulo de 46 px em duas linhas e por palavras, texto maior de legenda. O corpo da contagem chega ao mesmo alvo e preserva o mesmo ritmo de gesto. |
+| v03-janela-c10, relativos 0–3,900000 s | janela 1100×560, rótulos 36 px, números 150 px, barra, divisor e slots com `count` | números começam mais cedo e com 0,55 s entre grupos, pois esta fase ocupa ~4 s dentro da cena combinada; não reduzir a duração da mola. Ponto passa pela lateral e fundo chega ao grafite durante a entrada. |
+| v03-tese-c09, relativos 0–1,400000 s | duas linhas a 160 px, entrada por palavras e “turno.” em laranja | palavras seguem os tempos da nova fala; tese sai mais cedo porque há outra cena na sequência. Legenda inferior é mantida como determina o roteiro atual. |
+| v04-c03, relativos 0–4,916667 s | odômetro 236 px, mesma família `count`, fileira de dez círculos/mesmos sete índices trocados, subtítulo e fonte | gatilho da contagem deslocado em relação à fala, período novo do roteiro, fundo vindo do escuro. Depois do trecho comparável, a vaga reaparece e o ponto prepara B. |
+
+Não se atribui nota automática ao piloto. As pausas acima são oportunidades de leitura, não aprovação de ritmo por contagem de pixels. Recall de D2 continua limitado aos controles conhecidos do §23: flash artificial de um frame a 60 fps, salto controlado e presença contratual recuperam os casos exercitados; o mergulho v5 conhecido foi recuperado. A revisão deste A acrescentou o caso real de oclusão do ponto e o corrigiu. Não há estimativa de recall geral; o detector não julga qualidade artística ou cada artefato local. A nova métrica de borda D9 permanece para tarefa separada por não haver movimento de câmera no A; supersampling 2× já foi aplicado.
+
+**Cópia:** 35 strings/fragmentos observados na conferência a 12 fps, todas localizadas em roteiro.json ou docs/v4; `origens-copia.json` registra caminhos/campos. Valores intermediários dos odômetros são estados gráficos, com alvos finais históricos preservados. Sem texto inventado ou cursor. O inventário histórico novo apenas transcreve os literais usados da fonte v4, sem ampliar funções do app.
+
+Reprodução do piloto:
+
+```sh
+.venv/bin/python motor/render.py pt --bloco A --regua ../fvp-audio-blocos/motor/cache/blocos-regua/A.json
+.venv/bin/python motor/analisar_video.py motor/cache/bloco-a-imagem/bloco-a-sem-audio.mp4 --tempos motor/cache/bloco-a-imagem/tempos.json --html motor/cache/bloco-a-imagem/filme.html --contrato motor/cache/bloco-a-imagem/contrato.json --emendas 4.316666666666666 8.633333333333333 12.95 17.266666666666666 21.583333333333332 25.575416666666666 --saida motor/cache/bloco-a-imagem/analise
+./scripts/verificar.sh
+```
+
+### Correção de encode do A aprovado — 26/10/2026
+
+O Fabrício aprovou a imagem; coreografia e fonte ficam congeladas. O ffprobe do
+clipe e das partes aponta `yuvj420p`, range `pc`, sem transferência/primárias,
+apesar das opções de saída existentes. Corrigir a conversão do JPEG full-range
+para vídeo limited-range explicitamente no filtro e no encoder: `yuv420p`,
+`tv`, matriz, transferência e primárias `bt709`. Regravar os mesmos subquadros,
+com a mesma régua, fonte, mistura temporal e Lanczos; não reinterpretar range
+por simples troca de etiqueta. Regressão deve exercitar o encoder real e ler
+o MP4 com ffprobe, rejeitando `yuvj420p`, `pc` e metadados incompletos. Conferir
+também duração, contagem de frames e diferenças visuais contra o encode anterior.
+
+**Resultado:** seis partes e clipe conferidos com ffprobe: `yuv420p`, `tv`,
+`color_space/color_transfer/color_primaries=bt709`, 1550 frames, 60/1 fps,
+25,833333 s, sem áudio. Fonte e régua mantêm os hashes do piloto aprovado.
+SSIM sobre RGB decodificado dos 1550 pares: **0,999327**; não é identidade
+bit a bit (há conversão de range e novo encode). Comparativo em
+`motor/cache/bloco-a-imagem/comparacao-encode.png` e log homônimo. Regenerados
+faixas, cortes e comparativos v4 a partir do novo MP4. D2 agora informa seis
+pausas e sete registros de salto: mesmos episódios deliberados; a troca de
+range acrescentou uma amostra heurística em **19,316667 s** e retirou a pausa
+antes registrada em 22,866667–23,483333 s, sem mudança de gesto. Zero travada
+contratual, sumiço, nascimento, cintilação global ou colisão de texto.
+
+A primeira parte falhou antes de capturar imagem com `ERR_SOCKET_NOT_CONNECTED`
+no servidor local; reexecutada isoladamente (1036 subquadros), seguida de
+validação de todas as partes e nova concatenação. Não alterado limiar ou
+coreografia. Regressão real falhou por `yuvj420p` antes da correção e passou
+depois. Gate completo: **67 testes** (18 gerais, 22 de motor, 27 de áudio).
+
+O modo completo legado da v5 não foi usado nem promovido; o piloto tem inicialização e régua parciais explícitas. Nenhum arquivo de voz/mixagem foi alterado. Sem produção de B/C/D antes da aprovação da imagem A pelo Fabrício.
+
+**Gate final após rebase na main `038fe3b`:** `./scripts/verificar.sh` passou com **66 testes** (18 gerais, 21 de motor, 27 de áudio/emendas/blocos), dependências/cópia/roteiro e varredura de arquivos proibidos sem erro; `git diff --check` limpo. Regressões novas cobrem régua parcial/margem, cena fora de janela, ponto visível pela pilha de pintura, não cruzar o percentual, cor da tese, estado no fim e seek reversível. Artefatos em cache não entram no commit. Isso torna o piloto revisável; não substitui a auditoria independente do Maestro ou a aprovação visual do Fabrício.
