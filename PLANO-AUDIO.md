@@ -1899,5 +1899,65 @@ Em 26/10/2026, a partir da escuta atenta dos 48 ativos do Kit de Pronúncia em `
 3. **Controle de Filtro por Bloco (`--blocos`):**
    - Implementado o suporte a `--blocos A,C,D` em `vozes/produzir_blocos_tarefa6.py`, permitindo a produção parcial autorizada dos blocos plenamente aprovados sem afrouxar a trava de segurança que bloqueia o Bloco B.
 
+### O9. Decisão de ouvido do Fabrício para Gabriel e Liberação do Bloco B (27/10/2026)
+
+Em 27/10/2026, o Fabrício concluiu a escuta do narrador Gabriel e formalizou a decisão completa:
+1. **Gabriel pt-BR publicidade — Decisão Completa:**
+   - **Formas Originais Aprovadas (sem substituição fonética):**
+     `Frila`, `check-in`, `histórico`, `comparecimento`, `cuida`, `dezenove`, `Federal`, `meta`, `piloto`, `negócio`, `restaurantes`, `rotatividade`, `cinquenta`.
+   - **Formas Candidatas Aprovadas (com substituição fonética):**
+     `dez` → `déis`; `Abrasel` → `Abrazéu`.
+2. **Impacto no Bloco B (Cenas v05–v09):**
+   - Os termos incidentes no Bloco B (`Frila` 2x, `check-in`, `histórico`, `quinze`) foram todos aprovados em sua **forma original**.
+   - Nenhuma substituição fonética se aplica ao Bloco B: a fala enviada ao TTS coincide 100% com a ortografia canônica de `roteiro.json`.
+   - Todas as regras do Gabriel em `vozes/pronuncia.json` passam ao status `"aprovada"`, liberando a sintetização do Bloco B via `--blocos B --executar --teto-caracteres 500`.
+
+### O10. Produção, Auditoria e Deriva Tímbrica dos 4 Blocos de Voz (Tarefa 6)
+
+Com as aprovações de pronúncia da Ana e do Gabriel registradas, foi executada a produção dos 4 blocos em tomadas contínuas de estúdio:
+1. **Contabilidade e Saldo ElevenLabs:**
+   - Saldo inicial pré-Tarefa 6: 21.224 caracteres;
+   - Saldo antes da síntese final de B, C e D: 22.093 caracteres;
+   - Saldo final apurado após a síntese dos 4 blocos: **22.391 de 40.000 caracteres usados**;
+   - Consumo total na Tarefa 6: **1.167 caracteres** (TTS + Scribe), amplamente dentro do teto orçado de 5.500 caracteres (economia de > 4.300 caracteres).
+2. **Resultados Técnicos por Bloco:**
+   - **Bloco A (Ana v3, PCM 48 kHz, seed 1):** Duração 24,320 s; -17,8 LUFS; TP -2,1 dBTP; LRA 3,1 LU; F0 mediano 211,5 Hz; Centroide 3.154,9 Hz. Regra A8 acusa pausa respiratória de 500 ms em t=5,910 s ("Abrasel, nove"), candidata a exceção de ouvido pelo Fabrício.
+   - **Bloco B (Gabriel v2, PCM 48 kHz, seed 1, dirigida Pico 1):** Duração 19,133 s; -22,6 LUFS; TP -2,7 dBTP; LRA 1,6 LU; F0 mediano 134,8 Hz; Centroide 2.987,8 Hz. Regra A8 sem falhas; transcrição Scribe 100% idêntica ao roteiro original.
+   - **Bloco C (Ana v3, PCM 48 kHz, seed 1, dirigida Pico 2):** Duração 22,080 s; -18,0 LUFS; TP -3,3 dBTP; LRA 1,7 LU; F0 mediano 231,9 Hz; Centroide 3.372,2 Hz. Regra A8 acusa pausa enfática de 660 ms em t=8,350 s ("oito semanas, cinquenta"), submetida à escuta.
+   - **Bloco D (Ana v3, PCM 48 kHz, seed 1, dirigida Pico 3):** Duração 10,240 s; -17,7 LUFS; TP -3,8 dBTP; LRA 2,1 LU; F0 mediano 245,5 Hz; Centroide 3.476,3 Hz. Regra A8 perfeitamente limpa (sem falhas); Scribe 100% idêntico.
+3. **Consistência e Deriva Tímbrica (Ana A, C, D):**
+   - Variação $F_0$ A vs C: 20,4 Hz (1,59 semitons); Centroide: 217,3 Hz;
+   - Variação $F_0$ C vs D: 13,6 Hz (0,99 semitons); Centroide: 104,1 Hz;
+   - Variação $F_0$ A vs D: 34,0 Hz (2,58 semitons); Centroide: 321,4 Hz;
+   - Todas as transições entre blocos da mesma narradora mantêm desvio tonal inferior a 3 semitons, garantindo identidade vocal contínua e estável.
+4. **Contraste com Narrador Gabriel (Bloco B):**
+   - Diferença $F_0$ Gabriel vs Ana (B vs A): 76,7 Hz de queda tonal (voz masculina grave, contrastando nitidamente com a voz feminina de abertura);
+   - Diferença $F_0$ Gabriel vs Ana (B vs C): 97,1 Hz.
+
+### O11. Nova Régua Narrativa Proposta (Grade de 41 Compassos / 80,661 s)
+
+A nova locução totaliza 75,773 s de voz ativa. Para acomodar as novas durações preservando pausas $\ge 500$ ms entre blocos, proteção temporal $\ge 120$ ms contra cortes visuais e tempo final no alvo de 78–90 s:
+- **Grade musical:** `compassos_limites = [0, 13, 23, 35, 41]` (41 compassos a 1,96734 s = **80,661 s**).
+- **Recuos de voz:** A: 0,9837 s (2 batidas da trilha, $2 \times P$); B: 0,650 s; C: 0,600 s; D: 0,100 s.
+- **Pausas verbais entre blocos:**
+  - **A→B:** 1,102 s (Corte no compasso 13 = 25,575 s; proteção antes: 0,332 s; depois: 0,770 s; folga de WAVs: 0,922 s);
+  - **B→C:** 1,163 s (Corte no compasso 23 = 45,249 s; proteção antes: 0,463 s; depois: 0,700 s; folga de WAVs: 0,490 s);
+  - **C→D:** 1,188 s (Corte no compasso 35 = 68,857 s; proteção antes: 0,968 s; depois: 0,220 s; folga de WAVs: 1,028 s).
+- **Cortes de cena:** Todos os 13 cortes de cena foram recalculados nos centros exatos das pausas intra-bloco via `janela_bloco` e persistidos em `motor/cache/blocos-regua/{A,B,C,D}.json` e `resumo.json`.
+- **Preservação de Integridade:** O arquivo oficial `vozes/selecao-blocos-pt.json` permanece inalterado até a decisão de ouvido soberana do Fabrício.
+
+### O12. Kit de Escuta para Avaliação do Fabrício
+
+Os arquivos tratados e as prévias de transição foram disponibilizados em `~/Downloads/frila-escuta-vozes-blocos/`:
+- `bloco_A_ana_v3.wav`: Locução completa do Bloco A com pronúncia familiar "déis";
+- `bloco_B_gabriel_v2.wav`: Locução completa do Bloco B 100% original ("Frila", "check-in", "histórico");
+- `bloco_C_ana_v3.wav`: Locução completa do Bloco C com "méta", "déis" e "Federau";
+- `bloco_D_ana_v3.wav`: Locução completa do Bloco D com "Fríla" (2x);
+- `fronteira_A_B.wav`: Prévia direta da troca Ana → Gabriel no compasso 13;
+- `fronteira_B_C.wav`: Prévia direta da troca Gabriel → Ana no compasso 23;
+- `fronteira_C_D.wav`: Prévia direta da continuidade Ana → Ana no compasso 35;
+- `README.md`: Documentação técnica sem notas ou scorecards, contendo parâmetros físicos e 2 a 4 pontos objetivos "o que ouvir" por arquivo.
+
+
 
 
