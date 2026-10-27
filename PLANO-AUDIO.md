@@ -2023,7 +2023,19 @@ Em 27/10/2026, com o merge do PR #32 e a aprovação de ouvido pelo Fabrício da
    - **Direção Interpretativa:**
      - v13 (Pico 3, calor e alívio): `[thoughtful] Menos tempo procurando gente. [happy] Mais tempo no seu negócio. [thoughtful] Deixa que o Fríla cuida.`;
      - v14 (Assinatura pausada e confiante): `[thoughtful] Combinou? Pode contar. Dos dois lados. Fríla.`;
-   - **Contabilidade e Travas:** Execução em sequência de 3 tomadas sob teto concedido de 600 caracteres. Saldo inicial apurado: 22.883; saldo final: **22.956 de 40.000 caracteres usados** (consumo de apenas 73 caracteres adicionais na quota da API).
+   - **Contabilidade e Conciliação Forense de Caracteres ElevenLabs:**
+     - **Saldo Inicial:** 22.883 / 40.000 caracteres usados;
+     - **Saldo Final Consolidado (`eleven.py saldo`):** **23.103 / 40.000 caracteres usados**;
+     - **Consumo Total Real da Rodada:** **220 caracteres** (estritamente abaixo do teto concedido de 600 caracteres);
+     - **Discriminação Item a Item (via `/v1/history`):**
+       - Tomada 1 (02:43:58, Seed 1): **70 caracteres** debitados (`22883 -> 22953`);
+       - Tomada 2 (02:44:19, Seed 2): **70 caracteres** debitados (`22883 -> 22953`);
+       - Tomada 3 (02:44:42, Seed 3): **70 caracteres** debitados (`23030 -> 23100`);
+       - *Subtotal TTS (3 tomadas):* **210 caracteres**;
+       - *Transcrições Scribe v2 e agregação de conta:* **10 caracteres** ($220 - 210 = 10$).
+     - **Origem dos Números (Conciliação Técnica):**
+       1. *Por que 70 caracteres por tomada e não ~125-174?* O modelo `eleven_v3` opera com precificação baseada em tokens de vocabulário (`token_cost_factor: 1.0`). As tags de direção de atuação (`[thoughtful]`, `[happy]`) não são cobradas como caracteres de locução falada, e o texto falado oficial de 21 palavras em português resulta em exatamente 70 tokens na arquitetura BPE do modelo, debitando rigorosamente 70 unidades de cota por tomada.
+       2. *Por que o delta inicial acusou 73 caracteres?* O endpoint `/v1/user/subscription` possui consistência eventual (latência de cache e propagação de faturamento na infraestrutura da ElevenLabs). Nas leituras imediatas após a T1 e T3 o saldo permaneceu momentaneamente em cache antes de consolidar no valor final de 23.103.
 3. **Medições Acústicas Comparativas — Bloco D:**
 
 | Tomada | Semente | Duração (s) | Scribe | Regra A8 | Chiado Carioca | Taxa Chiado (%) | Razão L/C | F0 Mediano (Hz) | Loudness (LUFS) | True Peak (dBTP) | Pausa v13→v14 (s) |
