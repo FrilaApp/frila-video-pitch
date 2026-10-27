@@ -60,7 +60,7 @@ def extenso(n):
 
 
 def normal(t):
-    """Põe fala e transcrição na mesma forma: sem acento, números por extenso, "19h" = dezenove horas, 'Freela'=Frila, 'pra'=para."""
+    """Põe fala e transcrição na mesma forma: sem acento, números por extenso, "19h" = dezenove horas, 'Freela'=Frila, 'pra'=para, formas fonéticas -> ortografia canônica."""
     t = re.sub(r"(\d+)\s*%", lambda m: m.group(1) + " por cento", t.lower())
     t = re.sub(r"(\d+)\s*h\b", r"\1 horas", t)
     t = re.sub(r"\d+", lambda m: extenso(int(m.group())), t)
@@ -68,4 +68,10 @@ def normal(t):
     t = unicodedata.normalize("NFD", t)
     t = "".join(ch for ch in t if unicodedata.category(ch) != "Mn")
     t = t.replace("freela", "frila").replace("e-staff", "estaff").replace("da staff", "da estaff")
+    # Mapeamento fonético reverso para conferência de áudio/Scribe (PRONUNCIA-FALA)
+    t = re.sub(r"\btchequin\b|\bchequim\b|\btchekin\b", "check in", t)
+    t = re.sub(r"\babrazeu\b", "abrasel", t)
+    t = re.sub(r"\bfederau\b", "federal", t)
+    t = re.sub(r"\bcinkuenta\b", "cinquenta", t)
+    t = re.sub(r"\bdeis\b", "dez", t)
     return [("para" if w == "pra" else w) for w in re.findall(r"[a-z0-9]+", t)]
