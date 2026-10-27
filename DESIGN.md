@@ -939,3 +939,69 @@ Manifesto e pranchas arquivados em `motor/cache/bloco-c-imagem/comparacao-v4/`.
 ### 6. O que ficou apertado
 - **v10-dado (4,90 s vs 7,5 s no roteiro conceitual):** a frase "Dos vinte e dois apps que estudamos, nenhum mostra comparecimento medido." consome 4,18 s de voz (início aos 0,44 s, término aos 4,62 s). A palavra "nenhum" surge aos 2,68 s, restando apenas 1,94 s para que o espectador assimile o check verde no ponto do Frila e o contraste com os 22 concorrentes cinzas antes da transição para a cena de metas aos 4,90 s. O ritmo respirou ajustando o fade dos 22 pontos em cascata rápida (20 ms por item).
 - **v12-estrategia (7,60 s nominal vs 9,0 s no roteiro conceitual):** a cena abriga 3 fases sucessivas de expansão da fala ("Começamos por um núcleo de 15 km" aos 12,42 s; "Depois, bares e restaurantes" aos 15,34 s; "Depois, o Distrito Federal" aos 17,74 s). A locução se encerra aos 19,36 s, restando apenas 0,313 s antes do corte nominal de 19,673 s. A transição dos raios de expansão e ativação dos pontos foi distribuída em molas suaves para assentar visualmente a tempo da margem de 30 frames de congelamento para o Bloco D.
+
+## §28. Bloco D de imagem (cenas v13 fecho e v14 assinatura)
+
+Entrega planejada pelo Prisma (sucessor temporário de Motion) com base na liberação do Fabrício
+em 27/10/2026. A régua oficial inicial é `/Users/fabriciotosta/dev/video-frila/fvp-audio-blocos/motor/cache/blocos-regua/D.json`,
+composta por 2 cenas (v13: 5,81 s; v14: 7,961375 s; total nominal: 13,771375 s; margem: 30 quadros = 14,271375 s).
+
+### 1. Diretrizes de narrativa e design
+- **v13-fecho (PICO 3 do Mapa Narrativo: calor, alívio e acolhimento):**
+  - Fundo off-white calmo (`#F7F3EE`, `C.paper`).
+  - O ponto laranja herdado de `estado-fim-C.json` (posição 1258, 515, tamanho 24×24) navega suavemente em direção ao centro e dá origem ao relógio do gancho como motivo visual circular sem pressa, restabelecendo o laço com a v01. O mostrador circular e os ponteiros rotacionam em ritmo lento e tranquilo.
+  - Tipografia de produto em espelho:
+    1. "Menos tempo procurando gente." (descendente, sutil entrada superior para baixo)
+    2. "Mais tempo no seu negócio." (ascendente, sutil entrada inferior para cima)
+    3. "Deixa que o Frila cuida." (ponto de repouso central acolhedor, onde "cuida" assenta)
+  - Pausas narrativas respeitadas (~0,7 s e ~0,6 s entre frases).
+  - Promessa de produto e marca, sem dados medidos ou contadores inventados.
+  - Ausência de legenda inferior duplicada (`NOCAP` ativo para v13 e v14): o texto em tela é o elemento focal.
+- **v14-assinatura (Calma final, 2; fecho em compasso sem corte seco):**
+  - O relógio esmaece suavemente enquanto os traços do logo A1 se desenham progressivamente letra por letra ("frila").
+  - O ponto laranja realiza seu voo de pouso final, assentando com extrema precisão como o pingo da letra "i" (`E.idot`, x=957, y=338, raio 17 px).
+  - A locução "Frila." surge isolada, seguida de pausa confortável, abrindo espaço para a assinatura de valor: "Turno combinado, regra clara."
+  - Linha de contato discreta centralizada abaixo da assinatura: `frila.org@gmail.com` (texto visual em tela, não falado).
+  - Rodapé obrigatório discreto: `Narração com voz sintética (IA). Frila em teste no iPhone.`
+  - Fecho em compasso musical suave, sem terminação abrupta.
+- **Continuidade C→D:** herança de `estado-fim-C.json` (t=0 do bloco D alinhado com repouso em 1258, 515; câmera identidade; fundo papel).
+- **Sem cursor (Regra D8):** ausência estrita de `#cur` em todo o Bloco D.
+- **Câmera e render (Regra D9):** câmera como escala geral do conjunto em `#world`, renderizado em supersampling 2× (3840×2160) e downscale com filtro Lanczos para 1920×1080 a 60 fps, encode `yuv420p`, color range `tv`, BT.709 completo.
+- **Saída final:** exportação de `estado-fim-D.json` mantido congelado por 30 quadros de margem após a duração nominal de 13,771375 s (total de 14,271375 s = 857 quadros a 60 fps).
+
+### 2. Plano de implementação e evidências
+
+- [x] `docs/v4/COPIA-BLOCO-D.md`: inventário estrito de cópia (Regra D6).
+- [x] `motor/tests/test_bloco_d.py`: testes unitários em Chromium headless para continuidade C→D, relógio de fecho, pouso no logo A1, texto sem duplicidade e ausência de cursor.
+- [x] `motor/render.py`: adicionar suporte ao `--bloco D` na função `render_bloco` e `preparar_bloco` (validar v13/v14 e exportar `estado-fim-D.json`).
+- [x] `motor/filme.html`: implementar `buildBlocoD()`, `bootBlocoD()`, `seekBlocoD(t)` e `window.estadoBlocoD()`.
+- [x] Exportar `motor/cache/bloco-d-imagem/bloco-d-sem-audio.mp4`, 1920×1080, 60 fps, yuv420p/tv/BT.709 completo.
+- [x] Rodar análise de vídeo com D9: faixas 12 fps, cortes ±0,5 s, `achados.json`, `metricas.json`, presença raster do ponto.
+- [x] Comparações lado a lado com a referência v4 (`c16-logo`).
+- [x] Executar `./scripts/verificar.sh`, commit no branch `feat/bloco-d-imagem` sem push e notificar o Maestro via `maestri ask`.
+
+### 3. Medições de render e encode (conformidade técnica)
+- **Clipe:** `motor/cache/bloco-d-imagem/bloco-d-sem-audio.mp4`
+- **Duração e quadros:** 857 quadros a 60 fps = 14,283333 s (13,771375 s nominais + 30 quadros de margem final).
+- **Parâmetros de encode:** `yuv420p`, color range `tv`, color space/transfer/primaries `bt709` completos.
+- **Resolução e escala:** renderizado a 3840×2160 com `deviceScaleFactor: 2` no Chromium headless e redimensionado via filtro Lanczos de alta precisão para 1920×1080 (D9).
+- **Sem cursor (D8):** ausência absoluta de cursor (`#cur` = 0).
+- **Continuidade do ponto:** herdado de `estado-fim-C.json` (1258, 515), voando para o centro (960, 546) durante o relógio de v13 e pousando com precisão como o pingo do 'i' (957, 338) no logo A1 em v14.
+
+### 4. Análise de vídeo D2 e D9
+- **Cintilação de borda D9:** zero alertas. Valores de HF MAD medidos:
+  - `v13-fecho`: média 3,06; máximo 5,78 (limiar de alerta: 22,0).
+  - `v14-assinatura`: média 4,81; máximo 11,13 (limiar de alerta: 22,0).
+- **Verificação física de croma laranja do ponto nos cortes (`conferir-ponto.py`):**
+  - 120 quadros amostrados em janelas de ±0,5 s ao redor dos cortes e transições.
+  - Ausências de croma: 0 (100% de presença). Média de pixels: 801,5 px (mínimo de 650 px).
+- **Pausas editoriais:** 4 pausas de assentamento e leitura registradas em `achados.json`, correspondentes à cadência das 3 frases em v13 e ao pouso e assentamento final da marca em v14.
+
+### 5. Comparações lado a lado com a v4 (mesmos segundos relativos)
+- `v13-fecho-c14` (2,95 s): fecho acolhedor de promessa de produto com tipografia espelho vs c14 da v4.
+- `v14-assinatura-c16` (7,37 s): traçado vetorial do logo A1 com pouso do ponto laranja no pingo do 'i' vs assinatura c16 da v4.
+Manifesto e pranchas arquivados em `motor/cache/bloco-d-imagem/comparacao-v4/`.
+
+### 6. O que ficou apertado
+- **v13-fecho (5,81 s nominal vs 8,0 s no roteiro conceitual):** a cena abriga 3 frases sucessivas de acolhimento ("Menos tempo procurando gente", "Mais tempo no seu negócio", "Deixa que o Frila cuida"), com pausas de cerca de 0,4 s entre elas. O desenho com tipografia espelho (descendente na primeira, ascendente na segunda e repouso na terceira) permitiu manter a cadência sem sobreposição e sem pressa visual, apoiado pelo relógio circular contínuo ao fundo.
+- **v14-assinatura (7,96 s nominal vs 6,0 s no roteiro conceitual):** a locução conclui aos 8,80 s, proporcionando uma respiração confortável de ~5 segundos para que a assinatura visual, a linha de contato e o rodapé institucional assentem em repouso calmo até o congelamento da margem final, garantindo um fecho em compasso sem terminação abrupta.

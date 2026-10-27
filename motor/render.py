@@ -60,14 +60,15 @@ def preparar_bloco(regua, margem_quadros=15):
     import copy
     import math
     bloco = regua.get('bloco')
-    if bloco not in ('A', 'B', 'C'):
-        raise ValueError('Somente os blocos A, B e C foram autorizados nesta etapa.')
+    if bloco not in ('A', 'B', 'C', 'D'):
+        raise ValueError('Somente os blocos A, B, C e D foram autorizados nesta etapa.')
     if margem_quadros < 12:
         raise ValueError('A margem de transição exige pelo menos 12 quadros.')
     r = copy.deepcopy(regua)
     nomes = (['v01-gancho', 'v02-dor1', 'v03-dor2', 'v04-dor3'] if bloco == 'A'
              else ['v05-virada', 'v06-solucao1', 'v07-solucao2', 'v09-solucao3'] if bloco == 'B'
-             else ['v10-dado', 'v11-meta', 'v12-estrategia'])
+             else ['v10-dado', 'v11-meta', 'v12-estrategia'] if bloco == 'C'
+             else ['v13-fecho', 'v14-assinatura'])
     if [c['id'] for c in r['cenas']] != nomes:
         raise ValueError(f'Régua do {bloco} deve conter exatamente {nomes}, em ordem.')
     fim = 0.
@@ -124,6 +125,11 @@ def render_bloco(args):
             dict(id='ponto', selector='#dot', de=0, ate=regua['total'], opacidade_min=.999)],
             movimento=[dict(de=a, ate=b) for a,b in [(.1, 1.8), (2.5, 3.5), (4.8, 6.2),
                 (6.8, 7.8), (9.2, 10.5), (12.0, 14.5), (14.8, 17.0), (17.2, 19.5)]])
+    elif args.bloco == 'D':
+        contrato = dict(presenca=[
+            dict(id='ponto', selector='#dot', de=0, ate=regua['total'], opacidade_min=.999)],
+            movimento=[dict(de=a, ate=b) for a,b in [(.1, 1.8), (2.0, 3.4), (3.8, 5.4),
+                (5.8, 7.5), (7.8, 9.2)]])
     else:
         contrato = {}
     (pasta/'contrato.json').write_text(json.dumps(contrato, indent=2)+'\n')
@@ -142,7 +148,7 @@ def render_bloco(args):
         lista = partes/'lista.txt'
         lista.write_text(''.join(f"file '{r[0].resolve()}'\n" for r in res))
         subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', str(lista), '-c', 'copy', str(final)], check=True)
-        if args.bloco in ('B', 'C'):
+        if args.bloco in ('B', 'C', 'D'):
             from playwright.sync_api import sync_playwright
             with sync_playwright() as pw:
                 b = pw.chromium.launch()
@@ -161,7 +167,7 @@ def render_bloco(args):
         margem_quadros=regua['margem_quadros'], regua_origem=str(args.regua.resolve()),
         regua_sha256=hashlib.sha256(args.regua.read_bytes()).hexdigest(),
         html_sha256=hashlib.sha256(fonte.encode()).hexdigest(),
-        camera=('identidade no ancestral comum #world' if args.bloco == 'A'
+        camera=('identidade no ancestral comum #world' if args.bloco in ('A', 'D')
                 else 'matriz única em #b-camera, chassi+tela+ilha+UI' if args.bloco == 'B'
                 else 'identidade no mundo (#world); transformações e mapa vetoriais (#c-mapa, #dot)'),
         audio=False, voz_arquivo=regua_original.get('arquivo'), voz_sha256=regua_original.get('sha256'))
@@ -174,7 +180,7 @@ if __name__ == "__main__":
         import argparse
         parser = argparse.ArgumentParser(description='Imagem por bloco com régua oficial e margem de transição.')
         parser.add_argument('idioma', choices=['pt'])
-        parser.add_argument('--bloco', choices=['A', 'B', 'C'], required=True)
+        parser.add_argument('--bloco', choices=['A', 'B', 'C', 'D'], required=True)
         parser.add_argument('--regua', type=pathlib.Path, required=True)
         parser.add_argument('--saida', type=pathlib.Path)
         parser.add_argument('--margem-quadros', type=int, default=15)

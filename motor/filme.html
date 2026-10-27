@@ -710,6 +710,139 @@ window.estadoBlocoC=()=>{
  };
 };
 
+/* ==================== BLOCO D ==================== */
+const COPIA_D={
+ v13:{
+  frases:[
+   'Menos tempo procurando gente.',
+   'Mais tempo no seu negócio.',
+   'Deixa que o Frila cuida.'
+  ]
+ },
+ v14:{
+  tag:'Turno combinado, regra clara.',
+  contato:'frila.org@gmail.com',
+  rod:'Narração com voz sintética (IA). Frila em teste no iPhone.'
+ }
+};
+
+function buildBlocoD(){
+ const c=COPIA_D;
+ add(W,`<div class="ab" id="d-v13" style="inset:0;opacity:0">
+   <div class="ab" id="d-relogio" style="left:854px;top:440px;width:212px;height:212px;opacity:0">
+     <svg width="212" height="212" viewBox="0 0 212 212">
+       <circle cx="106" cy="106" r="94" fill="none" stroke="${C.line}" stroke-width="4"/>
+       <g id="d-ponteiro" fill="none" stroke="${C.ink}" stroke-width="5" stroke-linecap="round">
+         <path d="M106 46V82"/>
+         <path d="M128 117L146 126"/>
+       </g>
+     </svg>
+   </div>
+   <div class="ab h ctr" id="d-f1" style="top:260px;font-size:72px;font-weight:800;letter-spacing:-0.03em;color:${C.ink};opacity:0">${c.v13.frases[0]}</div>
+   <div class="ab h ctr" id="d-f2" style="top:260px;font-size:72px;font-weight:800;letter-spacing:-0.03em;color:${C.ink};opacity:0">${c.v13.frases[1]}</div>
+   <div class="ab h ctr" id="d-f3" style="top:260px;font-size:72px;font-weight:800;letter-spacing:-0.03em;color:${C.ink};opacity:0">${c.v13.frases[2]}</div>
+ </div>`);
+
+ add(W,`<div class="ab" id="d-v14" style="inset:0;opacity:0">
+   <svg class="ab" id="d-logo" style="left:610px;top:291px" width="700" height="318.6" viewBox="-4 -6 245 111.5" fill="none" stroke="${C.ink}" stroke-width="19" stroke-linecap="butt" stroke-linejoin="miter">
+     ${['M20 100V30A21.5 21.5 0 0 1 41.5 8.5H51','M0 45.5H73.5','M64 100V45.5','M64 67.5A22 22 0 0 1 86 45.5H95','M117.5 100V36','M149.5 100V0','M226.5 68a23 23 0 1 0 -46 0a23 23 0 1 0 46 0','M226.5 36V100'].map(d=>`<path class="lg" d="${d}" pathLength="1" stroke-dasharray="1 1"/>`).reduce((g,h,i)=>{ const k=[0,0,0,0,1,2,3,3][i]; (g[k]=g[k]||[]).push(h); return g; },[]).map(h=>`<g class="lgl">${h.join('')}</g>`).join('')}
+   </svg>
+   <div class="ab h ctr" id="d-tag" style="top:660px;font-size:56px;font-weight:800;letter-spacing:-0.03em;color:${C.ink};opacity:0">${c.v14.tag}</div>
+   <div class="ab ctr" id="d-contato" style="top:770px;font-size:26px;font-family:AHN;font-weight:600;color:${C.mut};opacity:0">${c.v14.contato}</div>
+   <div class="ab ctr" id="d-rodape" style="bottom:38px;font-size:20px;font-family:AHN;font-weight:400;color:#8A8F96;opacity:0">${c.v14.rod}</div>
+ </div>`);
+
+ E.dot=add(W,'<div id="dot" style="z-index:10"></div>');
+ add(HUD,'<div id="cap" style="opacity:0"></div>');
+}
+
+const ESTADO_C_D={x:1258,y:515,w:24,h:24,r:12};
+async function bootBlocoD(){
+ const ids=['v13-fecho','v14-assinatura'];
+ if(T.cenas.map(c=>c.id).join(',')!==ids.join(','))throw new Error('D exige v13 e v14, em ordem.');
+ for(const c of T.cenas){const id=c.id.slice(0,3),f=T.falas.filter(f=>f.cena===c.id);S[id]={id,ini:c.ini,dur:c.dur,end:c.ini+c.dur,f};ORD.push(S[id]);}
+ buildBlocoD();
+ await document.fonts.load('800 100px PJS');await document.fonts.load('700 100px PJS');
+ await document.fonts.load('800 56px PJS');await document.fonts.load('800 72px PJS');
+ await document.fonts.load('600 40px AHN');await document.fonts.load('400 40px AHN');await document.fonts.ready;
+
+ const idotX=610+(117.5+4)*700/245; // ~957.14
+ const idotY=291+(10.49+6)*700/245; // ~338.11
+
+ D(-9,{...ESTADO_C_D,c:C.o,sh:0});
+ D(0,{...ESTADO_C_D,c:C.o},'move');
+ D(0.55,{x:960,y:546,w:28,h:28,r:14,c:C.o},'move');
+ D(S.v14.ini,{x:960,y:546,w:28,h:28,r:14,c:C.o},'move');
+ D(S.v14.ini+0.85,{x:idotX,y:idotY,w:34,h:34,r:17,c:C.o},'move');
+ D(T.bloco_fim,{x:idotX,y:idotY,w:34,h:34,r:17,c:C.o},'move');
+
+ for(const n in K)K[n].sort((a,b)=>a[0]-b[0]);
+ window.eventos=[];window.seek(0);return {bloco:'D',total:T.total,cenas:2,eventos:0};
+}
+
+function seekBlocoD(tempo){
+ const t=Math.max(0,Math.min(tempo,T.bloco_fim));E.t=t;
+ $('#stage').style.background=C.paper;W.style.transform='none';
+ 
+ const d=E.dot.style,x=val('dx',t),y=val('dy',t),w=val('dw',t),h=val('dh',t);
+ box(E.dot,x-w/2,y-h/2,w,h);d.borderRadius=val('dr_',t)+'px';
+ d.background=C.o;d.opacity='1';d.transform='none';
+
+ // v13
+ const in13=fade(t,0,0.18)*(1-fade(t,S.v14.ini-0.3,0.25));
+ $('#d-v13').style.opacity=in13;
+ $('#d-relogio').style.opacity=fade(t,0.2,0.35)*(1-fade(t,S.v14.ini-0.35,0.25));
+ const rot=(t*36).toFixed(2);
+ $('#d-ponteiro').setAttribute('transform',`rotate(${rot} 106 106)`);
+
+ // Frases espelho v13
+ const f1=S.v13.f[0]||{ini:0.3,fim:1.78};
+ const f2=S.v13.f[1]||{ini:2.22,fim:3.52};
+ const f3=S.v13.f[2]||{ini:4.06,fim:5.54};
+
+ // F1: descendente
+ const op1=fade(t,f1.ini-0.08,0.22)*(1-fade(t,f1.fim+0.25,0.2));
+ st($('#d-f1'),{o:op1,y:(1-spr(t-f1.ini+0.05,'soft'))*-20});
+
+ // F2: ascendente
+ const op2=fade(t,f2.ini-0.08,0.22)*(1-fade(t,f2.fim+0.25,0.2));
+ st($('#d-f2'),{o:op2,y:(1-spr(t-f2.ini+0.05,'soft'))*20});
+
+ // F3: repouso central acolhedor
+ const op3=fade(t,f3.ini-0.08,0.22)*(1-fade(t,S.v14.ini-0.25,0.2));
+ st($('#d-f3'),{o:op3,y:0});
+
+ // v14
+ const in14=fade(t,S.v14.ini,0.25);
+ $('#d-v14').style.opacity=in14;
+
+ // Traços do logo A1
+ $$('#d-logo .lgl').forEach((g,k)=>{
+  const a=S.v14.ini+0.35+k*0.12;
+  $$('.lg',g).forEach(p=>p.style.strokeDashoffset=(1-eio(ramp(t,a,0.5))).toFixed(4));
+  st(g,{o:fade(t,a,0.25),y:(1-spr(t-a,'ui'))*10});
+ });
+
+ // Locução v14
+ const fTag=S.v14.f[1]||{ini:7.0,fim:8.8};
+ st($('#d-tag'),{o:fade(t,fTag.ini-0.1,0.35),y:(1-spr(t-fTag.ini+0.05,'ui'))*12});
+ st($('#d-contato'),{o:fade(t,fTag.ini+0.7,0.4),y:(1-spr(t-fTag.ini-0.65,'ui'))*8});
+ st($('#d-rodape'),{o:fade(t,S.v14.ini+0.6,0.4)});
+
+ $('#cap').style.opacity=0;
+}
+
+window.estadoBlocoD=()=>{
+ return {
+  instante:E.t,
+  ponto:{x:val('dx',E.t),y:val('dy',E.t),w:val('dw',E.t),h:val('dh',E.t),r:val('dr_',E.t),cor:getComputedStyle(E.dot).backgroundColor},
+  camera:[1,0,0,1,0,0],
+  fundo:getComputedStyle($('#stage')).backgroundColor,
+  cena:E.t>=S.v14.ini?S.v14.id:S.v13.id,
+  progresso:E.t>=S.v14.ini?($('#d-tag')?.textContent||''):($('#d-f3')?.textContent||'')
+ };
+};
+
 /* ---------- HUD, câmera, ponto e cursor ---------- */
 const NOCAP=new Set(['v01','v13','v14']);
 function runHUD(t){const th=val('th',t);$('#stage').style.background=mixc(C.paper,C.ink,th);const ink=mixc(C.ink,C.paper,th),mut=mixc(C.mut,'#8A8F96',th);const cp=$('#cap');const fl=T.falas.find(f=>t>=f.leg_ini&&t<f.leg_fim);
@@ -726,6 +859,7 @@ window.boot=async function(tempos,lang='pt'){
   if(T.bloco==='A')return await bootBlocoA();
   if(T.bloco==='B')return await bootBlocoB();
   if(T.bloco==='C')return await bootBlocoC();
+  if(T.bloco==='D')return await bootBlocoD();
   const ids=T.cenas.map(c=>c.id.slice(0,3));if(ids.join(',')!==Array.from({length:14},(_,i)=>`v${String(i+1).padStart(2,'0')}`).join(','))throw new Error('A v5 exige uma régua com v01–v14. Para ensaio sem voz: scripts/tempos-provisorios.py.');
   for(const c of T.cenas){const id=c.id.slice(0,3),f=T.falas.filter(f=>f.cena===c.id);S[id]={id,ini:c.ini,dur:c.dur,end:c.ini+c.dur,f};ORD.push(S[id]);}
   build();await document.fonts.load('800 100px PJS');await document.fonts.load('700 100px PJS');await document.fonts.load('600 40px AHN');await document.fonts.load('700 40px AHN');await document.fonts.load('400 40px AHN');await document.fonts.ready;
@@ -738,5 +872,5 @@ window.boot=async function(tempos,lang='pt'){
   for(const sc of SC)sc.plan(S[sc.id]);for(const n in K)K[n].sort((a,b)=>a[0]-b[0]);EV.sort((a,b)=>a.t-b.t);window.eventos=EV;window.seek(0);
   return {total:T.total,cenas:SC.length,eventos:EV.length,provisorio:!!T._provisorio};
 };
-window.seek=function(t){if(T.bloco==='A')return seekBlocoA(t);if(T.bloco==='B')return seekBlocoB(t);if(T.bloco==='C')return seekBlocoC(t);E.t=t;for(const sc of SC){const s=S[sc.id],on=t>=s.ini&&t<s.end;sc.root.style.display=on?'block':'none';if(on)sc.run(t,s);}runCam(t);runDot(t);runCursor(t);runHUD(t);};
+window.seek=function(t){if(T.bloco==='A')return seekBlocoA(t);if(T.bloco==='B')return seekBlocoB(t);if(T.bloco==='C')return seekBlocoC(t);if(T.bloco==='D')return seekBlocoD(t);E.t=t;for(const sc of SC){const s=S[sc.id],on=t>=s.ini&&t<s.end;sc.root.style.display=on?'block':'none';if(on)sc.run(t,s);}runCam(t);runDot(t);runCursor(t);runHUD(t);};
 </script></body></html>
