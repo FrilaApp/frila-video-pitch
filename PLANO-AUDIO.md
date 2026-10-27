@@ -1217,3 +1217,254 @@ planejado de −2 dB em v13/v14 consta em `motor/mixagem.json`. O clima musical
   (18 + 16 + 27), AST/dependências, roteiro/cópia e ausência de binários/chaves.
   `git diff --check` também passou. Log: `motor/cache/blocos-regua/verificar-final.log`.
   Aprovação audiovisual e de montagem pendentes; commit local sem push/PR.
+
+## M. Tarefa 4 — prévia de voz e música (plano antes do código)
+
+**Autorizado pelo Fabrício/Maestro:** produzir somente voz + música, usando
+as quatro tomadas já selecionadas e a régua T5 de 78,693604 s. Sem efeitos,
+vídeo, nova geração de voz ou alteração de tomada/régua. Branch
+`feat/mix-voz-musica`, criado de main após o PR #18. Efeitos terão configuração
+preservada, mas bus desligado e sem leitura de `eventos-pt.json`.
+
+### M1. Análise e proposta de montagem
+
+Primeiro medir a trilha original com FFmpeg/NumPy, sem nova dependência:
+SHA-256, duração, energia RMS/pico/crest por compasso da grade existente
+(P 0,491835 s, compasso 1,967340 s, origem musical 1,014 s), bandas espectrais
+e energia/transientes ao redor das fronteiras. A identificação de clima por
+energia é hipótese para orientar a escuta, não aprovação musical.
+
+A montagem será **uma trilha global**, sem reiniciar nos blocos. Priorizar
+intervalos contíguos longos, sem loops curtos; qualquer salto/repetição só em
+fim de compasso e em pausa entre palavras da régua. Propor a lista exata de
+compassos de origem antes de implementar a montagem. Medir os dois lados e
+o salto em cada ponto; crossfade musical curto somente na música, no
+compasso, sem coincidir com palavra. Final deve usar cauda musical natural
+e encerrar no compasso 40. Se um corte musical não tiver pausa de fala,
+escolher outro corte/trecho, sem mover a voz.
+
+### M2. Voz, ducking e master
+
+A voz é exatamente a referência decodificada/reamostrada a 48 kHz, sem ganho,
+fade, corte ou normalização por tomada; quatro WAVs inteiros nas amostras da
+régua. Registrar o padrão bit a bit em float32 (24→48 kHz exige reamostragem;
+não confundir com identidade dos bytes dos WAVs 24 kHz). Stems separados de
+voz, música-base e música-duck; premix é sua soma, com bus de efeitos zero.
+
+Ducking baseado nas frases/palavras Scribe, não na duração inteira dos WAVs;
+proteger sons fracos e bordas, mesclar pausas curtas para não bombear. Rampas
+suaves e release musical, recuperação em pausas com espaço suficiente. Medir
+≥12 dB de voz/música em fala ativa e bordas; registrar mínimo/mediana por
+frase, limiares, envelope e intervalos. Não aumentar voz nem afrouxar limiar
+para passar. A referência legada −20 dB RMS deixa de ser um alvo que altere
+a voz nesta prévia: medir o nível aprovado e baixar música conforme preciso.
+
+Master em duas passagens `loudnorm`, sem limiter extra. Registrar modo
+linear/dinâmico efetivo e alinhamento; medir −16 LUFS ±0,5 e ≤−1,5 dBTP no
+AAC final a 256 kbit/s, 48 kHz estéreo. A identidade da voz é verificada no
+stem/premix antes do processamento global e da codificação com perdas.
+
+### M3. Conferência, testes e entrega
+
+Testes primeiro para voz com ganho zero apesar da referência de RMS, efeitos
+desligados sem síntese/leitura de eventos, montagem musical contígua sem
+emendas a cada compasso e margens por frase em fala ativa. Null test da soma
+dos stems; comparação bit a bit das quatro inserções e integridade dos brutos.
+
+Conferir cache Scribe pelo hash do AAC final. Se não houver resposta válida,
+**uma única chamada** no mix final, com contexto de 250 ms ao redor da fala
+(cabeça/cauda do filme já dão essa margem); guardar resposta inteira e custo
+em duração/minutos. Nenhuma repetição automática de API. A5/A8 nas três
+fronteiras com manifesto, palavras do mix e trechos ±2 s; confrontar com as
+fontes para distinguir timestamp/ASR, mascaramento e edição. Exceção A8 de
+C fica explícita e vinculada à tomada aprovada, sem mudar o limiar.
+
+Entregar `motor/cache/mix-voz-musica.m4a`, sessão/stems/relatório local,
+lista de trechos para escuta do Fabrício, configuração e código/testes.
+Ausência de acesso perceptivo não será declarada como escuta feita.
+`./scripts/verificar.sh` antes de commit/handoff; commit local sem push/PR.
+
+### M4. Medição da trilha e montagem proposta antes da implementação
+
+**Medido aqui:** a trilha tem **114,113750 s**, não ~2,5 min. SHA-256
+`29a93bdd8ff4ebfe1eff786eb788c0bcc8c82db2338690c5bceebb7aff8eb1e5`,
+igual ao de `scripts/trilha.sh`. Há 57 compassos completos após a origem
+1,014 s, mais 0,961375 s residual. RMS estéreo por compasso:
+intro 0–6 em −14,52 a −14,99 dBFS; groove 8–23 em −12,97 a −15,27;
+quebra 24–30 em −17,45 a −19,31; groove 32–47 em −12,61 a −14,41;
+outro 48–55 em −17,44 a −20,43; cauda 56 em −41,19. O grave ocupa
+aproximadamente 0,74–0,82 da energia do primeiro groove, 0,68–0,71 do segundo,
+e 0,08–0,12 do outro. Dados completos por compasso, bandas e bordas em
+`motor/cache/mix-voz-musica/analise-musica.json`. “Intro/groove/outro” são
+hipóteses estruturais apoiadas na energia/bandas, ainda sem escuta perceptiva.
+
+**Proposta escolhida para a prévia — índices a partir de zero, fim exclusivo:**
+
+| Compassos do vídeo | Compassos da fonte | Papel e razão |
+|---|---|---|
+| 0–13 | 0–13 | A: intro/tensão, com abertura progressiva nos últimos cinco compassos |
+| 13–29 | 32–48 | Groove mais cheio, 16 compassos contíguos atravessando B→C sem emenda em 23 |
+| 29–33 | 20–24 | Quatro compassos de groove/fill para completar C; não usados antes nesta montagem |
+| 33–40 | 50–57 | Outro leve/cauda original para D, −2 dB; final natural, sem loop de assinatura |
+
+Quarenta compassos de origem **únicos**, sem repetição de trecho. Três saltos
+musicais, nos compassos de saída **13 / 29 / 33**, tempos **25,575420 /
+57,052860 / 64,922220 s**; nenhum reinício no corte B→C. Cada salto tem
+crossfade musical de **40 ms**, centrado na fronteira de compasso (±20 ms),
+sem mudar duração/grade. As folgas Scribe antes/depois desses centros são,
+respectivamente, **856/200, 84/616 e 313/300 ms**: nenhuma janela do crossfade
+intersecta palavra conhecida. Reconfirmar com o Scribe do mix final.
+
+As bordas da fonte em 13/32 e 48/20 têm ataque de compasso e **não são
+silêncio** (RMS de ±5 ms: −8,72/−9,15 e −16,65/−9,33 dBFS). Não apresentar
+isso como corte bruto já limpo: o crossfade suprime descontinuidade e a
+atenuação musical durante a pausa da fala reduz a energia efetiva da emenda;
+medir RMS/salto/transiente no stem montado e listar para escuta. A última
+junção (24→50) tem bordas de −18,28/−18,33 dBFS em ±5 ms. Se a emenda não
+for suficientemente suave, reportar a limitação, sem afrouxar regra ou chamar
+outra geração. Ao fim da fonte 57 o residual de 0,961375 s mede −64,11 dBFS;
+os últimos 80 ms do compasso 56 medem −59,33. Usar a cauda desse compasso e
+um fechamento de **80 ms só na música**, sem fade no bus de voz.
+
+### M5. Ajuste medido de nível antes do master
+
+O ensaio inicial (música-base −28 dBFS e duck18/21 dB nas bordas)
+conservou voz e null test, mas falhou em margens locais de fala ativa.
+Não se alterou o limiar. Comparação em memória com duck fixo22 dB
+(teto já previsto) mediu mínimo **5.974561 dB** por frase.
+Para alvo conservador de12,5 dB, baixar uniformemente a música-base em
+**6.525439 dB**, para **-34.525439 dBFS**, mantendo voz ganho0.
+Ducking22 dB, sem reforço adicional nas bordas; hold200 ms, release984 ms
+(~dois tempos), antecipação200 ms, patamar50 ms antes da fala.
+Essa opção prioriza as consoantes fracas e pode deixar a música discreta;
+isso é item de escuta, não aprovação automática do equilíbrio artístico.
+Ensaio inicial preservado em `motor/cache/mix-voz-musica/qa-inicial.json`.
+
+### M6. Prévia entregue — medições e limites
+
+Arquivo local `motor/cache/mix-voz-musica.m4a`, AAC256 kbit/s,48 kHz estéreo,
+SHA-256 `fa45326c61187afffb0b9e29618e54c062d273bb3c27ba95e363a8c7b308b82f`.
+**Medido no AAC:** −16,03 LUFS, −1,99 dBTP, LRA3,10 LU; atraso0 amostras;
+stream78,693 s, régua78,693604167 s. Decodificação tem243 amostras de padding
+AAC além das3.777.293 do PCM, sem truncamento do stem. Master em duas
+passagens, modo efetivo **dynamic**, uma tentativa e sem limiter adicional;
+a dinâmica/limitação interna do loudnorm atua globalmente, não na voz isolada.
+
+Stem de voz: quatro inserções bit a bit iguais à referência48 kHz dos brutos,
+ganho0, sem cortes/fades/padding internos. Os15 arquivos das5 tomadas
+permaneceram intactos. Null test voz + música-duck + efeitos-zero →premix:
+**erro máximo0,0**. Efeitos-base/duck inteiramente zero, sem síntese e sem ler
+`eventos-pt.json`. A identidade bit a bit é anterior ao master/AAC com perdas.
+
+#### Margens e envelope
+
+Referência musical final −34,525439 dBFS; duck22 dB (teto mantido), hold200 ms,
+release984 ms, antecipação200 ms e patamar50 ms antes da fala. A voz não foi
+normalizada ao alvo histórico−20: preservação explícita solicitada nesta tarefa.
+As22 frases da régua orientam o duck, não os4 intervalos inteiros dos WAVs.
+Janelas100 ms, passo10 ms, ativas quando voz≥referência da frase−20 dB,
+critério já declarado no plano; janelas abaixo entram na escuta, sem fingir
+que são silêncio. Mínimo VM ativo **12,50 dB**; mediana das medianas por frase
+**37,68 dB**. Este equilíbrio é conservador/discreto, a ouvir. Não se afirma
+que não bombeia: recuperação máxima nas pausas A/B, B/C e C/D foi17,55 /
+7,46 /5,33 dB a partir do patamar22. Envelope e todas as janelas no cache.
+
+| Frase | VM agregado (dB) | VM ativo mínimo (dB) | VM ativo mediana (dB) |
+|---|---:|---:|---:|
+| v01-gancho-1 | 40.98 | 24.15 | 43.43 |
+| v01-gancho-2 | 39.35 | 13.77 | 40.65 |
+| v02-dor1-1 | 39.09 | 16.48 | 39.70 |
+| v03-dor2-1 | 39.80 | 17.10 | 40.87 |
+| v03-dor2-2 | 38.85 | 24.23 | 39.09 |
+| v04-dor3-1 | 37.09 | 18.04 | 37.10 |
+| v05-virada-1 | 35.71 | 12.50 | 36.74 |
+| v06-solucao1-1 | 37.65 | 30.47 | 37.43 |
+| v06-solucao1-2 | 35.13 | 15.73 | 34.93 |
+| v07-solucao2-1 | 35.16 | 19.90 | 36.29 |
+| v07-solucao2-2 | 36.70 | 14.83 | 36.28 |
+| v09-solucao3-1 | 37.61 | 21.57 | 37.63 |
+| v10-dado-1 | 37.21 | 21.09 | 37.23 |
+| v11-meta-1 | 37.13 | 15.19 | 37.30 |
+| v12-estrategia-1 | 36.89 | 19.78 | 36.32 |
+| v12-estrategia-2 | 37.63 | 19.37 | 37.74 |
+| v12-estrategia-3 | 37.96 | 14.90 | 37.34 |
+| v13-fecho-1 | 43.50 | 32.82 | 43.36 |
+| v13-fecho-2 | 41.64 | 27.32 | 41.32 |
+| v13-fecho-3 | 43.04 | 26.90 | 41.86 |
+| v14-assinatura-1 | 41.13 | 37.28 | 42.34 |
+| v14-assinatura-2 | 44.07 | 25.24 | 43.55 |
+
+Montagem M4 preservada,40 compassos únicos, sem repetição exata. RMS do stem
+música-duck em±20 ms nas emendas13/29/33: **−35,10 /−57,79 /−61,22 dBFS**.
+O corte B→C/23, sem emenda musical, mede−50,76 dBFS. As bordas originais de
+13/32 são fortes, não silêncio natural; crossfade/ganho produzem transição
+mais baixa no mix. Conferência musical perceptiva pendente, sobretudo13.
+
+#### Scribe, fronteiras e exceção
+
+**Uma chamada Scribe v2** no AAC final:78,693604167 s / **1,311560 min**,
+zero caracteres TTS enviados;151 palavras e964 caracteres transcritos,
+incluindo tags de evento musical no texto bruto. Sem inferir preço ou
+arredondamento de cobrança. O áudio inteiro já contém mais de250 ms antes e
+depois da fala. Resposta completa e wrapper por hash preservados; não há
+outra chamada nem retentativa. As151 palavras normalizadas conferem com o
+roteiro; nenhuma omissão/substituição não resolvida no ASR. Isso não prova
+inteligibilidade perceptiva de todas as palavras.
+
+A8 no mix mede **0,620 s**, “semanas,” [51,920–52,440] →“50”
+[53,060–53,260], centro52,750. A fonte C seed1 tem pausa0,600 s aceita pelo
+Fabrício em26/10/2026; a identidade do stem prova a mesma tomada sem edição.
+O analisador mantém a falha medida e o limiar0,500; a exceção da fonte está
+registrada separadamente, sem fingir A8 sem falha. Nenhuma outra falha A8 ou
+pendência de alinhamento textual no mix.
+
+| Fronteira/emenda | Pausa Scribe do mix (s) | Achados brutos |
+|---|---:|---|
+| 25.575417 s | 1.020000 | diferença de fundo >3 dB (estimativa no mix); energia central em ±120 ms; mix não separa fala de música/efeitos |
+| 45.248812 s | 0.680000 | energia central em ±120 ms; mix não separa fala de música/efeitos |
+| 57.052860 s | 0.680000 | palavra/energia de fala na proteção ±120 ms (pista Scribe) |
+| 64.922229 s | 0.481000 | pausa entre blocos menor que 500 ms; energia central em ±120 ms; mix não separa fala de música/efeitos |
+
+**C→D não está liberada pela análise automática:** Federal. termina64,739 e
+Menos começa65,220 no Scribe do mix, pausa **0,481 s**, abaixo de500 ms.
+A régua baseada nos brutos estimava0,613416667 s; o novo fim de Federal.
+foi~130 ms depois. Energia do stem:64,6–64,7 s em−36,01 dBFS e64,7–64,8 em
+−60,80; depois há cauda/respiração. Não classificar automaticamente como
+silêncio/fonema nem alterar a régua/voz para esconder o alerta. **Ouvir
+Federal./Menos e decidir com Fabrício/Maestro.** A prévia está disponível
+para essa escuta, sem declaração de aprovação de som ou liberação final.
+
+A→B acusa diferença de fundo>3 dB, e as três fronteiras têm energia central;
+o mix inclui música/caudas, sem prova automática de fala cortada. Em29,
+a proteção genérica±120 ms alcança presentes., mas o crossfade musical
+±20 ms não intersecta palavra no Scribe antigo ou novo. Nenhuma frase
+comprovadamente dividida e nenhum clique sinalizado nas4 análises. Os
+relatórios brutos continuam bloqueados; não se afrouxou limiar para passá-los.
+
+Calibração declarada: A8 histórica4/4 referências v5; detector cego v4
+aproxima1/4 centros da régua em±120 ms, o que não é recall auditiva validada.
+Heurísticas de energia/fundo/transiente continuam Nível2, para escuta;
+exceção de C e divergência temporal C/D ficam explícitas. Não houve acesso
+perceptivo ao som neste runtime nem revisão contra vídeo nesta tarefa.
+
+#### Artefatos e escuta
+
+- Sessão `motor/cache/mix-voz-musica/sessao/`: voz, música-base, música-duck,
+  efeitos-zero, premix, master, AAC, configuração/receitas, QA e envelope.
+- Relatório `motor/cache/mix-voz-musica/RELATORIO.md`:57 compassos da fonte,
+  montagem, margens, palavras do Scribe ao redor de cada emenda e limites.
+- `auditoria-mix/`: A5/A8 brutos e trechos±2 s; `scribe-mix.json` vinculado ao
+  hash final; `verificacao-mix.json`: identidade, null e energia por stem.
+- Trechos AAC decodificado, sem normalização separada, em `escuta/`:
+  abertura0–7; A/B23,575417–27,575417; B/C43,248812–47,248812;
+  exceção C50,750–54,750; música29 em55,052860–59,052860;
+  C/D62,922229–66,922229; assinatura69,500–78,693604.
+- Ouvir o nível discreto da música, recuperação de até17,55 dB na pausa A/B,
+  crossfades e transição para calma; conferir a pausa C/D e o final natural.
+- Reprodução sem API: `.venv/bin/python motor/audio2.py pt --saida
+  motor/cache/mix-voz-musica/sessao`; a prévia é cópia exata do
+  `verificacao.m4a` dessa sessão. Scribe só é reutilizável se o hash conferir.
+- Gate final: `./scripts/verificar.sh` **passou, código0,67 testes**
+  (21 +19 +27), dependências, roteiro/cópia e ausência de binários/chaves.
+  `git diff --check` passou; log em `motor/cache/mix-voz-musica/verificar-final.log`.
+  Isso valida a infraestrutura, não libera C→D ou aprova o som.
