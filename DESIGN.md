@@ -363,7 +363,7 @@ A varredura original `sobreposicoes.py pt` a cada 1/15 s encontrou **13 pares ge
 
 ### Fontes e distinção entre dado e julgamento
 
-Fonte executável: `git show 4efa75a:motor/filme.html`, preservada apenas em cache para a inspeção. Régua e eventos: `docs/v4/tempos-pt.json`, `docs/v4/eventos-pt.json`; descrição: `docs/v4/STORYBOARD.md`. Referência visual: `/Users/fabriciotosta/Downloads/frila-pitch-pt.mp4`, **76,733333 s, 1920×1080, 60 fps**, medidos com ffprobe nesta tarefa. V5 somente para calibração: `../fvp-tempos/pt/frila-pitch-pt.mp4`, **108,200 s de imagem / 108,204 s de contêiner**. A nota 8/10 é avaliação do Fabrício, não resultado do detector.
+Fonte executável: `git show 4efa75a:motor/filme.html`, preservada apenas em cache para a inspeção. Régua e eventos: `docs/v4/tempos-pt.json`, `docs/v4/eventos-pt.json`; descrição: `docs/v4/STORYBOARD.md`. Referência visual: `/Users/fabriciotosta/Downloads/frila-pitch-pt.mp4`, **76,733333 s, 1920×1080, 60 fps**, medidos com ffprobe nesta tarefa. V5 somente para calibração (arquivada em 26/10/2026; também há cópia da v4 em `/Users/fabriciotosta/dev/video-frila/referencias/v4-nota-8/`): `/Users/fabriciotosta/dev/video-frila/referencias/v5-reprovada/frila-pitch-pt.mp4`, **108,200 s de imagem / 108,204 s de contêiner**. A nota 8/10 é avaliação do Fabrício, não resultado do detector.
 
 ### Curvas reais, sem substituir por curvas genéricas
 
@@ -497,9 +497,9 @@ motor/cache/qa-venv/bin/python motor/analisar_video.py \
   --contrato motor/cache/revisao-v4-v5/contrato-v4.json \
   --saida motor/cache/revisao-v4-v5/v4
 motor/cache/qa-venv/bin/python motor/analisar_video.py \
-  /Users/fabriciotosta/dev/video-frila/fvp-tempos/pt/frila-pitch-pt.mp4 \
-  --tempos ../fvp-tempos/motor/tempos-pt.json \
-  --html ../fvp-tempos/motor/filme.html --raiz ../fvp-tempos \
+  /Users/fabriciotosta/dev/video-frila/referencias/v5-reprovada/frila-pitch-pt.mp4 \
+  --tempos /Users/fabriciotosta/dev/video-frila/referencias/v5-reprovada/tempos-pt.json \
+  --html /Users/fabriciotosta/dev/video-frila/referencias/v5-reprovada/filme-v5.html \
   --contrato motor/cache/revisao-v4-v5/contrato-v5.json \
   --saida motor/cache/revisao-v4-v5/v5
 ```
