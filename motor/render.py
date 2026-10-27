@@ -10,6 +10,7 @@ N_TRAB = 6
 
 def trabalho(arg):
     L, porta, q0, q1, saida, *extra = arg
+    import time
     from playwright.sync_api import sync_playwright
     from fotos import abrir
     regua = extra[0] if extra else None
@@ -19,33 +20,38 @@ def trabalho(arg):
               if regua else "scale=iw:ih:in_range=pc:out_range=tv:out_color_matrix=bt709,")
     filtro += f"tmix=frames={SUB},select='not(mod(n+1\\,{SUB}))',setpts=N/{FPS}/TB"
     filtro += ",format=yuv420p,setparams=range=limited:color_primaries=bt709:color_trc=bt709:colorspace=bt709"
-    ff = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "image2pipe", "-framerate", str(FPS*SUB), "-c:v", "mjpeg", "-i", "-",
-        "-vf", filtro, "-r", str(FPS), "-an", "-c:v", "libx264", "-preset", "medium", "-crf", "14", "-pix_fmt", "yuv420p",
-        "-color_range", "tv", "-color_primaries", "bt709", "-color_trc", "bt709", "-colorspace", "bt709", str(saida)], stdin=subprocess.PIPE)
     erros = []
-    try:
-        with sync_playwright() as pw:
-            if regua:
-                b = pw.chromium.launch(args=["--force-color-profile=srgb", "--disable-lcd-text"])
-                pg = b.new_page(viewport={"width":1920, "height":1080}, device_scale_factor=2)
-                pg.on('pageerror', lambda e: erros.append(str(e)))
-                pg.goto(f"http://127.0.0.1:{porta}/motor/filme.html")
-                pg.evaluate('r=>window.boot(r,"pt")', regua)
-            else:
-                b, pg, _, _, erros = abrir(pw, L, f"http://127.0.0.1:{porta}/motor/filme.html")
-            try:
-                for q in range(q0, q1):
-                    t = (q+1)/(FPS*SUB) - (SUB-1)/(2*FPS*SUB)
-                    pg.evaluate('(t)=>window.seek(t)', t)
-                    ff.stdin.write(pg.screenshot(type="jpeg", quality=94))
-                    if regua and (q-q0) % 480 == 0:
-                        print(f'{saida.name}: {q-q0}/{q1-q0} subquadros', flush=True)
-            finally:
-                b.close()
-    finally:
-        ff.stdin.close()
-        retorno = ff.wait()
-    if retorno: raise RuntimeError(f'FFmpeg falhou no trecho {saida}')
+    with sync_playwright() as pw:
+        if regua:
+            b = pw.chromium.launch(args=["--force-color-profile=srgb", "--disable-lcd-text"])
+            pg = b.new_page(viewport={"width":1920, "height":1080}, device_scale_factor=2)
+            pg.on('pageerror', lambda e: erros.append(str(e)))
+            url = f"http://127.0.0.1:{porta}/motor/filme.html"
+            for tentativa in range(5):
+                try:
+                    pg.goto(url)
+                    pg.evaluate('r=>window.boot(r,"pt")', regua)
+                    break
+                except Exception:
+                    if tentativa == 4: raise
+                    time.sleep(0.5 * (tentativa + 1))
+        else:
+            b, pg, _, _, erros = abrir(pw, L, f"http://127.0.0.1:{porta}/motor/filme.html")
+        ff = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "image2pipe", "-framerate", str(FPS*SUB), "-c:v", "mjpeg", "-i", "-",
+            "-vf", filtro, "-r", str(FPS), "-an", "-c:v", "libx264", "-preset", "medium", "-crf", "14", "-pix_fmt", "yuv420p",
+            "-color_range", "tv", "-color_primaries", "bt709", "-color_trc", "bt709", "-colorspace", "bt709", str(saida)], stdin=subprocess.PIPE)
+        try:
+            for q in range(q0, q1):
+                t = (q+1)/(FPS*SUB) - (SUB-1)/(2*FPS*SUB)
+                pg.evaluate('(t)=>window.seek(t)', t)
+                ff.stdin.write(pg.screenshot(type="jpeg", quality=94))
+                if regua and (q-q0) % 480 == 0:
+                    print(f'{saida.name}: {q-q0}/{q1-q0} subquadros', flush=True)
+        finally:
+            b.close()
+            ff.stdin.close()
+            retorno = ff.wait()
+        if retorno: raise RuntimeError(f'FFmpeg falhou no trecho {saida}')
     return saida, erros
 
 
@@ -127,6 +133,17 @@ def render_bloco(args):
         lista = partes/'lista.txt'
         lista.write_text(''.join(f"file '{r[0].resolve()}'\n" for r in res))
         subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', str(lista), '-c', 'copy', str(final)], check=True)
+        if args.bloco == 'B':
+            from playwright.sync_api import sync_playwright
+            with sync_playwright() as pw:
+                b = pw.chromium.launch()
+                pg = b.new_page(viewport={"width": 1920, "height": 1080})
+                pg.goto(f"http://127.0.0.1:{s.server_port}/motor/filme.html")
+                pg.evaluate('r=>window.boot(r,"pt")', regua)
+                pg.evaluate('t=>window.seek(t)', regua['bloco_fim'])
+                fim = pg.evaluate('()=>window.estadoBlocoB()')
+                b.close()
+            (pasta/'estado-fim-B.json').write_text(json.dumps(fim, ensure_ascii=False, indent=2)+'\n')
     finally:
         s.shutdown(); s.server_close()
     manifesto = dict(bloco=args.bloco, arquivo=str(final.resolve()), frames=n, fps=FPS, subquadros=SUB,
