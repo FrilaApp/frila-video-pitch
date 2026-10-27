@@ -17,7 +17,7 @@ Cada papel trabalha no seu worktree e commita no seu branch, sem push.
 
 ## 2. Fluxo
 
-1. **Roteiro mestre travado** (`roteiro.json`): texto enxuto aprovado em 26/10/2026 (13 cenas, 156 palavras, alvo ~80 s; ids v01–v14 sem a v08, não renumerados). Só o Fabrício muda.
+1. **Roteiro mestre travado** (`roteiro.json`): texto enxuto aprovado em 26/10/2026 (13 cenas, 158 palavras, alvo ~80 s; ids v01–v14 sem a v08, não renumerados). Só o Fabrício muda.
 2. **Metas de melhoria sobre a v4.** O Fabrício avaliou a v4 (`~/Downloads/frila-pitch-pt.mp4`, 76,7 s) com **nota 8/10**. O trabalho é **evoluir a v4, não substituí-la**. Os três pontos a melhorar:
    - **Emenda de voz mais natural.** Na v4, as pausas entre frases da mesma cena são sempre 0,21–0,29 s (frases geradas isoladas e encaixadas); é o "remendo" audível. Alvo: voz por bloco em tomada contínua (A3, A4).
    - **Leves ajustes de motion** nas cenas existentes, sem refazer a coreografia que já funciona.

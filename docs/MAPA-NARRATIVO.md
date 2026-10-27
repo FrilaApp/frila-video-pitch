@@ -37,7 +37,7 @@ Três picos: **v05** (a virada, a promessa do Frila), **v10** (o diferencial: "n
 | **v11** meta | Confiança, objetivo | 2 | Cadência de lista, números marcados | Números com peso crescente; "nove em cada dez profissionais presentes." fecha firme | "oito", "cinquenta", "nove em cada dez" | 0,5 s / 0,5 s |
 | **v12** estratégia | Expansão, ambição | 2→3 | Cada frase um pouco mais aberta | Terminações sustentadas; "o Distrito Federal." ascendente-resolvida | "quinze quilômetros", "Distrito Federal" | 0,5 s / 0,9 s |
 | **v13** fecho | **Pico 3: calor e alívio** | **4** | Mais lento, acolhedor | "Menos…" / "Mais…" espelhados (descendente / ascendente); "Deixa que o Frila cuida." íntimo, suave, descendente conclusivo | "menos", "mais", "cuida" | 0,7 s / 0,6 s |
-| **v14** assinatura | Marca, calma | 2 | Pausado | "Frila." isolada, com pausa depois; "Turno combinado, regra clara." firme e descendente | "Frila", "clara" | 0,6 s / fecho |
+| **v14** assinatura | Marca, calma | 2 | Pausado | "Combinou?" curta, sobe como pergunta; "Pode contar." firme e baixa; "Dos dois lados." suave; "Frila." isolada, com pausa curta antes, descendente conclusiva | "contar", "dois lados", "Frila" | 0,6 s / fecho |
 
 As pausas são alvos de direção, não substituem a régua (que continua definida pelas pausas reais da tomada); servem para **pedir** a pausa na geração e para o mix saber onde a música respira.
 
