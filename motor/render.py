@@ -53,14 +53,16 @@ def preparar_bloco(regua, margem_quadros=15):
     """Conserva o relógio oficial e acrescenta apenas margem de imagem no fim."""
     import copy
     import math
-    if regua.get('bloco') != 'A':
-        raise ValueError('Somente o piloto A foi autorizado nesta etapa.')
+    bloco = regua.get('bloco')
+    if bloco not in ('A', 'B'):
+        raise ValueError('Somente os blocos A e B foram autorizados nesta etapa.')
     if margem_quadros < 12:
         raise ValueError('A margem de transição exige pelo menos 12 quadros.')
     r = copy.deepcopy(regua)
-    nomes = ['v01-gancho', 'v02-dor1', 'v03-dor2', 'v04-dor3']
+    nomes = (['v01-gancho', 'v02-dor1', 'v03-dor2', 'v04-dor3'] if bloco == 'A'
+             else ['v05-virada', 'v06-solucao1', 'v07-solucao2', 'v09-solucao3'])
     if [c['id'] for c in r['cenas']] != nomes:
-        raise ValueError('Régua do A deve conter exatamente v01–v04, em ordem.')
+        raise ValueError(f'Régua do {bloco} deve conter exatamente {nomes}, em ordem.')
     fim = 0.
     for c in r['cenas']:
         if not all(math.isfinite(c[k]) for k in ('ini', 'dur')) or c['dur'] <= 0 or abs(c['ini']-fim) > 1e-6:
@@ -89,7 +91,7 @@ def render_bloco(args):
     if args.bloco != regua_original.get('bloco'):
         raise ValueError('Bloco solicitado difere da régua fornecida.')
     regua = preparar_bloco(regua_original, args.margem_quadros)
-    pasta = args.saida or AQUI/'cache/bloco-a-imagem'
+    pasta = args.saida or AQUI/f'cache/bloco-{args.bloco.lower()}-imagem'
     pasta.mkdir(parents=True, exist_ok=True)
     (pasta/'regua-oficial.json').write_text(json.dumps(regua_original, ensure_ascii=False, indent=2)+'\n')
     (pasta/'tempos.json').write_text(json.dumps(regua, ensure_ascii=False, indent=2)+'\n')
@@ -102,9 +104,16 @@ def render_bloco(args):
             (regua['falas'][-2]['ini']-.5,regua['cenas'][3]['ini']+.4),
             (regua['cenas'][3]['ini']+.4,regua['cenas'][3]['ini']+3.45),
             (regua['bloco_fim']-2.1,regua['bloco_fim']-.2)]])
+    if args.bloco == 'B':
+        contrato = dict(presenca=[
+            dict(id='chassi', selector='#dot', de=0, ate=regua['total'], opacidade_min=.999),
+            dict(id='tela', selector='#scr', de=2.2, ate=regua['total'], opacidade_min=.999)],
+            movimento=[dict(de=a,ate=b) for a,b in [(.12,2.2),(2.5,3.65),(4.45,5.6),
+                (6.16,7.2),(8.42,9.2),(10.14,11.04),(12.74,13.44),
+                (14.1,15.4),(16.05,16.8),(17.1,17.4),(18.45,19.62)]])
     (pasta/'contrato.json').write_text(json.dumps(contrato, indent=2)+'\n')
     s = servidor()
-    final = pasta/'bloco-a-sem-audio.mp4'
+    final = pasta/f'bloco-{args.bloco.lower()}-sem-audio.mp4'
     partes = pasta/'partes'; partes.mkdir(exist_ok=True)
     n = round(regua['total']*FPS)
     passo = math.ceil(n/args.trabalhadores)
@@ -120,12 +129,14 @@ def render_bloco(args):
         subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', str(lista), '-c', 'copy', str(final)], check=True)
     finally:
         s.shutdown(); s.server_close()
-    manifesto = dict(bloco='A', arquivo=str(final.resolve()), frames=n, fps=FPS, subquadros=SUB,
+    manifesto = dict(bloco=args.bloco, arquivo=str(final.resolve()), frames=n, fps=FPS, subquadros=SUB,
         deviceScaleFactor=2, reducao='Lanczos 3840×2160 → 1920×1080 antes da mistura temporal',
         duracao_render=regua['total'], fim_nominal=regua['bloco_fim'],
         margem_quadros=regua['margem_quadros'], regua_origem=str(args.regua.resolve()),
         regua_sha256=hashlib.sha256(args.regua.read_bytes()).hexdigest(),
-        html_sha256=hashlib.sha256(fonte.encode()).hexdigest(), camera='identidade no ancestral comum #world',
+        html_sha256=hashlib.sha256(fonte.encode()).hexdigest(),
+        camera=('identidade no ancestral comum #world' if args.bloco == 'A'
+                else 'matriz única em #b-camera, chassi+tela+ilha+UI'),
         audio=False, voz_arquivo=regua_original.get('arquivo'), voz_sha256=regua_original.get('sha256'))
     (pasta/'manifesto-render.json').write_text(json.dumps(manifesto, ensure_ascii=False, indent=2)+'\n')
     print('ok', final, flush=True)
@@ -136,7 +147,7 @@ if __name__ == "__main__":
         import argparse
         parser = argparse.ArgumentParser(description='Imagem por bloco com régua oficial e margem de transição.')
         parser.add_argument('idioma', choices=['pt'])
-        parser.add_argument('--bloco', choices=['A'], required=True)
+        parser.add_argument('--bloco', choices=['A', 'B'], required=True)
         parser.add_argument('--regua', type=pathlib.Path, required=True)
         parser.add_argument('--saida', type=pathlib.Path)
         parser.add_argument('--margem-quadros', type=int, default=15)

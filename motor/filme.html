@@ -387,6 +387,203 @@ function seekBlocoA(tempo){
  return {ponto:{x,y,w,h,r:val('dr_',t),cor:E.dot.style.background},camera:[1,0,0,1,0,0]};
 }
 
+const COPIA_B={
+form:{role:'Contratante',t:'Nova vaga',f1:'Função',ph:'Escolha a função',v1:'Garçom',f2:'Horário',v2:['19h às ','h'],f3:'Endereço',v3:'Plano Piloto',f4:'Valor',v4:'R$ 120',b:'Publicar',b2:'Vaga publicada'},
+lock:{role:'Profissional',clock:'17:52',app:'FRILA · agora',t:'Garçom · hoje, 19h',b:'R$ 120 · a 2,4 km'},
+cand:{role:'Contratante',t:'Candidatos',n1:'Bruno T.',d1:'Garçom · a 3 km',s1:'Compareceu a 18 de 20 turnos',s2:'10 de 12 chamariam de novo',b:'Escolher',b2:'Escolhido',n2:'Carla M.',d2:'sem histórico'},
+chk:{role:'Os dois lados',t:'Check-in',ring:'200 m',ok:'Check-in feito',d:'a 45 m do local',av:'Avaliação',sim:'Sim',nao:'Não'},
+};
+function buildBlocoB(){
+ const f=COPIA_B.form,lk=COPIA_B.lock,cd=COPIA_B.cand,ck=COPIA_B.chk;
+ add(W,`<div class="ab" id="b-raio" style="inset:0">
+  <svg width="1920" height="940"><circle id="b-15" cx="1100" cy="484" r="0" fill="none" stroke="${C.ink}" stroke-width="2" stroke-dasharray="6 6"/></svg>
+  <div class="ab" style="left:1550px;top:460px;font:800 32px PJS">15 km</div></div>`);
+ E.bCamera=add(W,'<div class="ab" id="b-camera" style="inset:0;transform-origin:0 0"></div>');
+ E.dot=add(E.bCamera,'<div id="dot"></div>');
+ add(E.bCamera,`<div class="ab" id="b-vaga" style="left:660px;top:588px;width:600px;height:104px;border-radius:52px;background:${C.ink};display:flex;align-items:center;justify-content:center;gap:22px;color:#fff;font:700 36px PJS"><span style="width:16px;height:16px;border-radius:50%;background:${C.o}"></span><span>Garçom · hoje, 19h</span></div>`);
+ add(E.bCamera,`<div class="ab" id="scr" style="left:484px;top:104px;width:352px;height:752px;border-radius:50px;background:${C.paper};overflow:hidden">
+      <div class="ab" id="isl" style="background:#000;border-radius:16px;overflow:hidden">
+        <div class="ab" id="nt" style="left:0;top:0;width:324px;height:128px;opacity:0">
+          <div class="ab" style="left:18px;top:20px;width:46px;height:46px;border-radius:12px;background:${C.o};display:flex;align-items:center;justify-content:center"><span style="width:14px;height:14px;border-radius:50%;background:#fff"></span></div>
+          <div class="ab" style="left:78px;top:18px;font-size:14px;font-weight:700;letter-spacing:.1em;color:#9C9894">${lk.app}</div>
+          <div class="ab" style="left:78px;top:40px;font-family:PJS;font-weight:700;font-size:21px;color:#fff;white-space:nowrap">${lk.t}</div>
+          <div class="ab" style="left:78px;top:72px;font-size:19px;color:#D8D3CC;white-space:nowrap">${lk.b}</div></div></div>
+      <!-- A: formulário -->
+      <div class="ab scA" style="left:0;top:0;width:352px;height:752px">
+        <div class="ab lbl" style="left:26px;top:62px;color:${C.ob}">${f.role}</div>
+        <div class="ab h" style="left:24px;top:86px;font-size:38px">${f.t}</div>
+        <div class="ab lbl" style="left:26px;top:166px">${f.f1}</div>
+        <div class="ab fld" id="fF" style="left:24px;top:190px;width:304px;height:64px"><div class="ab mut" id="fFp" style="left:20px;top:17px;font-size:22px">${f.ph}</div><div class="ab" id="fFv" style="left:20px;top:15px;font-family:PJS;font-weight:700;font-size:24px">${f.v1}</div><div class="ab" id="fFk" style="left:262px;top:19px;width:24px;height:24px;color:${C.o}">${ICO.check}</div></div>
+        <div class="ab lbl" style="left:26px;top:278px">${f.f2}</div>
+        <div class="ab fld" style="left:24px;top:302px;width:304px;height:104px"><div class="ab" style="left:20px;top:14px;font-family:PJS;font-weight:700;font-size:24px">${f.v2[0]}<span id="hora" style="display:inline-block;min-width:26px"></span>${f.v2[1]}</div>
+          <div class="ab" style="left:20px;top:70px;width:264px;height:6px;border-radius:3px;background:${C.line}"></div><div class="ab" id="trk" style="left:20px;top:70px;height:6px;border-radius:3px;background:${C.ink}"></div>
+          <div class="ab" id="hnd" style="top:60px;width:26px;height:26px;border-radius:50%;background:#fff;border:2px solid ${C.ink}"></div></div>
+        <div class="ab lbl" style="left:26px;top:430px">${f.f3}</div>
+        <div class="ab fld" style="left:24px;top:454px;width:304px;height:64px"><div class="ab" style="left:20px;top:15px;font-family:PJS;font-weight:700;font-size:24px">${f.v3}</div></div>
+        <div class="ab lbl" style="left:26px;top:542px">${f.f4}</div>
+        <div class="ab fld" style="left:24px;top:566px;width:304px;height:64px"><div class="ab" style="left:20px;top:15px;font-family:PJS;font-weight:700;font-size:24px">${f.v4}</div></div>
+        <div class="ab btn" id="pub" style="left:24px;top:658px;width:304px;height:66px;font-size:24px;overflow:hidden">
+          <span class="ab" id="pubA" style="left:0;width:304px;text-align:center">${f.b}</span>
+          <svg class="ab" id="pubS" style="left:136px;top:17px" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="12" fill="none" stroke="#fff" stroke-opacity=".3" stroke-width="3.5"/><path d="M16 4a12 12 0 0 1 12 12" fill="none" stroke="#fff" stroke-width="3.5"/></svg>
+          <span class="ab" id="pubB" style="left:0;width:304px;display:flex;align-items:center;justify-content:center;gap:10px"><span style="width:26px;height:26px">${ICO.check}</span>${f.b2}</span></div>
+      </div>
+      <!-- B: tela de bloqueio -->
+      <div class="ab scB" style="left:0;top:0;width:352px;height:752px">
+        <div class="ab lbl" id="lkr" style="left:0;width:352px;text-align:center;top:214px;color:${C.ob}">${lk.role}</div>
+        <div class="ab h" style="left:0;width:352px;text-align:center;top:250px;font-size:96px;letter-spacing:-0.04em">${lk.clock}</div>
+      </div>
+      <!-- C: candidatos -->
+      <div class="ab scC" style="left:0;top:0;width:352px;height:752px">
+        <div class="ab lbl" style="left:26px;top:62px;color:${C.ob}">${cd.role}</div>
+        <div class="ab h" style="left:24px;top:86px;font-size:38px">${cd.t}</div>
+        <div class="ab card" style="left:16px;top:160px;width:320px;height:262px;border-radius:22px">
+          <div class="ab av" style="left:18px;top:18px;width:58px;height:58px;font-size:20px">BT</div>
+          <div class="ab" style="left:90px;top:18px;font-family:PJS;font-weight:800;font-size:26px">${cd.n1}</div>
+          <div class="ab mut" style="left:90px;top:52px;font-size:19px;white-space:nowrap">${cd.d1}</div>
+          <div class="ab" style="left:18px;top:100px;font-size:19px;font-weight:600;display:flex;gap:10px;align-items:center;white-space:nowrap"><span style="width:10px;height:10px;border-radius:50%;background:${C.o}"></span>${cd.s1}</div>
+          <div class="ab" style="left:18px;top:132px;font-size:19px;font-weight:600;display:flex;gap:10px;align-items:center;white-space:nowrap"><span style="width:10px;height:10px;border-radius:50%;background:${C.o}"></span>${cd.s2}</div>
+          <div class="ab btn" id="esc" style="left:18px;top:184px;width:284px;height:58px;font-size:22px;overflow:hidden">
+            <span class="ab" id="escA" style="left:0;width:284px;text-align:center">${cd.b}</span>
+            <span class="ab" id="escB" style="left:0;width:284px;display:flex;align-items:center;justify-content:center;gap:8px"><span style="width:24px;height:24px">${ICO.check}</span>${cd.b2}</span></div></div>
+        <div class="ab card" id="carla" style="left:16px;top:438px;width:320px;height:96px;border-radius:22px">
+          <div class="ab av" style="left:18px;top:18px;width:58px;height:58px;font-size:20px">CM</div>
+          <div class="ab" style="left:90px;top:16px;font-family:PJS;font-weight:800;font-size:26px">${cd.n2}</div>
+          <div class="ab mut" style="left:90px;top:50px;font-size:19px">${cd.d2}</div></div>
+      </div>
+      <!-- D: check-in e avaliação -->
+      <div class="ab scD" style="left:0;top:0;width:352px;height:752px">
+        <div class="ab lbl" style="left:26px;top:62px;color:${C.ob}">${ck.role}</div>
+        <div class="ab h" style="left:24px;top:86px;font-size:38px">${ck.t}</div>
+        <div class="ab" style="left:16px;top:160px;width:320px;height:270px;border-radius:22px;background:${C.map};overflow:hidden">
+          <svg class="ab" style="left:0;top:0" width="320" height="270"><circle id="ck200" cx="160" cy="138" r="96" fill="none" stroke="${C.ink}" stroke-width="2" stroke-dasharray="6 6"/>
+            <text id="ck200t" x="160" y="30" text-anchor="middle" font-family="PJS" font-weight="800" font-size="18" fill="${C.ink}">${ck.ring}</text></svg>
+          <div class="ab" style="left:150px;top:128px;width:20px;height:20px;border-radius:50%;background:${C.o}"></div>
+          <div class="ab" id="ckp" style="width:30px;height:30px;border-radius:50%;background:${C.ink};border:3px solid #fff;color:#fff"><div class="ab" id="ckpk" style="left:4px;top:4px;width:16px;height:16px">${ICO.check}</div></div></div>
+        <div class="ab" id="ckok" style="left:24px;top:448px;font-family:PJS;font-weight:800;font-size:28px;display:flex;align-items:center;gap:10px"><span style="width:28px;height:28px;color:${C.o}">${ICO.check}</span>${ck.ok}</div>
+        <div class="ab mut" id="ckd" style="left:62px;top:486px;font-size:21px">${ck.d}</div>
+<div class="ab" id="b-avaliacao" style="inset:0">        <div class="ab lbl" style="left:26px;top:552px">${ck.av}</div>
+        <div class="ab" style="left:16px;top:578px;width:320px;height:68px;border-radius:34px;background:${C.soft}"></div>
+        <div class="ab" id="thumb" style="top:584px;height:56px;border-radius:28px;background:${C.o}"></div>
+        <div class="ab" id="sim" style="left:16px;top:578px;width:160px;height:68px;display:flex;align-items:center;justify-content:center;font-family:PJS;font-weight:700;font-size:24px">${ck.sim}</div>
+        <div class="ab" style="left:176px;top:578px;width:160px;height:68px;display:flex;align-items:center;justify-content:center;font-family:PJS;font-weight:700;font-size:24px">${ck.nao}</div>
+</div>
+      </div>
+    </div>`);
+ add(W,`<div class="ab" id="b-acao" style="left:260px;top:235px;font-family:PJS;transform-origin:0 0">
+  <div id="b-progresso" style="font-size:32px;font-weight:800;color:${C.ob}">01/04</div>
+  <div style="display:flex;gap:12px;margin-top:22px">${Array.from({length:4},()=>`<span class="b-traco" style="display:block;width:42px;height:5px;border-radius:3px"></span>`).join('')}</div></div>`);
+ add(W,`<div class="ab k" id="b-rotulo" style="left:260px;top:350px;font-size:20px;letter-spacing:.08em;color:${C.ob};transform-origin:0 0">Exemplo</div>`);
+ add(HUD,'<div id="cap" style="bottom:28px"></div>');
+}
+/* B: coreografia da v4 na régua oficial, sem recriar o chassi nos cortes. */
+const ESTADO_A_B={x:959.9983800039402,y:760.0001618292611,w:27.999999901090405,h:27.999999901090405,r:13.999999950545202};
+async function bootBlocoB(){
+ const ids=['v05-virada','v06-solucao1','v07-solucao2','v09-solucao3'];
+ if(T.cenas.map(c=>c.id).join(',')!==ids.join(','))throw new Error('B exige v05/v06/v07/v09, em ordem.');
+ for(const c of T.cenas){const id=c.id.slice(0,3);S[id]={...c,id,end:c.ini+c.dur,f:T.falas.filter(f=>f.cena===c.id)};ORD.push(S[id]);}
+ E.b={conecta:palavraA('v05','conecta',.74),fun:2.2,drag0:2.9,drag1:3.65,
+  pub:palavraA('v06','publica',4.84),B:6.16,isl:palavraA('v06','avisa',6.58),
+  C:S.v07.ini-.05,esc:12.68,D:S.v07.f[1].ini,walk:14.1,
+  ok:palavraA('v07','check-in',14.94),avaliacao:17.1,sim:S.v09.f[0].fim,
+  raio:palavraA('v06','até',8.42)};
+ buildBlocoB();
+ await document.fonts.load('800 100px PJS');await document.fonts.load('700 40px PJS');
+ await document.fonts.load('700 40px AHN');await document.fonts.load('600 40px AHN');
+ await document.fonts.load('400 40px AHN');await document.fonts.ready;
+ D(-9,{...ESTADO_A_B,c:C.o,sh:0});
+ // O ponto acolhe a pílula existente; a transformação começa em “conecta”.
+ D(.12,{x:960,y:640,w:600,h:104,r:52,c:C.ink},'move');
+ D(E.b.conecta,{x:660,y:480,w:380,h:780,r:64,c:C.ink},'move');
+ for(const n in K)K[n].sort((a,b)=>a[0]-b[0]);
+ window.eventos=[];window.seek(0);return {bloco:'B',total:T.total,cenas:4,eventos:0};
+}
+function cameraBlocoB(t){
+ const gesto=(a,b,c,d)=>eio(ramp(t,a,b))*(1-eio(ramp(t,c,d)));
+ const entrada=eio(ramp(t,E.b.conecta,1.3));
+ const foco=gesto(4.45,.7,5.75,.9)+gesto(10.14,.9,12.5,.7)+gesto(16.05,.75,18.45,1.1);
+ const base=lerp(1,1.1,entrada),z=base*(1+.1*foco),x=(1100-660*1.1)*entrada-14*foco+(base-z)*660,
+       y=(484-480*1.1)*entrada+6*foco+(base-z)*480;
+ // Uma única matriz para chassi, ilha e todos os filhos da tela.
+ E.bCamera.style.transform=`matrix(${z},0,0,${z},${x},${y})`;
+ for(const [sel,f] of [['#b-rotulo',.35],['#b-acao',1.1]]){
+  const rotaX=1170*(1-eio(ramp(t,E.b.conecta+.3,.5))),
+        rotaY=lerp(370,610,eio(ramp(t,E.b.conecta,.3)))*(1-eio(ramp(t,E.b.conecta+.8,.5)));
+  const el=$(sel),rx=sel==='#b-rotulo'?rotaX:0,ry=sel==='#b-rotulo'?rotaY:0;
+  el.style.transform=`translate(${rx-14*foco*f}px,${ry+6*foco*f}px) scale(${1+.1*foco*f})`;
+  el.style.opacity=sel==='#b-rotulo'?1:fade(t,1.9,.2);
+ }
+ return [z,0,0,z,x,y];
+}
+function telaBlocoB(t){
+ const s=E.b;
+ const ent=(a,b)=>({o:fade(t,a,.15)*(1-fade(t,b??1e9,.15)),y:(1-spr(t-a,'ui'))*30-(b==null?0:spr(t-b,'ui')*30)});
+ $('#scr').style.opacity=fade(t,1.3,.12);
+ st($('.scA'),ent(1.3,s.B));st($('.scB'),ent(s.B,s.C));
+ st($('.scC'),ent(s.C,s.D));st($('.scD'),ent(s.D,null));
+ // Campos, pressão, carregamento e confirmação da v4; nenhum ponteiro.
+ const fu=fade(t,s.fun+.05,.14);$('#fFp').style.opacity=1-fu;
+ st($('#fFv'),{o:fu,y:(1-spr(t-s.fun-.05,'ui'))*8});st($('#fFk'),{o:fu,s:spr(t-s.fun-.1,'pop')});
+ $('#fF').style.borderColor=mixc(C.line,C.ink,fade(t,s.fun,.1)*(1-fade(t,s.drag0,.2)));
+ const u=eio(ramp(t,s.drag0,s.drag1-s.drag0)),hx=20+264*u;
+ $('#hnd').style.left=(hx-13)+'px';$('#trk').style.width=(264*u)+'px';
+ st($('#hnd'),{s:t>s.drag0-.08&&t<s.drag1?1.15:1});$('#hora').textContent=String(20+Math.round(u*3));
+ const pb=$('#pub'),load=s.pub+.12,done=s.pub+.52;
+ st(pb,{s:lerp(1,.96,spr(t-s.pub,'ui')*(1-spr(t-s.pub-.1,'ui')))});
+ pb.style.background=mixc(C.ink,C.o,spr(t-done,'ui'));
+ $('#pubA').style.opacity=1-fade(t,load,.1);$('#pubA').style.top='0px';$('#pubA').style.lineHeight='66px';
+ $('#pubS').style.opacity=fade(t,load,.1)*(1-fade(t,done,.1));
+ $('#pubS').style.transform=`rotate(${(t-load)*720}deg)`;$('#pubS').style.transformOrigin='16px 16px';
+ st($('#pubB'),{o:fade(t,done,.14),y:(1-spr(t-done,'ui'))*14});$('#pubB').style.top='0';$('#pubB').style.height='66px';
+ // Ilha e aviso nativos. A notificação cresce como UI, não como zoom de câmera.
+ const ie=spr(t-s.isl,'ui'),ih=spr(t-s.isl,'move'),ix=1-spr(t-s.C+.15,'ui');
+ const iw=lerp(110,324,ie*ix),ihh=lerp(32,128,ih*ix);
+ box($('#isl'),176-iw/2,14,iw,ihh);$('#isl').style.borderRadius=lerp(16,34,ie*ix)+'px';
+ $('#nt').style.opacity=fade(t,s.isl+.14,.16)*ix;$('#nt').style.transform=`scale(${lerp(.9,1,ie)})`;$('#nt').style.transformOrigin='162px 0';
+ // Histórico e escolha: a mesma tela C e os mesmos dados de exemplo da v4.
+ const ec=spr(t-s.esc,'ui');$('#esc').style.background=mixc(C.ink,C.o,ec);
+ st($('#esc'),{s:lerp(1,.96,ec*(1-spr(t-s.esc-.1,'ui')))});
+ $('#escA').style.lineHeight='58px';$('#escA').style.opacity=1-fade(t,s.esc,.1);
+ $('#escB').style.height='58px';st($('#escB'),{o:fade(t,s.esc+.04,.14),y:(1-spr(t-s.esc,'ui'))*12});
+ $('#carla').style.opacity=lerp(1,.4,fade(t,s.esc+.1,.3));
+ // Check-in: percurso, anel e confirmação herdados da tela D.
+ const wk=spr(t-s.walk,'soft'),px=lerp(292,192,wk),py=lerp(236,174,wk);
+ box($('#ckp'),px-15,py-15,30,30);$('#ckp').style.background=mixc(C.ink,C.o,spr(t-s.ok,'ui'));
+ $('#ckpk').style.opacity=fade(t,s.ok,.12);$('#ck200').setAttribute('r',Math.max(0,96*spr(t-s.D-.1,'move')));
+ $('#ck200t').style.opacity=fade(t,s.D+.3,.2);io($('#ckok'),t,s.ok,null,12);io($('#ckd'),t,s.ok+.08,null,12);
+ // Controles visíveis antes da pergunta; resposta depois de “novo?”.
+ $('#b-avaliacao').style.opacity=fade(t,s.avaliacao,.2);
+ const sim=eio(ramp(t,s.sim,.2));$('#thumb').style.left=lerp(96,20,sim)+'px';
+ $('#thumb').style.width=(152*sim)+'px';$('#thumb').style.opacity=t>s.sim?1:0;
+ $('#sim').style.color=mixc(C.ink,C.white,sim);
+ const passo=t>=S.v09.ini?3:t>=S.v07.ini?2:t>=s.B?1:0;
+ $('#b-progresso').textContent=`0${passo+1}/04`;
+ $$('.b-traco').forEach((e,i)=>e.style.background=i===passo?C.o:C.line);
+ const raio=cl(spr(t-s.raio,'move'));
+ $('#b-15').setAttribute('r',420*raio);$('#b-raio').style.opacity=fade(t,s.raio,.2)*(1-fade(t,S.v07.ini-.3,.22));
+}
+function seekBlocoB(tempo){
+ const t=Math.max(0,Math.min(tempo,T.bloco_fim));E.t=t;
+ $('#stage').style.background=C.paper;W.style.transform='none';
+ const matriz=cameraBlocoB(t),d=E.dot.style,x=val('dx',t),y=val('dy',t),w=val('dw',t),h=val('dh',t);
+ box(E.dot,x-w/2,y-h/2,w,h);d.borderRadius=val('dr_',t)+'px';
+ d.background=`rgb(${Math.round(val('dr',t))},${Math.round(val('dg',t))},${Math.round(val('db',t))})`;
+ d.opacity='1';d.transform='none';
+ const vaga=$('#b-vaga');if(t>=E.b.conecta)box(vaga,x-300,y-52,600,104);else box(vaga,660,588,600,104);
+ vaga.style.opacity=1-fade(t,E.b.conecta,.22);
+ telaBlocoB(t);
+ const cp=$('#cap'),f=T.falas.find(f=>t>=f.leg_ini&&t<f.leg_fim);
+ if(f){cp.textContent=f.legenda;st(cp,{o:fade(t,f.leg_ini,.14)*(1-fade(t,f.leg_fim-.14,.14)),y:(1-spr(t-f.leg_ini,'ui'))*10});}
+ else cp.style.opacity=0;
+ E.bMatriz=matriz;
+}
+window.estadoBlocoB=()=>{
+ const v=$('#b-vaga');
+ return {instante:E.t,ponto:{x:val('dx',E.t),y:val('dy',E.t),w:val('dw',E.t),h:val('dh',E.t),r:val('dr_',E.t),cor:getComputedStyle(E.dot).backgroundColor},
+  camera:E.bMatriz,fundo:getComputedStyle($('#stage')).backgroundColor,
+  vaga:{x:parseFloat(v.style.left),y:parseFloat(v.style.top),w:600,h:104,o:v.style.opacity,texto:v.textContent.trim()},
+  progresso:$('#b-progresso').textContent,avaliacao:$('#b-avaliacao').style.opacity,resposta:$('#sim').style.color};
+};
+
 /* ---------- HUD, câmera, ponto e cursor ---------- */
 const NOCAP=new Set(['v01','v13','v14']);
 function runHUD(t){const th=val('th',t);$('#stage').style.background=mixc(C.paper,C.ink,th);const ink=mixc(C.ink,C.paper,th),mut=mixc(C.mut,'#8A8F96',th);const cp=$('#cap');const fl=T.falas.find(f=>t>=f.leg_ini&&t<f.leg_fim);
@@ -401,6 +598,7 @@ window.boot=async function(tempos,lang='pt'){
   // É seguro montar de novo na mesma página (QA de diferentes réguas).
   T=tempos;L=lang;X=TX[L];if(!X)throw new Error('A v5 tem roteiro somente em português.');P=T.P;S={};ORD=[];SC.length=0;EV.length=0;for(const k of Object.keys(K))delete K[k];W.innerHTML=OV.innerHTML=HUD.innerHTML='';W.style.transform='none';
   if(T.bloco==='A')return await bootBlocoA();
+  if(T.bloco==='B')return await bootBlocoB();
   const ids=T.cenas.map(c=>c.id.slice(0,3));if(ids.join(',')!==Array.from({length:14},(_,i)=>`v${String(i+1).padStart(2,'0')}`).join(','))throw new Error('A v5 exige uma régua com v01–v14. Para ensaio sem voz: scripts/tempos-provisorios.py.');
   for(const c of T.cenas){const id=c.id.slice(0,3),f=T.falas.filter(f=>f.cena===c.id);S[id]={id,ini:c.ini,dur:c.dur,end:c.ini+c.dur,f};ORD.push(S[id]);}
   build();await document.fonts.load('800 100px PJS');await document.fonts.load('700 100px PJS');await document.fonts.load('600 40px AHN');await document.fonts.load('700 40px AHN');await document.fonts.load('400 40px AHN');await document.fonts.ready;
@@ -413,5 +611,5 @@ window.boot=async function(tempos,lang='pt'){
   for(const sc of SC)sc.plan(S[sc.id]);for(const n in K)K[n].sort((a,b)=>a[0]-b[0]);EV.sort((a,b)=>a.t-b.t);window.eventos=EV;window.seek(0);
   return {total:T.total,cenas:SC.length,eventos:EV.length,provisorio:!!T._provisorio};
 };
-window.seek=function(t){if(T.bloco==='A')return seekBlocoA(t);E.t=t;for(const sc of SC){const s=S[sc.id],on=t>=s.ini&&t<s.end;sc.root.style.display=on?'block':'none';if(on)sc.run(t,s);}runCam(t);runDot(t);runCursor(t);runHUD(t);};
+window.seek=function(t){if(T.bloco==='A')return seekBlocoA(t);if(T.bloco==='B')return seekBlocoB(t);E.t=t;for(const sc of SC){const s=S[sc.id],on=t>=s.ini&&t<s.end;sc.root.style.display=on?'block':'none';if(on)sc.run(t,s);}runCam(t);runDot(t);runCursor(t);runHUD(t);};
 </script></body></html>

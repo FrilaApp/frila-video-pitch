@@ -731,3 +731,108 @@ depois. Gate completo: **67 testes** (18 gerais, 22 de motor, 27 de áudio).
 O modo completo legado da v5 não foi usado nem promovido; o piloto tem inicialização e régua parciais explícitas. Nenhum arquivo de voz/mixagem foi alterado. Sem produção de B/C/D antes da aprovação da imagem A pelo Fabrício.
 
 **Gate final após rebase na main `038fe3b`:** `./scripts/verificar.sh` passou com **66 testes** (18 gerais, 21 de motor, 27 de áudio/emendas/blocos), dependências/cópia/roteiro e varredura de arquivos proibidos sem erro; `git diff --check` limpo. Regressões novas cobrem régua parcial/margem, cena fora de janela, ponto visível pela pilha de pintura, não cruzar o percentual, cor da tese, estado no fim e seek reversível. Artefatos em cache não entram no commit. Isso torna o piloto revisável; não substitui a auditoria independente do Maestro ou a aprovação visual do Fabrício.
+
+## 26. Bloco B — virada e demonstração no mesmo aparelho (26/10/2026)
+
+**Autorização:** Fabrício aprovou A e liberou B, conforme briefing do Maestro.
+Branch `feat/bloco-b-imagem`, encadeado ao A `e8705ca`; A fica congelado.
+Plano aplicado pelas skills brainstorming/writing-plans, dentro da direção
+já especificada e autorizada. Sem Computer, push, áudio novo ou alteração
+de régua. O mapa narrativo aprovado em main (`docs/MAPA-NARRATIVO.md`, PR #20)
+determina v05 como pico 1, acionado em **“conecta”, 0,740 s local**.
+
+### Base v4 → B e coreografia antes do código
+
+Fonte executável `4efa75a:motor/filme.html`, funções `planC05/runC05`,
+`planFluxo/runFluxo` e markup de `#scr` (telas A/B/C/D). Preservar tipografia,
+campos, ilha, cores, pressão, spinner, confirmação, anel e marcador caminhante;
+curvas `spr(ui/move/soft)` e `eio` do §20. Não usar cenas da v5 reprovada como
+base. O estudo aprovado §24 governa enquadramento e câmera.
+
+| B, segundos locais | Origem v4 | Coreografia na janela oficial |
+|---|---|---|
+| v05, 0–4,320 | c05→c06: vaga/chip e ponto viram telefone | Começar exatamente no estado final de A: papel, ponto e pílula 600×104 em (660,588). Sem reset. O ponto acolhe a pílula; a transformação única começa com “conecta” em 0,740. O mesmo fundo grafite da pílula torna-se chassi e revela Nova vaga, chegando ao enquadramento do estudo. A pílula mantém o texto durante a primeira parte do gesto; campos assumem a leitura. Sem nova metáfora ou título editorial. |
+| v06, 4,320–9,940 | c06 / tela A→B | Formulário já preenchido ao entrar. Aproximação contínua do conjunto; pressão Publicar em “publica” (4,840), spinner e confirmação ~5,360. Troca para bloqueio e aviso com “avisa” (6,580). Raio de 15 km herda o círculo do mapa c08, como plano esquemático externo, sem mover UI dentro do aparelho. O aviso encaminha a tela C de candidatos; não inventar tela/botão de candidatura ausente na v4. |
+| v07, 9,940–15,650 | c07 / tela C→D | Mesmo chassi, enquadramento geral nas margens do corte. Histórico fica em evidência por aproximação do conjunto, escolha após sua leitura. Check-in entra com a segunda frase (13,040); caminhada e anel preservados, confirmação em “check-in” (14,940). Avaliação ainda oculta. |
+| v09, 15,650–19,673396 | c07 / avaliação da tela D | Mesmo chassi e estado de check-in; revelar controles em “avaliam” (17,820), selecionar Sim na pergunta (18,620), retorno ao enquadramento geral até o limite nominal. Manter o aparelho na margem ≥12 frames para C. |
+
+**D4 / aperto informado:** v05 perdeu 1,68 s, v06 0,88 s, v07 1,29 s e
+v09 3,476604 s contra as janelas antigas do roteiro. Não comprimir as molas
+ou esticar a voz. Em v06 o gesto começa com o formulário preenchido; a
+candidatura é a passagem aviso→lista de candidatos, sem tela textual nova.
+Em v09 uma segunda reapresentação do histórico depois de Sim/Não não teria
+tempo de leitura; a comparação histórica já está na v07. Avisar o Maestro
+desse limite, sem alterar áudio. Não alegar que cada detalhe da tela é legível
+à distância: o ganho de fonte é o do §24 e a avaliação é do Fabrício.
+
+### Câmera, estados e cópia
+
+Um único `#dot` torna-se chassi. `#dot` e `#scr` (incluindo ilha/UI) são filhos
+do mesmo ancestral `#b-camera`; combinar escala base e câmera em **uma matriz**
+nesse ancestral. No geral, escala 1,10, centro (1100,484); foco 1,21, pan
+(−14,+6), retorno 1,10. Nenhum zoom, pan ou rolagem da UI. Parallax só entre
+aparelho, sinalização 0,35×/1,10× e esquema de raio. Sem arredondamento por
+filho durante câmera. `deviceScaleFactor=2`, redução Lanczos no encoder
+TV BT.709 corrigido no A. Sem cursor em qualquer instante.
+
+À esquerda ficam só progresso e **Exemplo**, sem repetir a legenda como
+título. Quatro marcas; estados 01/04 (publicação), 02/04 (aviso), 03/04
+(histórico/escolha/check-in), 04/04 (avaliação). O formato deriva da lista v4,
+com registro em `docs/v4/COPIA-BLOCO-B.md`. Todos os demais literais da tela
+são transcrição da v4, ou legenda atual. Auditoria de strings normalizadas
+deve gerar `origens-copia.json` e falhar para literal sem origem. Nenhum
+rótulo de revisão dentro do quadro.
+
+O estado inicial usa os valores residuais exatos de `estado-fim-A.json`, não
+snapping. O telefone fica fora dos fades de cena. Nos cortes v06→v07→v09,
+posição, escala, opacidade e velocidade do chassi atravessam o limite;
+apenas as telas mudam com entrada/saída nativas. O fim é congelado no limite
+nominal durante 30 frames extras, com `estado-fim-B.json` para C. Nenhum
+corte seco adicional autorizado.
+
+**Direção confirmada pelo Maestro após o plano:** v09 termina em Sim/Não,
+sem reapresentar histórico; v06 pode começar preenchida. Sim/Não estará
+visível antes de “chamaria” (18,620 s). A pergunta acaba em 19,420 s;
+o limite oficial vem apenas 0,253396 s depois. Resposta deve assentar
+até esse limite e atravessar a margem de 30 frames: o vídeo de revisão
+alcança ~0,770 s após a pergunta sem mover falas ou o limite nominal.
+Os 22 pontos de v10 pertencem ao futuro C; entregar o aparelho em estado
+estável para a próxima transformação, sem montar C antecipadamente.
+
+**Revisão do preflight antes do render:** a etiqueta Exemplo herdada de A
+atravessava a silhueta do telefone na primeira trajetória direta. Preservar
+o mesmo nó/estilo de A e deslocar pela lateral direita, depois por y=960
+abaixo do aparelho, só então subir em x=260; não atravessar a tela.
+Antecipar a entrada nativa da tela para ~1,30 s, depois que o chassi a contém,
+reduzindo a sustentação da silhueta vazia durante a transformação.
+
+**Referências arquivadas pelo Fabrício:** v4 em
+`../referencias/v4-nota-8/frila-pitch-pt-v4.mp4`; v5 e seus tempos/HTML em
+`../referencias/v5-reprovada/`. O worktree `fvp-tempos` foi removido.
+Comparações novas e Prisma devem usar esses caminhos; os antigos acima
+permanecem somente como histórico das tarefas já entregues.
+
+### Plano de implementação e evidências
+
+- [ ] Régua B em `motor/render.py`: aceitar exatamente v05/v06/v07/v09;
+  conservar falas/palavras e duração oficial; margem mínima 12; nome de
+  saída por bloco. Regressão de cobertura/duração sem depender do cache.
+- [ ] `motor/filme.html`: boot parcial B e fluxo persistente reutilizando
+  markup/curvas v4. Regressões em Chromium headless: estado A→B exato,
+  mesmo nó nos cortes, opacidade 1, geometria interna constante na câmera,
+  ausência de cursor/título duplicado e `seek` reversível. A não muda.
+- [ ] Exportar `motor/cache/bloco-b-imagem/bloco-b-sem-audio.mp4`, 1920×1080,
+  60 fps, yuv420p/tv/BT.709 completo. Fonte, régua, contrato e manifesto
+  juntos, fora do git. Conferir ffprobe e presença raster do chassi.
+- [ ] Rodar D2 integral: faixas 12 fps, clipes por cena, cortes ±0,5 s,
+  incluindo A→B a partir de sequência montada no limite nominal de A.
+  Comparar lado a lado com v4 c05/c06/c07, mesmos segundos relativos;
+  separar duração sem equivalente, sem retimar a referência.
+- [ ] Prisma: `aux/motion-cintilacao`, somente analisador/testes. Métrica D9
+  em resolução nativa, movimento compensado quando possível, JSON por
+  instante; calibração v4/v5/estudo/A e controles positivo/negativo. Informar
+  TP/FN/FP e recall da amostra; sem estimativa geral ou gate bloqueante.
+  Integrar commit após revisão e registrar método/limites aqui.
+- [ ] Rever sequências temporais, escala/velocidade e achados por segundo,
+  registrar falhas sem mudar limiares. `./scripts/verificar.sh`, commit
+  sem mídia/cache/push e handoff ao Maestro via `maestri ask`.
