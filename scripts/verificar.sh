@@ -75,7 +75,7 @@ echo "✓ Repositório limpo de binários pesados e credenciais."
 echo "--- [5/5] Executando testes unitários no ambiente do projeto..."
 "$PYTHON_EXEC" -m unittest discover -s "$ROOT_DIR/tests"
 "$PYTHON_EXEC" -m unittest discover -s "$ROOT_DIR/motor/tests"
-"$PYTHON_EXEC" -m unittest "$ROOT_DIR/motor/test_emendas.py" "$ROOT_DIR/vozes/test_blocos.py"
+"$PYTHON_EXEC" -m unittest motor/test_emendas.py vozes/test_blocos.py
 
 echo ""
 echo "=========================================================="
