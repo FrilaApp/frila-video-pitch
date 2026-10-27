@@ -14,9 +14,9 @@ from fotos import servidor
 def regua_b():
     roteiro = json.loads((RAIZ / 'roteiro.json').read_text())
     ids = ['v05-virada', 'v06-solucao1', 'v07-solucao2', 'v09-solucao3']
-    limites = [0, 4.32, 9.94, 15.65, 19.673395833333334]
-    janelas = [[(.2, 4.12)], [(4.52, 5.64), (6.1, 9.66)],
-               [(10.22, 12.54), (13.04, 15.32)], [(15.98, 19.42)]]
+    limites = [0, 4.439500000000001, 10.04, 15.63, 19.673395833333334]
+    janelas = [[(.77, 4.17)], [(4.71, 5.77), (6.21, 9.73)],
+               [(10.35, 12.41), (13.13, 15.19)], [(16.07, 19.21)]]
     falas = []
     for id_, js in zip(ids, janelas):
         tx = next(c['pt']['legenda'] for c in roteiro['cenas'] if c['id'] == id_)
@@ -24,13 +24,13 @@ def regua_b():
             if not texto.endswith(('.', '?')): texto += '.'
             falas.append(dict(cena=id_, k=k, ini=a, fim=b, leg_ini=a-.05,
                               leg_fim=b+.1, legenda=texto))
-    palavras = [dict(cena='v05-virada', text='conecta', start=.74, end=1.24),
-                dict(cena='v06-solucao1', text='publica', start=4.84, end=5.18),
-                dict(cena='v06-solucao1', text='avisa', start=6.58, end=7.02),
-                dict(cena='v06-solucao1', text='até', start=8.42, end=8.64),
-                dict(cena='v07-solucao2', text='check-in.', start=14.94, end=15.32),
-                dict(cena='v09-solucao3', text='Chamaria', start=18.62, end=19)]
-    return dict(bloco='B', duracao=limites[-1], duracao_voz=19.922708333333333,
+    palavras = [dict(cena='v05-virada', text='conecta', start=1.31, end=1.75),
+                dict(cena='v06-solucao1', text='publica', start=5.03, end=5.35),
+                dict(cena='v06-solucao1', text='avisa', start=6.93, end=7.33),
+                dict(cena='v06-solucao1', text='até', start=8.55, end=8.79),
+                dict(cena='v07-solucao2', text='check-in.', start=14.81, end=15.19),
+                dict(cena='v09-solucao3', text='chamaria', start=18.39, end=18.77)]
+    return dict(bloco='B', duracao=limites[-1], duracao_voz=19.13325,
                 voz_ini=.08, P=.491835, falas=falas, palavras=palavras,
                 cenas=[dict(id=id_, ini=a, dur=b-a) for id_, a, b in zip(ids, limites, limites[1:])])
 
@@ -44,7 +44,7 @@ class BlocoB(unittest.TestCase):
         self.assertEqual(r['voz_duracao'], original['duracao_voz'])
         self.assertAlmostEqual(r['bloco_fim'], 19.673395833333334)
         self.assertAlmostEqual(r['total'], 20.183333333333334)
-        self.assertAlmostEqual(original['cenas'][-1]['dur'], 4.023395833333334)
+        self.assertAlmostEqual(original['cenas'][-1]['dur'], 4.043395833333335)
         with self.assertRaises(ValueError):
             ruim = regua_b(); ruim['cenas'][2]['id'] = 'v08-inexistente'
             render.preparar_bloco(ruim)

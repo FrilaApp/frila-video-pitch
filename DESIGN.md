@@ -1010,3 +1010,63 @@ Manifesto e pranchas arquivados em `motor/cache/bloco-d-imagem/comparacao-v4/`.
 Em decisão do Fabrício de 27/10/2026, a fala de `v14-assinatura` no roteiro foi atualizada para "Combinou? Pode contar. Dos dois lados. Frila." (a marca "Frila." passa a ser a última palavra dita, em vez da abertura).
 A tag visual de assinatura em tela passa interinamente para "Combinou? Pode contar. Dos dois lados." (mantendo a presença literal aprovada sem inventar texto, em conformidade com D6).
 A reordenação da coreografia de cena (logo A1 e pouso do ponto laranja por último, em sincronia com "Frila.") e o reajuste fino de tempos de entrada/saída serão executados na rodada de calibração com a nova régua de voz a ser fornecida pelo Compasso.
+
+## §29. Reajuste de tempos da imagem (Régua final de 42 compassos)
+
+Em 27/10/2026, com a aprovação da locução com alternância de narradores (Ana v3 nos Blocos A, C e D; Gabriel no Bloco B) e a consolidação da grade musical em 42 compassos a 122 bpm (período rítmico $P = 0,491835$ s; compasso 4/4 = 1,96734 s), a régua temporal do vídeo foi unificada para exatamente **82,628 s** nominais, com limites de blocos nos compassos `[0, 13, 23, 35, 42]`.
+
+### 1. Tabela de tempos: Régua anterior vs. Régua final
+
+| Bloco | Cena | Início anterior (s) | Duração anterior (s) | Início novo (s) | Duração nova (s) | Delta duração (s) | Observações rítmicas e de respiração |
+|---|---|---|---|---|---|---|---|
+| **A** | **v01-gancho** | 0,000 | 6,039 | 0,000 | 5,194 | −0,845 | Voz da Ana entra em 0,98 s. Pílula fecha mais ágil e ganha respiro antes da dor. |
+| **A** | **v02-dor1** | 6,039 | 7,410 | 5,194 | 7,560 | +0,150 | Odômetro e 9 bolas pretas ganham 0,15 s a mais de respiração. |
+| **A** | **v03-dor2** | 13,449 | 5,950 | 12,754 | 6,820 | +0,870 | Janela do navegador web com dados 1,5M e 533 ganha 0,87 s a mais de leitura. |
+| **A** | **v04-dor3** | 19,399 | 6,176 | 19,574 | 6,002 | −0,175 | 70% de rotatividade assenta com precisão; pílula final ancora aos 24,32 s. |
+| **B** | **v05-virada** | 0,000 | 4,320 | 0,000 | 4,440 | +0,120 | Aparelho emerge do ponto com respiro extra de 0,12 s. |
+| **B** | **v06-solucao1** | 4,320 | 5,620 | 4,440 | 5,600 | −0,020 | Publicação de vaga em 4 passos (01/04) e mapa esquemático estáveis. |
+| **B** | **v07-solucao2** | 9,940 | 5,710 | 10,040 | 5,590 | −0,120 | Escolha com histórico e check-in a 200 m sincronizados com as falas. |
+| **B** | **v09-solucao3** | 15,650 | 4,023 | 15,630 | 4,043 | +0,020 | Avaliação de turno Sim/Não e histórico ilustrativo mantidos. |
+| **C** | **v10-dado** | 0,000 | 4,900 | 0,000 | 5,760 | +0,860 | Ganho de 0,86 s. Lâmina escura do aparelho virando ponto laranja cai na pausa inicial. |
+| **C** | **v11-meta** | 4,900 | 7,170 | 5,760 | 8,470 | +1,300 | Contadores (8 semanas, 50 vagas, 9 em 10) ganham 1,30 s; leitura mais calma. |
+| **C** | **v12-estrategia** | 12,070 | 7,603 | 14,230 | 9,378 | +1,775 | Círculo de expansão do DF e números CNPJ/IBGE ganham 1,78 s de respiração. |
+| **D** | **v13-fecho** | 0,000 | 5,810 | 0,000 | 7,040 | +1,230 | Relógio calmo e tipografia espelho ganham 1,23 s (acomoda pausas de 0,7 s e 0,6 s). |
+| **D** | **v14-assinatura** | 5,810 | 7,961 | 7,040 | 6,731 | −1,230 | Corte visual v13→v14 em 7,040 s. Nova coreografia com logo e pingo por último. |
+
+- **Totais por bloco (sem margem):**
+  - Bloco A: 25,575 s (13 compassos)
+  - Bloco B: 19,673 s (10 compassos)
+  - Bloco C: 23,608 s (12 compassos) — ampliado em 2 compassos musicais (+3,935 s)
+  - Bloco D: 13,771 s (7 compassos)
+  - **Total unificado:** 82,628 s (42 compassos).
+
+### 2. Decisões do Fabrício aplicadas aos Blocos A, B e C (Commit 1)
+1. **Lâmina de transição no início da v10:**
+   - O intervalo de 0,000 s a 0,600 s de v10 acolhe a morfologia do chassi herdado de B (`ESTADO_B_C`, 380×780 px) em rotação e contração suave até o ponto laranja em (1525, 540).
+   - Nenhuma fala de locução ocorre nesse intervalo (a fala inicial de v10 inicia aos 0,680 s na régua do Compasso).
+   - O DOM ainda contém “Sim” e “Os dois lados” entre 0,000 e 0,250 s, cobertos pela lâmina escura e invisíveis no vídeo; a infografia de `#c-v10` entra a partir de 0,680 s.
+2. **Supressão de legenda queimada redundante (Regra D6 e NOCAP):**
+   - Nas cenas `v10-dado` e `v12-estrategia`, o título e os subtítulos já reproduzem literalmente a cópia oficial da locução ("Dos 22 apps que estudamos...", "Núcleo de 15 km...", "Bares e restaurantes...", "Distrito Federal").
+   - Aplicou-se a diretriz `NOCAP` para suprimir a caixa de legenda inferior `#cap` nessas duas cenas, eliminando duplicidade visual e permitindo foco total na infografia, alinhado à conduta já adotada em v01, v13 e v14.
+   - Na cena `v11-meta`, a legenda queimada é mantida, pois a tela exibe contadores e rótulos resumidos de métricas em vez da frase contínua.
+   - O inventário `docs/v4/COPIA-BLOCO-C.md` foi atualizado com essa correspondência.
+
+### 3. Coreografia definitiva do Bloco D (Commit 2)
+1. **Pacing de v13-fecho:**
+   - Com a duração estendida de 5,810 s para 7,040 s (+1,230 s), as três frases de acolhimento ("Menos tempo procurando gente.", "Mais tempo no seu negócio.", "Deixa que o Frila cuida.") ganham as pausas exatas de 0,7 s e 0,6 s do mapa narrativo, sem sobreposição nem pressa visual.
+   - A locução de v13 encerra a palavra "cuida." em 6,800 s. O corte visual para v14 ocorre exatamente aos 7,040 s (0,240 s de respiro de cena).
+2. **Coreografia da v14-assinatura:**
+   - A fala inicia aos 7,280 s ("Combinou?").
+   - A tag de assinatura ("Combinou? Pode contar. Dos dois lados.") entra com a fala, centralizada e estável.
+   - O traçado vetorial do logo A1 e o voo do ponto laranja acontecem por último: o ponto migra suavemente e pousa como o pingo da letra "i" (`E.idot`, 957, 338) precisamente aos 11,520 s, sincronizado com a pronúncia da marca ("Frila.", 11,52 s a 11,82 s).
+   - Linha de contato (`frila.org@gmail.com`) e rodapé legal (`Narração com voz sintética (IA)...`) assentam com discrição, sustentando um encerramento em compasso musical suave até o congelamento da margem final aos 13,771 s.
+
+
+### 4. Contrato de movimento alinhado ao raster (sem alterar clipes)
+
+O contrato declara apenas intervalos observados em movimento; as pausas de leitura continuam no relatório heurístico. Medição em MP4 a 60 fps, diferenças entre quadros consecutivos; tempos relativos ao bloco. O limiar global de pausa permanece intacto e seus alertas são pistas, não veredito artístico.
+
+- **C/v10:** a entrada visível ocorre aproximadamente de 0,48 a 1,10 s; após isso o assentamento não é expectativa de movimento. O check foi isolado na região do ponto (80×80 px): diferenças acima de 2 níveis em mais de 3 pixels aparecem de 2,967 a 3,100 s; a janela declarada é 2,95–3,10 s. Diferenças de codec fora da região não são evidência do check.
+- **C/v12:** as ações seguintes começam com a mudança de estado aos 17,983 e 20,983 s, correspondentes às falas em 17,98 e 20,98 s (offsets de +3,75 e +6,75 s desde 14,23 s). As janelas começam nesses instantes e mantêm os fins anteriores 18,73 e 21,73 s. A variação de baixa amplitude após 17,98 s ainda pode gerar alerta heurístico; ele deve ser reportado, não suprimido.
+- **D/v13:** removem-se as janelas 3,8–5,4 e 5,6–7,0 s do contrato de movimento geral: o ponteiro gira a 36°/s, mas a alteração é localizada e inferior ao limiar raster global. A análise permanece capaz de indicar pausas e não comprova ausência de movimento local; não se afrouxa o limiar nem se cria uma classe sem medição e calibração próprias.
+- **Proveniência:** os manifestos de A, B e C citam `html_sha256` do `fb77e5c` (`184b6deb0dee3b70f07f5780429bc2aba14c585a7b19021f64cf9ddd0134ce50`). O `dc74e40` alterou funções do Bloco D no HTML; os clipes A, B e C continuam equivalentes. Nenhum clipe foi re-renderizado para este ajuste.

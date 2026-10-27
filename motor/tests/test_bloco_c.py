@@ -14,23 +14,27 @@ from fotos import servidor
 def regua_c():
     roteiro = json.loads((RAIZ / 'roteiro.json').read_text())
     ids = ['v10-dado', 'v11-meta', 'v12-estrategia']
-    limites = [0, 4.90, 12.07, 19.673416666666668]
-    janelas = [[(0.44, 4.62)], [(5.18, 11.72)], [(12.42, 19.36)]]
+    limites = [0, 5.76, 14.23, 23.60808333333334]
+    janelas = [[(0.68, 5.30)], [(6.22, 13.82)],
+               [(14.64, 17.38), (17.98, 20.30), (20.98, 22.80)]]
     falas = []
     for id_, js in zip(ids, janelas):
         tx = next(c['pt']['legenda'] for c in roteiro['cenas'] if c['id'] == id_)
+        partes = [tx] if len(js) == 1 else [p.strip() for p in tx.split('. ') if p.strip()]
         for k, (a, b) in enumerate(js, 1):
+            texto = partes[k-1] if k-1 < len(partes) else tx
+            if not texto.endswith(('.', '?')): texto += '.'
             falas.append(dict(cena=id_, k=k, ini=a, fim=b, leg_ini=a-.05,
-                              leg_fim=b+.1, legenda=tx))
-    palavras = [dict(cena='v10-dado', text='nenhum', start=2.68, end=2.92),
-                dict(cena='v11-meta', text='oito', start=6.42, end=6.62),
-                dict(cena='v11-meta', text='50', start=7.8, end=8.0),
-                dict(cena='v11-meta', text='nove', start=9.44, end=9.74),
-                dict(cena='v12-estrategia', text='núcleo', start=13.34, end=13.72),
-                dict(cena='v12-estrategia', text='bares', start=16.24, end=16.56),
-                dict(cena='v12-estrategia', text='Distrito', start=18.44, end=18.84)]
-    return dict(bloco='C', duracao=limites[-1], duracao_voz=19.551208333333335,
-                voz_ini=.34, P=.491835, falas=falas, palavras=palavras,
+                              leg_fim=b+.1, legenda=texto))
+    palavras = [dict(cena='v10-dado', text='nenhum', start=2.96, end=3.4),
+                dict(cena='v11-meta', text='oito', start=7.68, end=7.88),
+                dict(cena='v11-meta', text='50', start=9.30, end=9.56),
+                dict(cena='v11-meta', text='nove', start=11.34, end=11.70),
+                dict(cena='v12-estrategia', text='núcleo', start=15.68, end=16.02),
+                dict(cena='v12-estrategia', text='bares', start=19.04, end=19.44),
+                dict(cena='v12-estrategia', text='Distrito', start=21.96, end=22.36)]
+    return dict(bloco='C', duracao=limites[-1], duracao_voz=22.24,
+                voz_ini=.68, P=.491835, falas=falas, palavras=palavras,
                 cenas=[dict(id=id_, ini=a, dur=b-a) for id_, a, b in zip(ids, limites, limites[1:])])
 
 
@@ -41,8 +45,8 @@ class BlocoC(unittest.TestCase):
         r = render.preparar_bloco(original, margem_quadros=30)
         self.assertEqual(r['falas'], original['falas'])
         self.assertEqual(r['palavras'], original['palavras'])
-        self.assertAlmostEqual(r['bloco_fim'], 19.673416666666668)
-        self.assertAlmostEqual(r['total'], (math.ceil(19.673416666666668 * 60 - 1e-7) + 30) / 60)
+        self.assertAlmostEqual(r['bloco_fim'], 23.60808333333334)
+        self.assertAlmostEqual(r['total'], (math.ceil(23.60808333333334 * 60 - 1e-7) + 30) / 60)
         self.assertEqual([c['id'] for c in r['cenas']], ['v10-dado', 'v11-meta', 'v12-estrategia'])
         with self.assertRaises(ValueError):
             ruim = regua_c()
@@ -76,8 +80,8 @@ class BlocoC(unittest.TestCase):
                     self.assertEqual(estado0['fundo'], 'rgb(247, 243, 238)')
                     self.assertEqual(estado0['camera'], [1, 0, 0, 1, 0, 0])
                     
-                    # 2. v10: Ponto Frila em (1525, 540) com check ativo após 2.8s
-                    pg.evaluate('()=>window.seek(3.0)')
+                    # 2. v10: Ponto Frila em (1525, 540) com check ativo após 2.96s (palavra 'nenhum')
+                    pg.evaluate('()=>window.seek(3.3)')
                     estado10 = pg.evaluate('()=>window.estadoBlocoC()')
                     self.assertAlmostEqual(estado10['ponto']['x'], 1525, delta=1.0)
                     self.assertAlmostEqual(estado10['ponto']['y'], 540, delta=1.0)
@@ -87,21 +91,30 @@ class BlocoC(unittest.TestCase):
                     # 22 pontos da grade presentes
                     n_pontos = pg.locator('.c-ponto-concorrente').count()
                     self.assertEqual(n_pontos, 22)
+                    # NOCAP em v10: sem legenda duplicada em #cap
+                    cap_op_v10 = float(pg.locator('#cap').evaluate('(e)=>getComputedStyle(e).opacity'))
+                    self.assertEqual(cap_op_v10, 0.0)
                     
                     # 3. v11: Meta do piloto (3 contadores)
                     pg.evaluate('()=>window.seek(11.0)')
                     v11_op = float(pg.locator('#c-v11').evaluate('(e)=>getComputedStyle(e).opacity'))
                     self.assertGreater(v11_op, 0.9)
+                    # Legenda ativa em v11 (#cap exibe a fala completa enquanto tela mostra números)
+                    cap_op_v11 = float(pg.locator('#cap').evaluate('(e)=>getComputedStyle(e).opacity'))
+                    self.assertGreater(cap_op_v11, 0.8)
                     
                     # 4. v12: Estratégia de expansão (mapa do DF ativo)
-                    pg.evaluate('()=>window.seek(16.0)')
+                    pg.evaluate('()=>window.seek(18.5)')
                     v12_op = float(pg.locator('#c-v12').evaluate('(e)=>getComputedStyle(e).opacity'))
                     self.assertGreater(v12_op, 0.9)
                     fase = pg.locator('#c-fase').text_content().strip()
                     self.assertIn('restaurantes', fase.lower())
+                    # NOCAP em v12: sem legenda duplicada em #cap
+                    cap_op_v12 = float(pg.locator('#cap').evaluate('(e)=>getComputedStyle(e).opacity'))
+                    self.assertEqual(cap_op_v12, 0.0)
                     
                     # 5. Ausência de cursor em toda a extensão
-                    for t in (0, 1.5, 4.0, 7.5, 11.0, 14.0, 18.0):
+                    for t in (0, 1.5, 4.0, 7.5, 11.0, 14.0, 18.0, 22.0):
                         pg.evaluate('t=>window.seek(t)', t)
                         has_cursor = pg.evaluate('()=>!!document.querySelector("#cur")')
                         self.assertFalse(has_cursor, f'Cursor detectado em t={t}')
@@ -109,14 +122,14 @@ class BlocoC(unittest.TestCase):
                     # 6. Reversibilidade e determinismo de seek
                     pg.evaluate('()=>window.seek(3.0)')
                     antes = pg.screenshot()
-                    pg.evaluate('()=>window.seek(14.0)')
+                    pg.evaluate('()=>window.seek(18.0)')
                     pg.evaluate('()=>window.seek(3.0)')
                     self.assertEqual(pg.screenshot(), antes)
                     
                     # 7. Margem de 30 frames congelada
-                    pg.evaluate('()=>window.seek(19.673416666666668)')
+                    pg.evaluate('()=>window.seek(23.60808333333334)')
                     fim = pg.evaluate('()=>window.estadoBlocoC()')
-                    pg.evaluate('()=>window.seek(20.10)')
+                    pg.evaluate('()=>window.seek(24.00)')
                     fim_margem = pg.evaluate('()=>window.estadoBlocoC()')
                     self.assertEqual(fim_margem['ponto'], fim['ponto'])
                     self.assertEqual(fim_margem['camera'], fim['camera'])
