@@ -66,6 +66,8 @@ Cada papel trabalha no seu worktree e commita no seu branch, sem push.
 
 **D8. Sem cursor.** Nenhuma cena usa ponteiro de mouse ou cursor para demonstrar uma ação. A demonstração é a **mudança de estado da própria UI** (campo preenchido, botão pressionado, item selecionado, destaque do passo), sem elemento de interface que o app não tenha.
 
+**D9. Câmera sem artefatos de reamostragem.** Escala e posição da câmera são aplicadas por **uma única transformação** num ancestral comum de todos os elementos, no mesmo quadro: nada de escalar cada elemento por separado, de arredondar ou ajustar a posição por elemento (snapping), nem de reposicionar por layout durante o movimento. Textos e traços não podem tremer nem mostrar serrilhado perceptível durante o movimento: renderizar com supersampling (por exemplo `deviceScaleFactor` 2 com redução de escala por filtro de qualidade (Lanczos) no FFmpeg) ou provar por medição que não há cintilação de borda. O `analisar_video.py` passa a medir a cintilação de borda entre quadros consecutivos durante o movimento de câmera; até estar calibrado contra casos conhecidos, **informa** (§5b) e a avaliação final é o olhar do Fabrício. Regra pedida pelo Fabrício em 26/10/2026.
+
 ## 5b. Gates: bloqueia, informa, aprova
 Detector automático só **bloqueia** quando a regra é objetiva e calibrada (margens, vazamento de chave, texto fora da lista). Caso contrário **informa** (pista ordenada). Toda ferramenta declara a recall contra casos conhecidos; sem calibração só informa. **Aprovar** é do olhar e da escuta do Fabrício.
 
