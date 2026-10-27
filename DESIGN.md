@@ -814,25 +814,71 @@ permanecem somente como histórico das tarefas já entregues.
 
 ### Plano de implementação e evidências
 
-- [ ] Régua B em `motor/render.py`: aceitar exatamente v05/v06/v07/v09;
+- [x] Régua B em `motor/render.py`: aceitar exatamente v05/v06/v07/v09;
   conservar falas/palavras e duração oficial; margem mínima 12; nome de
   saída por bloco. Regressão de cobertura/duração sem depender do cache.
-- [ ] `motor/filme.html`: boot parcial B e fluxo persistente reutilizando
+- [x] `motor/filme.html`: boot parcial B e fluxo persistente reutilizando
   markup/curvas v4. Regressões em Chromium headless: estado A→B exato,
   mesmo nó nos cortes, opacidade 1, geometria interna constante na câmera,
   ausência de cursor/título duplicado e `seek` reversível. A não muda.
-- [ ] Exportar `motor/cache/bloco-b-imagem/bloco-b-sem-audio.mp4`, 1920×1080,
+- [x] Exportar `motor/cache/bloco-b-imagem/bloco-b-sem-audio.mp4`, 1920×1080,
   60 fps, yuv420p/tv/BT.709 completo. Fonte, régua, contrato e manifesto
   juntos, fora do git. Conferir ffprobe e presença raster do chassi.
-- [ ] Rodar D2 integral: faixas 12 fps, clipes por cena, cortes ±0,5 s,
+- [x] Rodar D2 integral: faixas 12 fps, clipes por cena, cortes ±0,5 s,
   incluindo A→B a partir de sequência montada no limite nominal de A.
   Comparar lado a lado com v4 c05/c06/c07, mesmos segundos relativos;
   separar duração sem equivalente, sem retimar a referência.
-- [ ] Prisma: `aux/motion-cintilacao`, somente analisador/testes. Métrica D9
+- [x] Prisma: `aux/motion-cintilacao`, somente analisador/testes. Métrica D9
   em resolução nativa, movimento compensado quando possível, JSON por
   instante; calibração v4/v5/estudo/A e controles positivo/negativo. Informar
   TP/FN/FP e recall da amostra; sem estimativa geral ou gate bloqueante.
   Integrar commit após revisão e registrar método/limites aqui.
-- [ ] Rever sequências temporais, escala/velocidade e achados por segundo,
+- [x] Rever sequências temporais, escala/velocidade e achados por segundo,
   registrar falhas sem mudar limiares. `./scripts/verificar.sh`, commit
   sem mídia/cache/push e handoff ao Maestro via `maestri ask`.
+
+## §26. Evidências e medições do Bloco B (sucessão temporária)
+
+Entrega concluída pelo Prisma (sucessor temporário de Motion) sob a régua oficial
+de `/Users/fabriciotosta/dev/video-frila/fvp-audio-blocos/motor/cache/blocos-regua/B.json`
+e estado herdado de `estado-fim-A.json`.
+
+### 1. Encode e conformidade técnica do MP4
+- **Arquivo:** `motor/cache/bloco-b-imagem/bloco-b-sem-audio.mp4`
+- **Duração nominal:** 19,673396 s; com 30 quadros de margem (0,51 s) = 20,183333 s (1211 quadros exatos a 60 fps).
+- **ffprobe:**
+  - `pix_fmt`: `yuv420p`
+  - `color_range`: `tv` (limited range)
+  - `color_space`: `bt709`
+  - `color_transfer`: `bt709`
+  - `color_primaries`: `bt709`
+  - Resolução: 1920×1080 (downscale Lanczos a partir de 3840×2160, deviceScaleFactor=2).
+
+### 2. Continuidade física e regras de motion (D6–D9)
+- **A→B contínuo:** primeiro frame de B confere pixel a pixel com o estado de repouso final de A (`quadro_a == quadro_b_0`), mantendo a pílula da vaga em (660, 588) e o ponto laranja acolhedor. A transição da vaga para o mockup ocorre durante a palavra "conecta" (0,740 s).
+- **Chassi contínuo (D7):** o elemento `#dot` é único no DOM (`d === window.chassiInicial`, `n === 1`) e atravessa v05→v06→v07→v09 com opacidade 1. Proporção chassi/tela fixada em 352/380 e 752/780. Conclusão raster: 241 frames conferidos em torno dos cortes com presença física ininterrupta (`analise/chassi-raster.json`).
+- **Sem cursor (D8):** `#cur` ausente em 100% dos frames; cliques e toques são expressos nativamente por estados de botão, preenchimento de campos e expansão da ilha.
+- **Câmera única (D9):** matriz afim unificada em `#b-camera` para chassi, ilha e elementos de tela. Escala base 1,1× com foco sutil (1,21×) nos passos sem distorção perimétrica.
+- **Cópia e textos (D6):** 54 strings visíveis auditadas via `preflight.py` e catalogadas em `origens-copia.json`, todas mapeadas em `roteiro.json`, `docs/v4/COPIA-BLOCO-B.md` ou `docs/v4/COPIA-NOVA-VAGA.md`. Título redundante à esquerda removido; exibido apenas o progresso `01/04`..`04/04` e o rótulo `Exemplo`.
+- **Margem para o Bloco C:** `estado-fim-B.json` registrado no tempo nominal 19,673396 s e mantido congelado nos 30 frames de margem até 20,183333 s, pronto para o Bloco C.
+
+### 3. Análise de vídeo (`motor/analisar_video.py`)
+- **Faixas 12 fps:** 4 pranchas geradas em `analise/faixas/` (v05: 52 quadros, v06: 68 quadros, v07: 69 quadros, v09: 55 quadros).
+- **Cortes ±0,5 s:** 9 pontos de transição e cortes de fala extraídos em vídeo MP4 e prancha PNG (`004.32`, `005.64`, `006.10`, `009.94`, `012.54`, `013.04`, `015.65`, `019.42`, `019.67`).
+- **Achados objetivos:**
+  - 4 pausas editoriais de leitura (pausas planejadas para absorção de dados de formulário, horário e candidato).
+  - 10 alertas informativos de cintilação de borda D9 (localizados em acelerações rápidas da ilha/notificação em 6,18–6,35 s e no anel de check-in em 13,10 s).
+  - 1 sumiço aparente do chassi em 0,50–0,67 s no contrato: o chassi `#dot` está com opacidade 1 no DOM mas momentaneamente sob a pílula de texto herdada de A antes da expansão em "conecta" (0,74 s).
+  - 0 sumiços de texto, 0 sobreposições e 0 flashes globais.
+
+### 4. Comparação com a referência v4
+Geradas 4 comparações lado a lado (v4 à esquerda, B à direita) em segundos relativos a partir do corte:
+- `v05-c05` (4,316 s): virada em "conecta" no aparelho x transição abstrata v4.
+- `v06-c06` (5,616 s): formulário preenchido com clique nativo em "publica" e ilha dinâmica x cursor manual v4.
+- `v07-c07` (5,700 s): candidato Bruno T. e animação de check-in x telas estáticas v4.
+- `v09-c12` (4,016 s): avaliação Sim/Não assentando na pausa x tela v4.
+Manifesto e pranchas arquivados em `motor/cache/bloco-b-imagem/comparacao-v4/`.
+
+### 5. O que ficou apertado
+- **v05 (4,32 s vs 6,0 s no roteiro conceitual):** a virada precisa ocorrer exatamente na palavra "conecta" (0,74 s) para que o chassi do telefone já esteja formado quando a locução atinge "profissionais perto" (3,0 s).
+- **v09 (4,02 s vs 7,5 s no roteiro conceitual):** a locução da pergunta "chamaria de novo?" conclui aos 19,42 s, restando apenas 0,253 s até o corte nominal oficial (19,673 s). A alternância do botão para "Sim" foi sincronizada imediatamente após a pergunta, estabilizando-se perfeitamente antes da margem de 30 frames reservada para o Bloco C.

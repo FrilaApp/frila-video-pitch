@@ -198,5 +198,103 @@ class Detectores(unittest.TestCase):
         self.assertIn(.2, ts)
         self.assertLessEqual(ts[-1], .7)
 
+    def test_cintilacao_borda_controle_estatico_zero(self):
+        m = self.modulo()
+        self.assertTrue(hasattr(m, 'medir_cintilacao_borda'))
+        import cv2
+        img = np.zeros((270, 480), dtype=np.uint8)
+        cv2.putText(img, 'CONTROLE ESTATICO', (50, 140), cv2.FONT_HERSHEY_SIMPLEX, 1.2, 220, 2)
+        cv2.rectangle(img, (30, 40), (450, 230), 200, 2)
+        frames = [img.copy() for _ in range(5)]
+        achados, metricas = m.medir_cintilacao_borda(frames, 60)
+        self.assertEqual(len(achados), 0)
+        self.assertTrue(all(not x['movimento'] for x in metricas))
+        self.assertTrue(all(x['hf_mad'] == 0.0 for x in metricas))
+
+    def test_cintilacao_borda_translacao_suave_sem_falso_positivo(self):
+        m = self.modulo()
+        import cv2
+        H, W, sc = 270, 480, 4
+        def render(sx, sy):
+            hr = np.zeros((H*sc, W*sc), dtype=np.float32)
+            x = int(round(sx * sc))
+            y = int(round(sy * sc))
+            cv2.putText(hr, 'SUAVE', (50*sc + x, 140*sc + y), cv2.FONT_HERSHEY_SIMPLEX, 1.2*sc, 220, 2*sc)
+            cv2.rectangle(hr, (30*sc + x, 40*sc + y), (450*sc + x, 230*sc + y), 200, 2*sc)
+            return cv2.resize(hr, (W, H), interpolation=cv2.INTER_AREA).astype(np.uint8)
+
+        frames = [render(i * 0.6, i * 0.4) for i in range(5)]
+        achados, metricas = m.medir_cintilacao_borda(frames, 60)
+        self.assertEqual(len(achados), 0)
+        movimentos = [x for x in metricas if x['movimento']]
+        self.assertGreater(len(movimentos), 0)
+        self.assertTrue(all(x['osc_ratio'] < 0.10 for x in movimentos))
+
+    def test_cintilacao_borda_escala_suave_sem_falso_positivo(self):
+        m = self.modulo()
+        import cv2
+        H, W, sc = 270, 480, 4
+        def render_scale(s):
+            hr = np.zeros((H*sc, W*sc), dtype=np.float32)
+            cx, cy = (W * sc) // 2, (H * sc) // 2
+            w_box = int(round(150 * sc * s))
+            h_box = int(round(80 * sc * s))
+            cv2.rectangle(hr, (cx - w_box, cy - h_box), (cx + w_box, cy + h_box), 220, 2*sc)
+            cv2.circle(hr, (cx, cy), int(round(40 * sc * s)), 200, 2*sc)
+            return cv2.resize(hr, (W, H), interpolation=cv2.INTER_AREA).astype(np.uint8)
+
+        frames = [render_scale(1.0 + i * 0.005) for i in range(5)]
+        achados, metricas = m.medir_cintilacao_borda(frames, 60)
+        self.assertEqual(len(achados), 0)
+        movimentos = [x for x in metricas if x['movimento']]
+        self.assertGreater(len(movimentos), 0)
+
+    def test_cintilacao_borda_detecta_borda_serrilhada_ou_oscilando(self):
+        m = self.modulo()
+        import cv2
+        H, W = 270, 480
+        def render_aliased(sx, sy):
+            img = np.zeros((H, W), dtype=np.uint8)
+            x, y = int(round(sx)), int(round(sy))
+            cv2.line(img, (40 + x, 40 + y), (400 + x, 220 + y), 255, 3, lineType=cv2.LINE_4)
+            cv2.putText(img, 'JAGGED', (60 + x, 160 + y), cv2.FONT_HERSHEY_SIMPLEX, 1.2, 255, 2, lineType=cv2.LINE_4)
+            return img
+
+        f0 = render_aliased(0, 0)
+        f1 = render_aliased(1, 1)
+        edge = cv2.magnitude(cv2.Sobel(f1, cv2.CV_32F, 1, 0), cv2.Sobel(f1, cv2.CV_32F, 0, 1)) > 30
+        f1_shimmer = f1.copy()
+        f1_shimmer[edge] = np.clip(f1_shimmer[edge].astype(float) + 60.0, 0, 255)
+        f2 = render_aliased(2, 2)
+
+        frames = [f0, f1_shimmer, f2]
+        achados, metricas = m.medir_cintilacao_borda(frames, 60)
+        cint = [x for x in achados if x['tipo'] == 'cintilacao_borda']
+        self.assertGreaterEqual(len(cint), 1)
+        self.assertEqual(cint[0]['confianca'], 'informativo')
+
+    def test_cintilacao_borda_cli_integra_metricas_e_achados(self):
+        self.modulo()
+        import json, pathlib, subprocess, sys, tempfile
+        with tempfile.TemporaryDirectory() as pasta:
+            pasta = pathlib.Path(pasta)
+            video = pasta / 'video_teste.mp4'
+            frames = np.full((120, 90, 160), 40, dtype=np.uint8)
+            for i in range(120):
+                frames[i, 20:60, 20 + (i % 20):60 + (i % 20)] = 200
+            subprocess.run(['ffmpeg', '-v', 'error', '-f', 'rawvideo', '-pix_fmt', 'gray',
+                '-s', '160x90', '-r', '60', '-i', '-', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', str(video)],
+                input=frames.tobytes(), check=True)
+            regua = pasta / 'tempos.json'
+            regua.write_text(json.dumps({'total': 2, 'cenas': [{'id': 'c01', 'ini': 0, 'dur': 2}]}))
+            saida = pasta / 'saida'
+            subprocess.run([sys.executable, str(CAMINHO), str(video), '--tempos', str(regua),
+                '--saida', str(saida), '--sem-artefatos'], check=True, capture_output=True)
+            relatorio = json.loads((saida / 'achados.json').read_text())
+            metricas = json.loads((saida / 'metricas.json').read_text())
+            self.assertTrue(relatorio['cobertura']['cintilacao_borda_d9'])
+            self.assertIn('cintilacao_borda', metricas[1])
+            self.assertIn('hf_mad', metricas[1]['cintilacao_borda'])
+
 if __name__ == '__main__':
     unittest.main()
