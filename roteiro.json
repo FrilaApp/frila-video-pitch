@@ -1,5 +1,5 @@
 {
- "_nota": "Texto enxuto da v5 aprovado pelo Fabrício em 26/10/2026: 13 cenas (a v08-teaser foi removida), 154 palavras faladas, alvo ~80 s. Os ids v01–v14 NÃO foram renumerados (a v08 não existe). 'bloco' agrupa a produção em A, B, C e D (PLAYBOOK §2). 'fala' vai para a voz (números por extenso); 'legenda' é o texto na tela e no .srt. Frases se separam em . ? ! e fala e legenda precisam ter o mesmo número de frases por cena. 'janela_s' é planejamento, não medida (valores da versão de ~100 s: revisar com a voz). Campos extras (bloco, tela, dado_e_fonte, janela_s, legenda_queimada) são documentação; o motor lê só id, pt.fala e pt.legenda.",
+ "_nota": "Texto enxuto da v5 aprovado pelo Fabrício em 26/10/2026: 13 cenas (a v08-teaser foi removida), 158 palavras faladas, alvo ~80 s. A fala da v14 foi trocada em 27/10/2026 (de Frila. Turno combinado, regra clara. para Combinou? Pode contar. Dos dois lados. Frila.): o Fabrício reprovou a anterior, escolheu a linha Combinou, pode contar e delegou a redação final ao Maestro. Os ids v01–v14 NÃO foram renumerados (a v08 não existe). 'bloco' agrupa a produção em A, B, C e D (PLAYBOOK §2). 'fala' vai para a voz (números por extenso); 'legenda' é o texto na tela e no .srt. Frases se separam em . ? ! e fala e legenda precisam ter o mesmo número de frases por cena. 'janela_s' é planejamento, não medida (valores da versão de ~100 s: revisar com a voz). Campos extras (bloco, tela, dado_e_fonte, janela_s, legenda_queimada) são documentação; o motor lê só id, pt.fala e pt.legenda.",
  "audio_blocos_aprovados": true,
  "blocos": [
   {
@@ -184,8 +184,8 @@
   {
    "id": "v14-assinatura",
    "pt": {
-    "fala": "Frila. Turno combinado, regra clara.",
-    "legenda": "Frila. Turno combinado, regra clara."
+    "fala": "Combinou? Pode contar. Dos dois lados. Frila.",
+    "legenda": "Combinou? Pode contar. Dos dois lados. Frila."
    },
    "janela_s": 6.0,
    "legenda_queimada": false,
