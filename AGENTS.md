@@ -12,4 +12,5 @@
 - **Validação obrigatória:** antes de qualquer commit ou entrega, execute `./scripts/verificar.sh`. Ele valida dependências (AST check), linters de cópia e roteiro, ausência de binários/chaves e testes unitários no `.venv`.
 - **Paridade de worktrees:** crie novos worktrees sempre via `./scripts/worktree.sh <caminho> <branch>` para evitar divergência de interpretador e dependências.
 - **Whitelist estrita de texto:** nenhuma string pode ser renderizada na tela ou em propostas de mockup sem constar no `roteiro.json` ou nas telas de `docs/v4/`. Anotações de revisão ficam fora da imagem.
+- **Proibido Computer Use:** os modelos não devem utilizar a ferramenta Computer (automação de desktop / GUI). Toda execução, análise de mídia, extração de quadros e renderização deve ser feita via shell, scripts Python, FFmpeg e Playwright headless.
 - Não commitar áudio, vídeo, trilha musical nem `motor/cache/` (ver `.gitignore`).
