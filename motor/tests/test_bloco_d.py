@@ -13,9 +13,6 @@ from fotos import servidor
 
 
 def regua_d():
-    caminho = Path('/Users/fabriciotosta/dev/video-frila/fvp-audio-blocos/motor/cache/blocos-regua/D.json')
-    if caminho.exists():
-        return json.loads(caminho.read_text())
     roteiro = json.loads((RAIZ / 'roteiro.json').read_text())
     ids = ['v13-fecho', 'v14-assinatura']
     limites = [0, 5.81, 13.771374999999992]

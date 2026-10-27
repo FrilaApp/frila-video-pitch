@@ -2010,6 +2010,37 @@ Com a métrica validada, foram sintetizadas 3 novas tomadas do Bloco C (Ana v3, 
    - `fronteira_B_C_reprovado.wav` e `fronteira_C_reprovado_D.wav`: Mantidas para comparação de contraste;
    - `README.md`: Documentação técnica completa das medições objetivas.
 
+### O17. Decisão de Ouvido do Fabrício: Seleção Final dos 4 Blocos, Distinção Humana vs Automática e Régua Oficial Definitiva (27/10/2026)
+
+Em 27/10/2026, o Fabrício concluiu a escuta de todas as tomadas geradas e deliberou soberanamente a seleção dos quatro blocos de voz:
+1. **Decisão Soberana de Ouvido dos 4 Blocos:**
+   - **Bloco A:** Tomada `5dcbc2883164470aa2d0cb7fbe2b4a44` (Ana v3, semente 1, 24,320 s). Exceção A8: pausa interna de 0,500 s (t = 5,910 s) após *"Abrasel,"* aceita de ouvido pelo Fabrício em 27/10/2026;
+   - **Bloco B:** Tomada `8f28d33d7aa44331ab4b8fccc47cdced` (Gabriel v2, semente 1, 19,133 s). Zero falhas A8;
+   - **Bloco C:** Tomada 4 (`61181794d7b4471891be3c8ca30dda2a`, Ana v3, semente 7, 22,240 s, taxa de chiado limpa de 6,7%). 3 exceções A8 aceitas de ouvido pelo Fabrício em 27/10/2026: 0,520 s em t=2,100 s (*"estudamos,"* / *"nenhum"*), 0,520 s em t=6,820 s (*"piloto:"* / *"oito"*) e 0,740 s em t=8,330 s (*"semanas,"* / *"50"*);
+   - **Bloco D:** Tomada 2 (`1cf3cc77c05843048808b69346d243ac`, Ana v3, semente 2, 11,840 s, taxa de chiado 0,0%, pausa verbal entre v13 e v14 de 0,480 s). Zero falhas A8.
+
+2. **Mecanismo de Seleção — Distinção Humana vs Verificação Automática:**
+   - O mecanismo em `vozes/regua_blocos.py` (`validar_aprovacao_selecao`) separa categoricamente dois conceitos:
+     1. `passou_verificacao_automatica`: Booleano determinístico baseado nos testes da regra A8 e validação de texto Scribe;
+     2. `aprovado_ouvido`: Veredito humano soberano com registro do aprovador ("Fabrício") e data da escuta;
+   - Nenhuma tomada é elegível para a seleção oficial apenas por ter passado na verificação automática (`aprovacao_ouvido` é sempre obrigatória);
+   - Caso haja falha na verificação automática (como nos blocos A e C), a tomada só é admitida se cada falha física corresponder a um registro explícito em `excecoes_a8` com data e motivo chancelados pelo Fabrício.
+
+3. **Grade Musical e Régua Narrativa Oficial:**
+   - **Parâmetros da Grade Musical:** $P = 0,491835\text{ s}$, $\text{BAR} = 4 \times P = 1,96734\text{ s}$;
+   - **Compassos Limites:** `[0, 13, 23, 35, 42]` (Total: 42 compassos musicais = **82,628 s**, perfeitamente contido na meta de 78–90 s);
+   - **Recuos Vocais:** `{"A": 0.98367, "B": 0.650, "C": 0.600, "D": 0.100}`;
+   - **Fronteiras e Proteções Acústicas:**
+     - **Fronteira A→B (Compasso 13, t = 25,575 s):** Pausa verbal = 1,102 s | Proteção antes = 332 ms | Proteção depois = 770 ms | Folga WAV = 922 ms;
+     - **Fronteira B→C (Compasso 23, t = 45,249 s):** Pausa verbal = 1,143 s | Proteção antes = 463 ms | Proteção depois = 680 ms | Folga WAV = 490 ms;
+     - **Fronteira C→D (Compasso 35, t = 68,857 s):** Pausa verbal = 1,068 s | Proteção antes = 808 ms | Proteção depois = 260 ms | Folga WAV = 868 ms;
+   - Todas as fronteiras respeitam a pausa ideal ($\sim 1\text{ s}$), a proteção temporal mínima de 120 ms e possuem folga positiva entre os arquivos de áudio;
+   - **Corte Visual v13→v14 dentro do Bloco D:**
+     - Última palavra da v13 ("cuida,"): fim em **6,800 s** local (global: **75,6569 s**);
+     - Primeira palavra da v14 ("combinou?"): início em **7,280 s** local (global: **76,1369 s**);
+     - Pausa verbal: **0,480 s**;
+     - Ponto exato do corte visual no centro da pausa (midpoint): **7,0400 s** local no Bloco D e **75,8969 s** global na timeline do filme (proteção acústica simétrica de 240 ms antes e 240 ms depois, atendendo com folga a margem mínima de 120 ms).
+
 ### O16. Aprovação de C-T4, Atualização do Roteiro v14 e Regeneração do Bloco D (27/10/2026)
 
 Em 27/10/2026, com o merge do PR #32 e a aprovação de ouvido pelo Fabrício da Tomada 4 do Bloco C (seed 7, Ana v3, sibilante limpa):

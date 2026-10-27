@@ -35,7 +35,8 @@ def ler_scribe(caminho, arquivo):
     """Resposta absoluta vinculada por hash ou relatório de trechos do pipeline."""
     caminho, arquivo = Path(caminho), Path(arquivo)
     d = json.loads(caminho.read_text())
-    if d.get('sha256') != hash_arquivo(arquivo):
+    h_arq = hash_arquivo(arquivo)
+    if (d.get('sha256') or d.get('sha256_bruto') or d.get('sha256_voz')) != h_arq:
         raise ValueError('Scribe: hash do arquivo diverge ou ausente')
     if 'words' in d or 'palavras' in d:
         if d.get('resposta_scribe') and hash_arquivo(caminho.parent / d['resposta_scribe']) != d['scribe_sha256']:
