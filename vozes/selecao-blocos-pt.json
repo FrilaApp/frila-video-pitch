@@ -1,0 +1,111 @@
+{
+  "versao": 1,
+  "idioma": "pt",
+  "aprovador": "Fabrício",
+  "data": "2026-10-26",
+  "origem_decisao": "Tarefa 3: aprovação de ouvido informada pelo Maestro, em nome do Fabrício",
+  "blocos": [
+    {
+      "id": "A",
+      "uuid": "b92c749be0314efea49558e467da3eb8",
+      "arquivo": "vozes/tomadas/blocos/pt/A/b92c749be0314efea49558e467da3eb8/bruto.wav",
+      "metadados": "vozes/tomadas/blocos/pt/A/b92c749be0314efea49558e467da3eb8/bruto.json",
+      "scribe": "vozes/tomadas/blocos/pt/A/b92c749be0314efea49558e467da3eb8/scribe.json",
+      "sha256": "056f3ac2572220ed2b10160548dc276f4ff668fe7b84584519d5257f7e65b596",
+      "metadados_sha256": "d0c6f24b3f42c47edbcb93cfa01325a8acae96f3c52dbb0aa43dfc57b39218a5",
+      "scribe_sha256": "17dcee1f1015d3e84ca53fdb6b23180182456a29bdeb7e49eb22af1c8a524f83",
+      "aprovacao_ouvido": {
+        "aprovador": "Fabrício",
+        "data": "2026-10-26",
+        "aprovado": true
+      },
+      "excecoes_a8": []
+    },
+    {
+      "id": "B",
+      "uuid": "43bbc4666c484358834e92131dad38ce",
+      "arquivo": "vozes/tomadas/blocos/pt/B/43bbc4666c484358834e92131dad38ce/bruto.wav",
+      "metadados": "vozes/tomadas/blocos/pt/B/43bbc4666c484358834e92131dad38ce/bruto.json",
+      "scribe": "vozes/tomadas/blocos/pt/B/43bbc4666c484358834e92131dad38ce/scribe.json",
+      "sha256": "d0df9058dcf898fb88fb615caf9ed86791ad22102675413ca9348a70e02f2be2",
+      "metadados_sha256": "b649bcdeb4d05c7e3f57d9fd9828690bd75d1c4ff925a36031134d33879f2b93",
+      "scribe_sha256": "4b35d7949d9bfca8ad074c85ad8b4d451db43efa2d8bf86eec9873960d0ec8c4",
+      "aprovacao_ouvido": {
+        "aprovador": "Fabrício",
+        "data": "2026-10-26",
+        "aprovado": true
+      },
+      "excecoes_a8": []
+    },
+    {
+      "id": "C",
+      "uuid": "5e4184f8bc7840f39acd9e74169417c1",
+      "arquivo": "vozes/tomadas/blocos/pt/C/5e4184f8bc7840f39acd9e74169417c1/bruto.wav",
+      "metadados": "vozes/tomadas/blocos/pt/C/5e4184f8bc7840f39acd9e74169417c1/bruto.json",
+      "scribe": "vozes/tomadas/blocos/pt/C/5e4184f8bc7840f39acd9e74169417c1/scribe.json",
+      "sha256": "cfba9ecef3c2279bd78e98886ded81bf0f743d39988f95fd44e28b2bc6b5da1b",
+      "metadados_sha256": "fae79242dbdfe7dbacef6cc113e08f1bca5b9fd125d8efd7d1b42ad763b8db33",
+      "scribe_sha256": "c4317d52362897253db0dc5f07aa099dda247ae009a9125657f302d120ae0180",
+      "aprovacao_ouvido": {
+        "aprovador": "Fabrício",
+        "data": "2026-10-26",
+        "aprovado": true
+      },
+      "excecoes_a8": [
+        {
+          "regra": "A8_pausa_interna",
+          "ini": 6.86,
+          "fim": 7.46,
+          "duracao": 0.6,
+          "sha256": "cfba9ecef3c2279bd78e98886ded81bf0f743d39988f95fd44e28b2bc6b5da1b",
+          "palavra_antes": "semanas,",
+          "palavra_depois": "50",
+          "aprovador": "Fabrício",
+          "data": "2026-10-26",
+          "motivo": "Pausa de 0,600 s aceita de ouvido; preservar vírgula e tomada seed 1, sem regeneração."
+        }
+      ]
+    },
+    {
+      "id": "D",
+      "uuid": "4acfe322e133423faa154465d85fc3cf",
+      "arquivo": "vozes/tomadas/blocos/pt/D/4acfe322e133423faa154465d85fc3cf/bruto.wav",
+      "metadados": "vozes/tomadas/blocos/pt/D/4acfe322e133423faa154465d85fc3cf/bruto.json",
+      "scribe": "vozes/tomadas/blocos/pt/D/4acfe322e133423faa154465d85fc3cf/scribe.json",
+      "sha256": "1dfa3ad8e355a7e588e2ba685592fbb645bd9e51e769ed2305e918ffe815de0e",
+      "metadados_sha256": "28aa862d8270bd83e1fda23fc4d0898977b94bcfd72b5504b42b6c5e3e992ed0",
+      "scribe_sha256": "a868d0a1659bb820cb88544a2462b7c611b3b9ebdfd90b8795a93109970e86df",
+      "aprovacao_ouvido": {
+        "aprovador": "Fabrício",
+        "data": "2026-10-26",
+        "aprovado": true
+      },
+      "excecoes_a8": []
+    }
+  ],
+  "regua": {
+    "P": 0.491835,
+    "bar": 1.96734,
+    "compassos_limites": [
+      0,
+      13,
+      23,
+      33,
+      40
+    ],
+    "recuos_voz_s": {
+      "A": 2.459175,
+      "B": 0.08,
+      "C": 0.34,
+      "D": 0.24
+    },
+    "nota": "Tempos de régua planejados pelo engenheiro; aprovação das vozes não é aprovação automática da régua/mix."
+  },
+  "descartadas": [
+    {
+      "bloco": "C",
+      "uuid": "1eb568e024f04d7e8832cb2e5f6d1781",
+      "acao": "preservar imutável; não selecionar"
+    }
+  ]
+}

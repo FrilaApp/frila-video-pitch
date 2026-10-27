@@ -8,9 +8,9 @@
 
 ## 0. Em 1 minuto
 
-- **O que é:** um vídeo de ~100 s, 1920×1080, 60 fps, narração em PT-BR por voz sintética, que mostra três dores de quem contrata turno avulso, como o Frila resolve cada uma (mockups), e fecha com potencial, meta de prospecção e estratégia para quem acompanha como investidor. O fim **não vende**: é tempo e foco ("deixa que o Frila cuida").
-- **Onde estamos:** a **narrativa** está escrita (14 momentos), o **design da v4** está documentado, o **plano de áudio** está aprovado com ajustes e o **motor** (HTML calculado quadro a quadro + FFmpeg) roda. **Não há render final da v5.** Texto aprovado e aplicado no `roteiro.json`; infra de áudio (T4) e 14 cenas com D1 (T6/T7) prontas, conferidas com régua provisória (`docs/QA-CENAS-v5.md`).
-- **O que falta (em ordem):** gerar a voz → adaptar a régua de tempos → renderizar → mixar → conferir → Fabrício ouve e aprova → entregar.
+- **O que é:** vídeo-pitch de ~80 s, 1920×1080, 60 fps, narração sintética PT-BR, treze cenas (v01–v14 sem v08), baseado na v4 aprovada com nota 8/10. O fecho fala de tempo e foco.
+- **Onde estamos:** quatro tomadas aprovadas de ouvido pelo Fabrício (26/10/2026); C seed 1 tem exceção explícita para a pausa A8 de 0,600 s, mantendo a vírgula. Seleção em `vozes/selecao-blocos-pt.json`, sem alterar os brutos. Régua T5 gerada: **78,693604 s / 40 compassos**, com janelas locais por bloco. **Não há novo render final nem mixagem desta régua.** O Diretor está produzindo a imagem por blocos.
+- **O que falta (em ordem):** validar a imagem de cada bloco com suas janelas → montar imagem → mixar → conferir emendas/sincronismo → Fabrício assiste e ouve o vídeo inteiro → entregar.
 - **Quem decide:** o **Fabrício** (produto, texto, ouvido final), desde 26/10/2026. Dúvida de conteúdo ou número: pergunte a ele; não decida sozinho.
 
 ## 1. Entrega e definição de pronto
@@ -36,14 +36,14 @@
 
 | Item | Estado | Onde |
 |---|---|---|
-| Narrativa de 100 s (14 momentos, 204 palavras faladas) | **Aprovada** (Fabrício, 26/10/2026) | `NARRATIVA-v5-100s.md`, `roteiro.json` |
+| Texto enxuto, 13 cenas sem v08 | **Aprovado** (Fabrício, 26/10/2026); texto de ~100 s é histórico | `roteiro.json`, `PLAYBOOK.md` |
 | Design do vídeo (v4 documentada, mapa v4→v5, diretriz D1) | Pronto | `DESIGN.md` |
-| Plano de áudio (trilhas separadas, ducking, cortes de fala, QA) | T4 implementada e conferida offline com sinais sintéticos (PR #1); voz/mix v5 e escuta pendentes | `PLANO-AUDIO.md` §H, `motor/mixagem.json`, `motor/conferir_audio.py` |
-| Motor (`motor/`) | Roda. Caminhos ajustados para este repositório. **Imagem com cenas v01–v14; `tempos2.py` ainda aguarda T5** | `motor/` |
+| Plano de áudio | T4 validada com sinais sintéticos; quatro vozes aprovadas. Mix/render novo pendentes | `PLANO-AUDIO.md` §§H/L, `motor/mixagem.json` |
+| Régua oficial T5 | 13 cenas, 78,693604 s; cortes entre blocos nos compassos 13/23/33, fim no 40; dez janelas menores que o planejamento antigo, reportadas ao Diretor | `motor/tempos2.py`, `vozes/regua_blocos.py`, `motor/cache/blocos-regua/` |
 | `preparar` (preparação da voz) | Preserva bruto por padrão, sem fades; corte/padding auditáveis testados offline. Régua/IDs da T5 preservados | `motor/tempos2.py`, `PLANO-AUDIO.md` §H |
 | Voz ElevenLabs (script de geração e conferência) | Pronto e testado (2 frases + 20 frases de teste) | `vozes/eleven.py` |
 | Roteiro da v5 aplicado no `roteiro.json` | **Sim** (T2); v4 em `docs/v4/roteiro-v4.json` | `roteiro.json` |
-| Voz da v5 gerada | **Não** | — |
+| Voz por bloco | **A/B/C seed 1/D aprovados de ouvido**. C seed 2 descartada, preservada imutável | `vozes/selecao-blocos-pt.json`, `PLANO-AUDIO.md` §L |
 | Cenas novas (v01–v14) no `filme.html` | **Montadas e conferidas em ensaio T6**, sem voz; régua provisória separada | `motor/filme.html`, `scripts/tempos-provisorios.py`, `docs/QA-CENAS-v5.md` |
 | D1 em v06, v07 e v09 (T7) | **Implementado e aprovado** (Fabrício, 26/10/2026): escala 1,10 após medir invasão da faixa em 1,20 | `DESIGN.md` §19 e capturas em `motor/cache/qa-v5/` |
 | Render, mix, QA, entrega | **Não** | — |
@@ -86,19 +86,23 @@ scripts/trilha.sh       # baixa a trilha e confere tamanho e SHA-256
 
 **Chave do ElevenLabs.** Não existe no repositório e **não deve** existir. Use `export ELEVENLABS_API_KEY=...` ou grave em `~/.config/elevenlabs/chave` (modo 600). Peça a chave ao Cauê por canal seguro ou use a sua. Confira o saldo: `.venv/bin/python vozes/eleven.py saldo` (o plano usado até aqui é Starter, 40.000 caracteres/mês; o roteiro tem ~1.300 caracteres por geração completa).
 
-**Voz Fernanda** (`7iqXtOF3wl3pomwXFY7G`, `eleven_multilingual_v2`, é o padrão do `eleven.py`). **Cuidado:** esse id é da conta do Cauê. Numa conta nova talvez a voz não exista; procure "Fernanda" (pt-BR, feminina, profissional) na Biblioteca de vozes do ElevenLabs e adicione à sua conta, ou peça ao Cauê para gerar. `eleven.py vozes` lista o que a sua conta tem. **Não troque de voz sem o Cauê:** ele escolheu esta de ouvido, entre seis.
+**Voz atual:** Ana Dias (`MZxV5lN3cv7hi1376O0m`), parâmetros editoriais do
+PLAYBOOK A9. As quatro tomadas já foram geradas e aprovadas; **não regenerar**.
+Fernanda e os testes de geração por frase eram do fluxo histórico.
 
-**Teste de fumaça** (confirma voz e conferência; gasta ~100 caracteres e não altera o roteiro):
+**Reproduzir T5 offline** (requer as tomadas selecionadas no disco, sem API):
 ```sh
-.venv/bin/python vozes/eleven.py gerar c01 c02     # 2 frases (texto da v4)
-.venv/bin/python vozes/eleven.py conferir c01 c02  # esperado: 2/2 ok
+.venv/bin/python motor/tempos2.py --bloco A
+.venv/bin/python motor/tempos2.py
+./scripts/verificar.sh
 ```
-O `tempos2.py` e o render só rodam com **todas** as frases do `roteiro.json` geradas (T3).
+T5 verifica hashes, texto/Scribe e exceções antes de exportar. O render novo
+depende das cenas adaptadas pelo Diretor às treze janelas atuais.
 
 ## 5. Como o pipeline funciona
 
 ```
-roteiro.json ──► vozes/eleven.py gerar ──► vozes/frases/pt/<cena>-<n>.wav   (24 kHz, uma frase por arquivo)
+roteiro.json + vozes/selecao-blocos-pt.json ──► quatro WAVs imutáveis e Scribe (24 kHz, tomada por bloco)
       │                                         │
       │                                         ▼
       │                              motor/tempos2.py  ──► motor/tempos-pt.json (régua: cenas, falas, música)
@@ -113,7 +117,7 @@ roteiro.json ──► vozes/eleven.py gerar ──► vozes/frases/pt/<cena>-<n
 ```
 
 - **Cada quadro é calculado** por `seek(t)`; nada depende do relógio. O mesmo `tempos-pt.json` gera sempre o mesmo vídeo.
-- **Fala vs legenda:** `fala` é o que a voz diz (números por extenso); `legenda` é o texto na tela. **Precisam ter o mesmo número de frases** (separadas em `.` `?` `!`) em cada cena, porque o arquivo de voz `<cena>-<n>.wav` casa pela posição.
+- **Fala vs legenda:** `fala` é o que a voz diz; `legenda` é o texto na tela. Mesma contagem de frases por cena para alinhamento textual. `falas` da régua são janelas de legenda; `audio_blocos` são quatro inserções de WAV completo. Não criar áudios por frase para esse roteiro.
 - **`eventos-pt.json` sai do render** e o `audio2.py` precisa dele (os efeitos acompanham o que a imagem faz). Mudou só ganho/ducking? Não precisa re-renderizar.
 - Atalho: `scripts/pipeline.sh voz|conferir|tempos|quadros|imagem|audio|mux|tudo`.
 
@@ -125,9 +129,9 @@ Esforço: **P** pequeno (≤ 2 h), **M** médio (meio dia), **G** grande (1 a 2 
 |---|---|---|---|---|---|
 | T1 | **Ambiente + teste de fumaça** (§4) | — | `setup.sh` e `trilha.sh` sem erro; `conferir c01 c02` com 2/2 ok. O teste de render só é possível depois de T3 (o `tempos2.py` precisa de todas as frases) | P | — |
 | T2 | **Aprovação do texto** e aplicar no `roteiro.json` | `git mv roteiro.json docs/v4/roteiro-v4.json`; `git mv roteiro-v5-100s.json roteiro.json` | Fabrício aprovou (26/10/2026); contagem de frases fala=legenda ok | P | Cauê |
-| T3 | **Gerar a voz** (28 frases) e conferir | `vozes/eleven.py` | `conferir` sem divergência não resolvida; Fabrício ouve cada frase. Frase com defeito: outra tomada com `SEED=n`; **dois defeitos iguais: pare e leve ao Fabrício** | M | T2 |
+| T3 | **Concluída: quatro tomadas contínuas aprovadas**, sem novas gerações | `vozes/selecao-blocos-pt.json` | A/B/C seed 1/D; exceção de ouvido A8 de C registrada | M | T2 |
 | T4 | **Infra de áudio** do `PLANO-AUDIO.md` §F passos 1–3, 5–7: trilhas separadas, `mixagem.json`, `preparar` que preserva o bruto, ducking novo, QA por estágio, master em 2 passagens | `motor/tempos2.py`, `motor/audio2.py`, `vozes/eleven.py`, novo `motor/conferir_audio.py`, `mixagem.json` | Null test da soma dos stems; margens por frase medidas; `grave` não mascara palavra; LUFS/TP no alvo | G | pode começar já, em paralelo |
-| T5 | **Adaptar `tempos2.py` aos ids v01–v14**: `ENTRADA`, `NO_COMPASSO`, `DURACAO_MIN`, `secoes()` (seções da música). Pausas pela fala, não pela grade de cada frase (plano §D3) | `motor/tempos2.py` | `tempos-pt.json` com 14 cenas, total 95–105 s, termina em fim de compasso | M | T3 |
+| T5 | **Régua oficial gerada**, cortes internos no meio das pausas, voz preservada | `motor/tempos2.py`, `vozes/regua_blocos.py` | 13 cenas, 78,693604 s, 40 compassos; janelas locais e cenas apertadas em `PLANO-AUDIO.md` §L | M | T3 |
 | T6 | **Cenas novas no `filme.html`** (v01–v14), reaproveitando componentes da v4 conforme `DESIGN.md` §14: textos em `TX`, uma `planX/runX` por cena, sons com `ev(...)` | `motor/filme.html` | Cada cena confere nos quadros de teste; fonte e margens do `DESIGN.md` §3–5 | G | pode começar já |
 | T7 | **D1: zoom + parallax** nos mockups das cenas v06, v07, v09 | `motor/filme.html` (câmera `CAM`, camadas) | Aparelho ~90% da altura; lista de passos nunca cobre a tela; legenda livre; valores iniciais em `DESIGN.md` §14, **aprovado em 1,10 pelo Fabrício** | M | T6 |
 | T8 | **Render** | `scripts/pipeline.sh imagem` | `cache/filme-pt.mp4` e `eventos-pt.json`; `sobreposicoes.py pt` limpo | M | T5, T6, T7 |
@@ -140,7 +144,7 @@ Esforço: **P** pequeno (≤ 2 h), **M** médio (meio dia), **G** grande (1 a 2 
 
 **Ordem sugerida:** T1 → (T2 em paralelo com T4 e T6) → T3 → T5 → T7 → T8 → T9 → T10 → T11 → T12. T4 e T6 não dependem do texto final; os ajustes de áudio e as cenas visuais podem andar antes da voz.
 
-**Mapa musical sugerido para T5** (proposta a validar de ouvido): tensão no começo até a virada (v01 a v04, incluindo o escuro v03); groove a partir da virada v05 até a solução 2 (v07); **respiro** (quebra) no teaser v08, que é a pergunta; groove de volta de v09 a v12; calma no fecho e na assinatura (v13 e v14, com −2 dB de música).
+**Mapa musical atual de T5:** tensão v01–v04; groove v05–v07, v09 e v10–v12; calma v13–v14, com −2 dB. A v08 foi removida. Há uma receita musical global por compassos; nenhuma trilha ou mix foi gerada nesta tarefa. O clima e as emendas efetivas dependem da escuta do mix futuro.
 
 ## 7. Decisões já tomadas (não reabrir sem o Fabrício)
 

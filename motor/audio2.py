@@ -254,9 +254,12 @@ def montar(T, eventos, cfg, saida, trilha=TRILHA, voz_dir=None):
     stems = saida / 'stems'; stems.mkdir(exist_ok=True)
     v = np.zeros(n, dtype=np.float32)
     frases, intervalos = [], []
-    for f in T['falas']:
+    # Legendas têm janelas por frase; a voz oficial usa quatro tomadas inteiras.
+    for f in T.get('audio_blocos', T['falas']):
         fid = f.get('id', f"{f['cena']}-{f['k']}")
         p = pathlib.Path(f.get('arquivo', pathlib.Path(voz_dir or AQUI / 'cache/voz/pt') / f'{fid}.npy'))
+        if f.get('sha256') and hash_arquivo(p) != f['sha256']:
+            raise ValueError(f'Hash da fonte vocal diverge: {fid}')
         x = np.load(p).astype(np.float32) if p.suffix == '.npy' else ler(p, 1)[:, 0]
         meta_path = p.with_suffix('.json')
         meta = json.loads(meta_path.read_text()) if meta_path.exists() else {}

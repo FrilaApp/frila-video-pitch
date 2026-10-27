@@ -1,14 +1,17 @@
-"""v4: mede as frases e monta a régua de cada idioma (tempos-pt.json, tempos-en.json) sobre a grade da trilha.
+"""Régua oficial PT: quatro tomadas aprovadas, treze cenas e palavras Scribe.
 
-Trilha: "Talent in the Air" (Diego Nava, Mixkit), 122 BPM medidos com librosa: 1 tempo = 0,4918 s, 1 compasso = 1,967 s.
-Cada idioma tem a própria régua (o inglês fala mais devagar); a música é remontada por compassos para cada régua (audio2.py).
-- Cenas começam num tempo da grade; c05, c09 e c12 começam num compasso, porque nelas a música muda de seção.
-- Frases começam num meio tempo. O vídeo termina no fim de um compasso.
-Uso: .venv/bin/python tempos2.py
+.venv/bin/python motor/tempos2.py [--bloco A]
+Seleção versionada em vozes/selecao-blocos-pt.json; sem API, edição de voz ou mix.
+Cortes internos na metade das pausas; só fronteiras de blocos seguem compassos.
+O gerador por frase abaixo permanece como compatibilidade com roteiros legados
+sem audio_blocos_aprovados. Não é o caminho de produção do roteiro atual.
 """
 import json, math, pathlib, re, subprocess
 import numpy as np
 import sys
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
+from vozes.regua_blocos import (gerar_oficial, janela_bloco, ler_selecao,
+                                validar_excecoes_a8)
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "vozes"))
 from manifesto import frases_do_roteiro
 try:
@@ -100,6 +103,14 @@ def secoes(cenas, total):
 
 def main():
     documento = json.loads((VIDEO / "roteiro.json").read_text())
+    if documento.get('audio_blocos_aprovados'):
+        import argparse
+        parser = argparse.ArgumentParser(description='Régua de tomadas contínuas aprovadas')
+        parser.add_argument('--bloco', choices=list('ABCD'))
+        args = parser.parse_args()
+        r = gerar_oficial(VIDEO, args.bloco)
+        print('Régua oficial', args.bloco or 'PT', r.get('total', r.get('duracao')))
+        return
     roteiro = documento["cenas"]
     itens = {f["id"]: f for f in frases_do_roteiro(documento)}
     config = json.loads((AQUI / "mixagem.json").read_text())

@@ -89,6 +89,33 @@ class Automacao(unittest.TestCase):
 
 
 class Sessao(unittest.TestCase):
+    def test_regua_por_blocos_insere_tomadas_uma_vez_sem_usar_legendas_como_audio(self):
+        from audio_util import ler, salvar, hash_arquivo
+        with tempfile.TemporaryDirectory() as tmp:
+            d = Path(tmp)
+            x = (.1 * np.sin(2*np.pi*350*np.arange(9600)/48000)).astype('float32')
+            salvar(d/'tomada.wav', x)
+            salvar(d/'trilha.wav', np.tile(x,20))
+            blocos = [{'id':f'bloco-{b}','cena':f'v0{i+1}','k':1,
+                       'ini':.2+i*.6,'fim':.4+i*.6,'arquivo':str(d/'tomada.wav'),
+                       'sha256':hash_arquivo(d/'tomada.wav'),'fala':'Uma. Duas.'}
+                      for i,b in enumerate('ABCD')]
+            t = {'total':4.,'bar':4.,'musica':[{'src':0.,'v':0.}], 'cenas':[],
+                 'audio_blocos':blocos,
+                 'falas':[{'id':f'legenda-{i}','cena':'v01','k':i+1,'ini':.2,'fim':.3}
+                          for i in range(8)]}
+            cfg=json.loads((RAIZ/'motor/mixagem.json').read_text())
+            cfg['voz']['frases']={b['id']:{'ganho_db':0} for b in blocos}
+            m=audio2.montar(t,[],cfg,d/'sessao',trilha=d/'trilha.wav')
+            self.assertEqual([f['id'] for f in m['frases']],[b['id'] for b in blocos])
+            esperado=np.zeros(4*48000,dtype='float32')
+            for b in blocos:
+                a=round(b['ini']*48000); esperado[a:a+len(x)]=x
+            self.assertTrue(np.array_equal(ler(d/'sessao/stems/voz.wav',1)[:,0],esperado))
+            t['audio_blocos'][0]['sha256']='hash-divergente'
+            with self.assertRaisesRegex(ValueError,'Hash'):
+                audio2.montar(t,[],cfg,d/'adulterado',trilha=d/'trilha.wav')
+
     def test_stems_null_cache_e_qa_detecta_mascaramento(self):
         self.assertTrue(callable(getattr(audio2, 'montar', None)), 'Falta montagem com stems')
         import conferir_audio as qa
