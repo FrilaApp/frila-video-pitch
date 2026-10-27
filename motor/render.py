@@ -91,6 +91,39 @@ def preparar_bloco(regua, margem_quadros=15):
     return r
 
 
+def contrato_bloco(bloco, regua):
+    if bloco == 'A':
+        contrato = dict(presenca=[dict(id='ponto', selector='#dot', de=0, ate=regua['total'], opacidade_min=.999)],
+            movimento=[dict(de=a, ate=b) for a,b in [( .24,1.7), (regua.get('voz_ini',0)+1.87,regua['cenas'][1]['ini']+.8),
+                (regua['cenas'][1]['ini']+.5,regua['cenas'][1]['ini']+1.8),
+                (regua['cenas'][2]['ini']-.5,regua['cenas'][2]['ini']+2.57),
+                (regua['falas'][-2]['ini']-.5,regua['cenas'][3]['ini']+.4),
+                (regua['cenas'][3]['ini']+.4,regua['cenas'][3]['ini']+3.45),
+                (regua['bloco_fim']-2.1,regua['bloco_fim']-.2)]])
+    elif bloco == 'B':
+        contrato = dict(presenca=[
+            dict(id='chassi', selector='#dot', de=0, ate=regua['total'], opacidade_min=.999),
+            dict(id='tela', selector='#scr', de=2.2, ate=regua['total'], opacidade_min=.999)],
+            movimento=[dict(de=a,ate=b) for a,b in [(.12,2.2),(2.5,3.65),(4.45,5.6),
+                (6.16,7.2),(8.42,9.2),(10.14,11.04),(12.74,13.44),
+                (14.1,15.4),(16.05,16.8),(17.1,17.4),(18.45,19.62)]])
+    elif bloco == 'C':
+        c11 = regua['cenas'][1]['ini']
+        c12 = regua['cenas'][2]['ini']
+        contrato = dict(presenca=[
+            dict(id='ponto', selector='#dot', de=0, ate=regua['total'], opacidade_min=.999)],
+            movimento=[dict(de=a, ate=b) for a,b in [(.48, 1.1), (2.95, 3.1),
+                (c11-.2, c11+.9), (c11+1.5, c11+3.0), (c11+3.2, c11+4.8), (c11+5.2, c11+6.5),
+                (c12-.2, c12+1.0), (c12+3.75, c12+4.5), (c12+6.75, c12+7.5)]])
+    elif bloco == 'D':
+        contrato = dict(presenca=[
+            dict(id='ponto', selector='#dot', de=0, ate=regua['total'], opacidade_min=.999)],
+            movimento=[dict(de=a, ate=b) for a,b in [(.1, 1.8), (2.0, 3.4), (10.8, 11.8)]])
+    else:
+        contrato = {}
+    return contrato
+
+
 def render_bloco(args):
     import hashlib
     import math
@@ -105,36 +138,7 @@ def render_bloco(args):
     (pasta/'tempos.json').write_text(json.dumps(regua, ensure_ascii=False, indent=2)+'\n')
     fonte = (AQUI/'filme.html').read_text()
     (pasta/'filme.html').write_text(fonte.replace('<head>', '<head><base href="/motor/">', 1))
-    if args.bloco == 'A':
-        contrato = dict(presenca=[dict(id='ponto', selector='#dot', de=0, ate=regua['total'], opacidade_min=.999)],
-            movimento=[dict(de=a, ate=b) for a,b in [( .24,1.7), (regua.get('voz_ini',0)+1.87,regua['cenas'][1]['ini']+.8),
-                (regua['cenas'][1]['ini']+.5,regua['cenas'][1]['ini']+1.8),
-                (regua['cenas'][2]['ini']-.5,regua['cenas'][2]['ini']+2.57),
-                (regua['falas'][-2]['ini']-.5,regua['cenas'][3]['ini']+.4),
-                (regua['cenas'][3]['ini']+.4,regua['cenas'][3]['ini']+3.45),
-                (regua['bloco_fim']-2.1,regua['bloco_fim']-.2)]])
-    elif args.bloco == 'B':
-        contrato = dict(presenca=[
-            dict(id='chassi', selector='#dot', de=0, ate=regua['total'], opacidade_min=.999),
-            dict(id='tela', selector='#scr', de=2.2, ate=regua['total'], opacidade_min=.999)],
-            movimento=[dict(de=a,ate=b) for a,b in [(.12,2.2),(2.5,3.65),(4.45,5.6),
-                (6.16,7.2),(8.42,9.2),(10.14,11.04),(12.74,13.44),
-                (14.1,15.4),(16.05,16.8),(17.1,17.4),(18.45,19.62)]])
-    elif args.bloco == 'C':
-        c11 = regua['cenas'][1]['ini']
-        c12 = regua['cenas'][2]['ini']
-        contrato = dict(presenca=[
-            dict(id='ponto', selector='#dot', de=0, ate=regua['total'], opacidade_min=.999)],
-            movimento=[dict(de=a, ate=b) for a,b in [(.1, 1.8), (2.5, 3.5),
-                (c11-.2, c11+.9), (c11+1.5, c11+3.0), (c11+3.2, c11+4.8), (c11+5.2, c11+6.5),
-                (c12-.2, c12+1.0), (c12+3.0, c12+4.5), (c12+6.0, c12+7.5)]])
-    elif args.bloco == 'D':
-        contrato = dict(presenca=[
-            dict(id='ponto', selector='#dot', de=0, ate=regua['total'], opacidade_min=.999)],
-            movimento=[dict(de=a, ate=b) for a,b in [(.1, 1.8), (2.0, 3.4), (3.8, 5.4),
-                (5.6, 7.0), (10.8, 11.8)]])
-    else:
-        contrato = {}
+    contrato = contrato_bloco(args.bloco, regua)
     (pasta/'contrato.json').write_text(json.dumps(contrato, indent=2)+'\n')
     s = servidor()
     final = pasta/f'bloco-{args.bloco.lower()}-sem-audio.mp4'

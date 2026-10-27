@@ -1044,7 +1044,7 @@ Em 27/10/2026, com a aprovação da locução com alternância de narradores (An
 1. **Lâmina de transição no início da v10:**
    - O intervalo de 0,000 s a 0,600 s de v10 acolhe a morfologia do chassi herdado de B (`ESTADO_B_C`, 380×780 px) em rotação e contração suave até o ponto laranja em (1525, 540).
    - Nenhuma fala de locução ocorre nesse intervalo (a fala inicial de v10 inicia aos 0,680 s na régua do Compasso).
-   - Nenhum texto ou título é renderizado sob a lâmina escura (a opacidade de `#c-v10` só inicia a transição suave aos 0,120 s e atinge legibilidade plena após a contração).
+   - O DOM ainda contém “Sim” e “Os dois lados” entre 0,000 e 0,250 s, cobertos pela lâmina escura e invisíveis no vídeo; a infografia de `#c-v10` entra a partir de 0,680 s.
 2. **Supressão de legenda queimada redundante (Regra D6 e NOCAP):**
    - Nas cenas `v10-dado` e `v12-estrategia`, o título e os subtítulos já reproduzem literalmente a cópia oficial da locução ("Dos 22 apps que estudamos...", "Núcleo de 15 km...", "Bares e restaurantes...", "Distrito Federal").
    - Aplicou-se a diretriz `NOCAP` para suprimir a caixa de legenda inferior `#cap` nessas duas cenas, eliminando duplicidade visual e permitindo foco total na infografia, alinhado à conduta já adotada em v01, v13 e v14.
@@ -1060,3 +1060,13 @@ Em 27/10/2026, com a aprovação da locução com alternância de narradores (An
    - A tag de assinatura ("Combinou? Pode contar. Dos dois lados.") entra com a fala, centralizada e estável.
    - O traçado vetorial do logo A1 e o voo do ponto laranja acontecem por último: o ponto migra suavemente e pousa como o pingo da letra "i" (`E.idot`, 957, 338) precisamente aos 11,520 s, sincronizado com a pronúncia da marca ("Frila.", 11,52 s a 11,82 s).
    - Linha de contato (`frila.org@gmail.com`) e rodapé legal (`Narração com voz sintética (IA)...`) assentam com discrição, sustentando um encerramento em compasso musical suave até o congelamento da margem final aos 13,771 s.
+
+
+### 4. Contrato de movimento alinhado ao raster (sem alterar clipes)
+
+O contrato declara apenas intervalos observados em movimento; as pausas de leitura continuam no relatório heurístico. Medição em MP4 a 60 fps, diferenças entre quadros consecutivos; tempos relativos ao bloco. O limiar global de pausa permanece intacto e seus alertas são pistas, não veredito artístico.
+
+- **C/v10:** a entrada visível ocorre aproximadamente de 0,48 a 1,10 s; após isso o assentamento não é expectativa de movimento. O check foi isolado na região do ponto (80×80 px): diferenças acima de 2 níveis em mais de 3 pixels aparecem de 2,967 a 3,100 s; a janela declarada é 2,95–3,10 s. Diferenças de codec fora da região não são evidência do check.
+- **C/v12:** as ações seguintes começam com a mudança de estado aos 17,983 e 20,983 s, correspondentes às falas em 17,98 e 20,98 s (offsets de +3,75 e +6,75 s desde 14,23 s). As janelas começam nesses instantes e mantêm os fins anteriores 18,73 e 21,73 s. A variação de baixa amplitude após 17,98 s ainda pode gerar alerta heurístico; ele deve ser reportado, não suprimido.
+- **D/v13:** removem-se as janelas 3,8–5,4 e 5,6–7,0 s do contrato de movimento geral: o ponteiro gira a 36°/s, mas a alteração é localizada e inferior ao limiar raster global. A análise permanece capaz de indicar pausas e não comprova ausência de movimento local; não se afrouxa o limiar nem se cria uma classe sem medição e calibração próprias.
+- **Proveniência:** os manifestos de A, B e C citam `html_sha256` do `fb77e5c` (`184b6deb0dee3b70f07f5780429bc2aba14c585a7b19021f64cf9ddd0134ce50`). O `dc74e40` alterou funções do Bloco D no HTML; os clipes A, B e C continuam equivalentes. Nenhum clipe foi re-renderizado para este ajuste.
