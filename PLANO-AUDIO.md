@@ -1859,3 +1859,22 @@ Para assegurar locução em português do Brasil editorial, neutro e sem sotaque
 5. **Kit de Pronúncia de Escuta:**
    - Palavras das prioridades 1 e 2 geradas em frases-veículo curtas (original vs. candidata) para ambas as vozes (Ana v3 e Gabriel v2), tratadas com a cadeia de estúdio e disponibilizadas em `~/Downloads/frila-escuta-pronuncia/` para julgamento de ouvido do Fabrício.
 
+### O7. Travas de segurança e execução controlada dos blocos (Ajuste PR #27)
+
+Para evitar qualquer disparo acidental de chamadas de API, vazamento de quota e garantir aplicação rigorosa da pronúncia aprovada:
+1. **Modo Dry-Run por Padrão:**
+   - A invocação padrão do script (`python vozes/produzir_blocos_tarefa6.py`) opera estritamente em modo informativo/dry-run;
+   - Extrai o texto dos blocos diretamente de `roteiro.json`, aplica `aplicar_pronuncia()`, calcula os caracteres previstos e exibe o resumo completo de execução sem ler chaves de API, sem tráfego de rede e sem debitar saldo;
+   - Encerra com código de saída `0`.
+2. **Execução com Teto Explícito Obrigatório:**
+   - O modo real de síntese requer simultaneamente `--executar` e `--teto-caracteres <N>`;
+   - A execução é rejeitada se `--executar` for fornecido sem `--teto-caracteres`, ou se o total de caracteres previstos exceder o teto estipulado.
+3. **Bloqueio por Termos Candidatos Não Aprovados (Código 2):**
+   - O script varre todo o texto dos blocos contra `vozes/pronuncia.json`. Se qualquer termo encontrado possuir status diferente de `"aprovada"` (por exemplo, status `"candidata"`), a execução é abortada imediatamente com código de saída `2` e mensagem explicativa de que formas ainda não aprovadas de ouvido pelo Fabrício bloqueiam a produção oficial;
+   - Apenas quando todos os termos de risco estiverem aprovados (ou descartados explicitamente), a produção pode prosseguir.
+4. **Fonte Canônica Dinâmica:**
+   - Nenhum texto de bloco é gravado de forma estática no script; as falas são compostas a partir de `roteiro.json`, preservando imutabilidade da fonte e aplicando as substituições fonéticas no pipeline de geração.
+5. **Auditoria de Saldo:**
+   - A consulta e registro de saldo da API ElevenLabs ocorrem exclusivamente dentro do fluxo `--executar`.
+
+
