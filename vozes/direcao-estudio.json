@@ -1,0 +1,70 @@
+{
+  "status_mapa": "aprovado pelo Fabrício, Tarefa5, PR20/main ed63819",
+  "mapa_fonte": "docs/MAPA-NARRATIVO.md",
+  "mapa_sha256": "cbcba370e62dfd8b3db91d459e1bebd4a2b63380670610d88f2bc16a5a7a3e5d",
+  "intensidades_aprovadas": {
+    "v01": 2,
+    "v02": 1,
+    "v03": 2,
+    "v04": 2,
+    "v05": 4,
+    "v06": 3,
+    "v07": 3,
+    "v09": 3,
+    "v10": 3,
+    "v11": 2,
+    "v12": "2→3",
+    "v13": 4,
+    "v14": 2
+  },
+  "mudanca_de_intensidade": "somente mediante pedido do Fabrício",
+  "producao": "tomada contínua por bloco, sem regerar nesta tarefa",
+  "selecao_atual_inalterada": true,
+  "experimento_kit": {
+    "cenas": [
+      "v05-virada",
+      "v02-dor1",
+      "v13-fecho"
+    ],
+    "v2_neutra": {
+      "stability": 0.55,
+      "similarity_boost": 0.75,
+      "style": 0.1,
+      "speed": 1.0
+    },
+    "v2_dirigida": {
+      "v05": {
+        "stability": 0.45,
+        "style": 0.22,
+        "speed": 0.98
+      },
+      "v02": {
+        "stability": 0.65,
+        "style": 0.05,
+        "speed": 1.0
+      },
+      "v13": {
+        "stability": 0.5,
+        "style": 0.18,
+        "speed": 0.97
+      }
+    },
+    "v3_neutra": {
+      "stability": 0.5
+    },
+    "v3_tags": {
+      "v05": [
+        "happy"
+      ],
+      "v02": [],
+      "v13": [
+        "thoughtful",
+        "happy",
+        "thoughtful"
+      ]
+    },
+    "v3_contexto": "API recusou previous_text/next_text com HTTP400; não promover para bloco sem resolver limitação A3"
+  },
+  "feedback": "livre, sem notas ou formulário",
+  "voz_e_parametros_finais": "ainda não selecionados; escuta do Fabrício"
+}

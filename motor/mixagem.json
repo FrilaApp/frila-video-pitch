@@ -108,5 +108,49 @@
     "janela_ms": 100,
     "passo_ms": 10,
     "vm_local_ativo_db": 12
+  },
+  "experimentos_estudio": {
+    "status": "para escuta; emenda A6 pendente",
+    "M2": {
+      "sidechain_db": 8,
+      "threshold": 0.035,
+      "ratio": 4,
+      "attack_ms": 10,
+      "release_ms": 320,
+      "lookahead_ms": 25,
+      "eq": {
+        "f_hz": 2200,
+        "q": 0.65,
+        "g_db": -7
+      },
+      "ganho_sobre_M1_base_db": 14.261687159090194,
+      "alvo_mediana_vm_banda_db": 15.5,
+      "banda_hz": [
+        300,
+        6000
+      ]
+    },
+    "M3": {
+      "mesma_base_M2": true,
+      "curva_musical_db": {
+        "v01": 0,
+        "v02": -2,
+        "v03": 0,
+        "v04": 0,
+        "v05": 2,
+        "v06": 1,
+        "v07": 1,
+        "v09": 1,
+        "v10": -2,
+        "v11": -1,
+        "v12": 0,
+        "v13": 2,
+        "v14": -2
+      },
+      "v12_termina_db": 1,
+      "v09_termina_db": 0,
+      "respiro_pausas_db": 1.5,
+      "mapa_narrativo": "aprovado pelo Fabrício na Tarefa5; intensidades de voz preservadas"
+    }
   }
 }

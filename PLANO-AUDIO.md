@@ -1468,3 +1468,305 @@ perceptivo ao som neste runtime nem revisão contra vídeo nesta tarefa.
   (21 +19 +27), dependências, roteiro/cópia e ausência de binários/chaves.
   `git diff --check` passou; log em `motor/cache/mix-voz-musica/verificar-final.log`.
   Isso valida a infraestrutura, não libera C→D ou aprova o som.
+
+## N. Tarefa 5 — experimento de voz, interpretação e mix (antes da execução)
+
+**Autorizado pelo Fabrício/Maestro:** somente kit comparativo de três textos
+(v05 pico4, v02 factual1, v13 calor4), sem regenerar os quatro blocos ou mudar
+sua seleção/régua. Teto **3.000 caracteres TTS** incluindo tags e testes de
+formato; lançar cada tentativa antes da requisição, nunca repetir
+automaticamente. Medir também o débito retornado pelo serviço, sem equipará-lo
+à contagem de texto/contexto. Starter informado com20.327/40.000; conferir a
+conta. Listagens GET não sintetizam áudio. Brutos/resultados imutáveis no cache.
+
+O mapa do PR#20 (`docs/mapa-narrativo:docs/MAPA-NARRATIVO.md`) foi **aprovado
+pelo Fabrício na atualização recebida nesta tarefa**, embora a revisão do PR
+ainda esteja em andamento. Seguir a curva e a tabela por cena, sem mudar
+palavras, pontuação ou intensidades. Alterar intensidade só por pedido dele.
+
+### N1. Hipóteses e fontes (consulta em 26/10/2026)
+
+- PCM24 kHz impõe Nyquist12 kHz, mas não prova a causa de “rádio/telefone”.
+  PCM não tem compressão com perdas; timbre/ruído do modelo ou da referência,
+  interpretação e master global também podem influenciar. Medir o espectro
+  real e comparar em volume equivalente; reamostrar não cria agudos ausentes.
+- O mix anterior mediu mediana das medianas VM37,68 dB e duck22 dB:
+  o diagnóstico de música sufocada é compatível com esses números. A margem
+  foi imposta até em janelas100 ms de voz fraca; testar nova métrica apenas
+  como emenda proposta ao A6, mantendo M1 intacto para comparação.
+- Documentação oficial `Create speech`: MP3 192 kbit/s exige Creator+;
+  PCM/WAV44,1 kHz exige Pro+. Testar a negação na conta e guardar HTTP/status,
+  sem chave. MP3_44100_128 é a referência permitida ao Starter; consultar
+  também PCM48/Opus48 e registrar o que a API efetivamente aceita.
+  Fonte: https://elevenlabs.io/docs/api-reference/text-to-speech/convert
+  e https://elevenlabs.io/docs/help-center/troubleshooting/what-audio-formats-do-you-support
+- v3 suporta tags de áudio; v2 não oferece o mesmo mecanismo. v3 não suporta
+  SSML break. Usar somente tags documentadas e sem efeitos/reações que mudem
+  palavras; sua eficácia por voz precisa de escuta. Não supor que velocidade,
+  contexto e estilo funcionam da mesma maneira nos dois modelos.
+  Fonte: https://elevenlabs.io/docs/overview/capabilities/text-to-speech/best-practices
+- Biblioteca compartilhada: filtros oficiais language/locale/use_cases e
+  metadados de categoria/descrição; listar pt/pt-BR/publicidade/narração.
+  Selecionar no máximo duas vozes, sem tarifa customizada, como candidatas,
+  sem alegar qualidade de estúdio a partir do rótulo da biblioteca.
+  Fonte: https://elevenlabs.io/docs/api-reference/voices/voice-library/get-shared
+
+### N2. Kit de voz e direção
+
+V1 reutiliza os trechos inteiros aprovados de v05/v02/v13, com margens só nas
+pausas externas. V2 usa Ana/v2 no melhor formato comprovadamente permitido;
+V3 trata offline a mesma V2. V4 compara Ana/v3 neutra e dirigida, com cadeia;
+V5/V6 testam até duas vozes pt-BR de publicidade/narração, no melhor formato,
+com cadeia. Manter versões neutras e dirigidas quando o modelo permitir:
+v2 por parâmetros de requisição, sem fingir instrução semântica por frase;
+v3 por tags documentadas. Contexto anterior/seguinte em campos separados,
+com limitações do modelo identificadas. Mesmas palavras/pontuação aprovadas.
+
+A geração de cada texto é uma tomada contínua, não uma nova seleção de
+produção. Sem montagem de fala ou silêncio intra-frase. A8 por pontuação e
+pausas acústicas como pista, sem confundir silêncio entre frases com falha.
+Não gastar Scribe no kit sem necessidade/autorização adicional: fidelidade
+lexical e A8 perceptiva ficam na lista de escuta; o envelope acústico pode
+apontar pausas, mas não atribui palavra/frase com certeza.
+
+Cadeia variante não destrutiva, a confirmar por ensaio: high-pass80 Hz,
+de-esser suave, presença+1,5 dB em3,8 kHz/Q0,8, shelf de ar+1 dB em11 kHz
+**só se energia real nessa banda for mensurável**, compressor leve1,6:1,
+ataque15 ms/release120 ms, sem limiter e sem reverb por padrão (sala é opcional,
+não necessária para “estúdio”). Equalizar volume dos ativos de comparação
+por ganho constante medido, preservando fontes/derivados e sem fade sobre fala.
+Não prometer transformar uma fonte informal em publicidade apenas com EQ.
+
+### N3. Direção aprovada e tradução para futura geração por blocos
+
+A direção segue o mapa aprovado pelo Fabrício nesta sessão. A: factual e estável,
+sem picos repetidos; B: abrir em v05 e sustentar clareza nas features, com
+pergunta genuína em v09; C: destacar “nenhum” e sustentar metas como metas;
+D: calor e alívio em v13, assinatura firme em v14. v2 só permite parâmetros
+por tomada: propor faixas estreitas de speed0,97–1,03, estabilidade0,45–0,65,
+estilo0,10–0,25; essas faixas são hipóteses de teste, não controles exatos de
+emoção/terminação. Não editar cada frase por áudio para simular direção.
+
+Se v3 responder às tags, colocá-las antes da frase dentro de **uma tomada
+contínua por bloco**, sem narrar a direção; não usar SSML não suportado,
+reticências nem pausas inseridas para imitar respiração. Pedir contraste
+calor/confiança/neutro, sem alterar palavras. Metas de pausa entre frases
+0,4–0,7 s; entre blocos≥0,5 s; dentro da frase<0,5 s, salvo a exceção já
+aceita do C atual. Os alvos do mapa não viram silêncio artificial nem régua
+rígida. A interpretação v05/v02/v13 deste kit não aprova mudança dos blocos.
+
+### N4. Mix offline M1/M2/M3 e emenda proposta ao A6
+
+M1 é cópia do AAC e dos stems atuais, sem remixar ou rebaixar a referência.
+M2 mantém a voz idêntica nas posições e a montagem musical, mas testa duck
+raso6–10 dB com detector sidechain, ataque rápido/retorno musical e EQ na
+música em1–4 kHz apenas sob fala. Medir separadamente música broadband,
+música/voz na banda300 Hz–6 kHz e silêncio/pausas. Ganho da voz continua0.
+M3 acrescenta a curva do mapa aprovado: abrir v05, recuar nos dados,
+respirar v04→v05 e v12→v13, crescer nas features/fecho, sem degraus bruscos.
+
+**Emenda proposta, não vigente:** comparar VM RMS na banda300 Hz–6 kHz,
+alvo de12–18 dB por frase para a cama musical (faixa de ensaio sugerida no
+briefing, não norma universal comprovada). Não forçar essa margem em todo
+fonema fraco de100 ms, pois isso volta a sufocar a trilha. Manter também
+mínimos/medianas locais como informação e testes de inteligibilidade/escuta.
+Identificar que M2/M3 podem não satisfazer o gate broadband do A6 atual:
+são alternativas autorizadas para escuta, não alteração silenciosa da regra.
+
+Todos com−16 LUFS±0,5 e AAC≤−1,5 dBTP, stems/premix/null test e voz bit a bit
+antes do master. Parte3 é **offline, sem API**: A5 acústica e tempos de palavra
+projetados das vozes aprovadas são referências, não novo Scribe do mix nem
+prova de ausência de mascaramento. Preservar os alertas C/D e a exceção C.
+Se o arranjo continuar denso mesmo após recorte, reportar a limitação antes
+de trocar trilha; nenhuma geração de música/licença nova presumida.
+
+### N5. Entrega e governança
+
+Copiar WAVs/M4As de escuta para `~/Downloads/frila-escuta-iteracao/`, com nomes
+claros, README/RELATÓRIO curto e ordem de escuta. **Atualização do Fabrício:**
+feedback livre, sem scorecard, notas, formulário ou checklist para preencher.
+Cada ativo terá apenas caminho, SHA-256, duração, LUFS/TP e uma lista de
+2–4 pontos objetivos de “o que ouvir”. O adendo anterior e seu template foram
+cancelados e retirados. Sem criar `docs/orquestracao/SCORECARD-AUDIO.md`.
+Testes, gate canônico antes de commit/handoff; commit local sem push/PR.
+
+
+### N6. Formatos e modelos — testes reais da conta
+
+Conta conferida: Starter,20.327/40.000, limite10 vozes. Em26/10/2026:
+`pcm_44100` →HTTP403 `output_format_not_allowed`, exige Pro;
+`mp3_44100_192` →HTTP403, exige Creator; `pcm_48000`,
+`opus_48000_192` e `mp3_44100_128` →HTTP200. Cada probe usou “Frila.”,
+6 caracteres;36 caracteres reservados incluindo negativas/modelo.
+**V2 usará PCM48 kHz, sem perdas, aceito de fato neste endpoint/conta**;
+não generalizar essa permissão para outros planos, formatos ou momentos.
+Comparar conteúdo espectral real; taxa de saída não garante banda útil.
+Registros e HTTPs em `motor/cache/voz-estudio-mix/tts-ledger.json`.
+
+v3 com `previous_text/next_text` foi recusado: HTTP400 `unsupported_model`,
+“Providing previous_text or next_text is not yet supported with the
+'eleven_v3' model.” O kit v3 registrará os contextos pretendidos como
+metadados, mas não os enviará para fingir suporte. Para futura produção,
+isso é uma limitação frente ao A3 atual; não promover v3 nem regenerar blocos
+sem decisão do Maestro/Fabrício. O GET/models desta conta informa v3 sem
+style/speaker_boost; v2 com ambos. v3 usará estabilidade0,5, sem esses campos.
+Fonte de API para campos/contexto e opção de clone:
+https://elevenlabs.io/docs/api-reference/text-to-speech/convert .
+
+Escolha de candidatas: Gabriel `WPgqgCVa3mD38JuyODU6` (professional,
+pt-BR, advertisement, descrição declara estúdio) e Bianca
+`9LwXyqQB0mUwtLRsS227` (high_quality, português brasileiro verificado em
+v2, advertisement, perfil sofisticado). Tarifa de ambas1,0 no catálogo,
+sem tarifa customizada. São rótulos do catálogo, não avaliação auditiva.
+Não alterar seleção A/B/C/D; as duas inclusões na biblioteca, se necessárias,
+servem só ao experimento autorizado.
+
+Adicionar V1-controle com3 sínteses PCM24 nas mesmas condições de V2, além
+de V1-atual extraída das tomadas aprovadas, para reduzir o confundimento de
+contexto/formato. Teto previsto de todas as solicitações permanece<3.000.
+V3 é derivado de V2 (zero caracteres), sem tratamento na voz dos mixes.
+
+### N7. Validação do kit e interpretação efetivamente enviada
+
+v2 neutra: estabilidade0,55, similaridade0,75, estilo0,10, speed1,0.
+Direção (curva aprovada, sem mudar as intensidades): v05 pico4 usa
+estabilidade0,45/estilo0,22/speed0,98; v02 factual1 usa0,65/0,05/1,0;
+v13 calor4 usa0,50/0,18/0,97. São ajustes globais por texto do kit,
+não uma alegação de controle semântico exato ou de terminação determinística.
+Para produção por blocos, v2 não pode trocar esses parâmetros dentro da
+tomada; essa limitação permanece, sem montagem de frases para contorná-la.
+
+v3 neutra usa estabilidade0,5 sem tags; dirigida usa `[happy]` em v05 e
+`[thoughtful]` / `[happy]` / `[thoughtful]` nas três frases de v13, para
+contrastar menos/mais/conclusão. v02 factual reutiliza a neutra, sem tag
+emotiva, evitando gasto e contraste artificial. Essas tags são exemplos
+oficiais, sua correspondência ao mapa é hipótese de tradução a ouvir.
+Fontes (26/10/2026):
+https://elevenlabs.io/blog/v3-audiotags e
+https://elevenlabs.io/docs/overview/capabilities/text-to-speech/best-practices .
+Nenhuma reticência, SSML ou palavra nova foi inserida na fala do roteiro.
+
+Para verificar **A8 e fidelidade lexical** das variantes novas, uma única
+conferência Scribe do kit concatenado para análise, com offsets registrados,
+é necessária porque não se pode atribuir palavras às pausas acústicas com
+certeza nem supor que as tags não foram narradas. Não é Scribe dos mixes:
+será feita antes da Parte3, que continua integralmente offline/sem API.
+O custo de STT é reportado separadamente em minutos; não consome o teto de
+texto TTS. Não haverá retentativa de TTS ou seleção silenciosa para esconder
+falhas: cada variante permanece disponível com seus achados. Brutos originais
+e a seleção A/B/C/D continuam imutáveis; essa chamada não autoriza novos blocos.
+
+### N8. Resultados de voz e receita experimental de mix antes do render
+
+TTS encerrado: **2.115 caracteres reservados** nas32 tentativas, incluindo
+negativas; **2.097 caracteres em29 respostas de áudio**. Contador global
+conferido após TTS: **20.327→21.158**, débito831 créditos do contador, que não
+é sinônimo do comprimento textual. Nenhuma nova geração será feita nesta
+iteração. As36 WAVs incluem as referências atuais e controles, neutras e
+dirigidas. PCM48 trouxe energia real12–20 kHz: V2 v05−26,5 dB relativos à
+energia total, contra−46,5 no controle PCM24, com duração idêntica4,133 s;
+as outras duas frases de controle também têm durações iguais nos formatos.
+Isso apoia uma diferença de banda; não prova, por si, melhor interpretação.
+
+Cadeia de estúdio aplicada a V3/V4/V5/V6, sempre em derivado, sem reverb.
+Volume comparativo mira−20 LUFS por ganho estático e pico≤−1,5 dBTP; onde
+os transientes não permitem ambos sem limiter, aceitar alvo mais baixo e
+registrar a diferença, em vez de esconder dinâmica com compressão extra.
+
+Scribe do kit: **uma chamada**,215,615333 s /3,593589 min, com offsets e
+fontes rastreadas. V1-controle v02 tem pausa0,540 s Abrasel/nove; V2/V3
+neutras v02 têm0,520 s. As dirigidas v02 não tiveram esse alerta. Quatro
+segmentos ficam inconclusivos lexicalmente no ASR do kit repetitivo:
+V4 v05 dirigida, V4 v02 dirigida, V4 v13 dirigida e V5 v05 neutra.
+A leitura se estende entre clipes e deixa palavras ausentes no segmento;
+não concluir automaticamente que o TTS as omitiu. V4 v02 dirigida é **o mesmo
+arquivo/hash** da neutra que conferiu, evidência concreta de limitação do ASR
+nessa repetição. Manter os áudios e pedir atenção lexical no feedback livre,
+sem retentativa de API ou aprovação cega. Não houve outra falha A8 detectada
+nos segmentos alinhados. A Parte3 começa agora e não terá nenhuma API.
+
+M2/M3: detector `sidechaincompress` de FFmpeg, threshold0,035, ratio4:1,
+ataque10 ms, release320 ms; envelope limitado a **8 dB** e antecipado25 ms
+somente na música. EQ peaking na música em2,2 kHz, Q0,65, −7 dB;
+mistura seca/tratada acompanha a redução do sidechain e volta ao sinal
+pleno na pausa. Não há processamento da voz. Medir banda300 Hz–6 kHz por
+FFT apenas para análise, sem aplicar esse filtro ao áudio ouvido.
+
+Calibrar um único ganho global da música para mediana de VM por frase na
+banda em torno de15,5 dB; registrar todas as frases e os extremos, em vez
+de forçar mínimos de fonemas fracos ao baixar a trilha inteira. Isso é o
+ensaio autorizado da **emenda ainda não aprovada ao A6**, não o gate vigente.
+M3 usa os mesmos8 dB/EQ e ganho de base de M2, somando curva musical suave:
+v02/v10−2 dB, v11−1; v05/v13+2; features v06/v07/v09+1;
+v12 abre0→+1; v14−2. Os valores são ganhos musicais de tradução da direção,
+não alteração das intensidades aprovadas de locução. Respiração musical
+nas pausas v04→v05 e v12→v13, sem mudar a duração de nenhuma fala.
+
+### N9. Contabilidade e kit de voz consolidado
+
+32 solicitações/probes reservadas;29 respostas de áudio. Texto conservador
+de todas as tentativas **2.115/3.000**, texto de respostas geradas2.097;
+as negativas somam18. Histórico conciliado:29 itens desta etapa, soma de
+débitos **831**, contador20.327→21.158. Um item antigo de mesmo texto foi
+excluído por ser anterior à etapa. O Scribe único do kit somou **66** no
+contador; final **21.224/40.000**, variação total897. Créditos do contador
+não são caracteres literais nem preço. Nenhuma API na Parte3.
+
+| Variante | WAVs | Texto TTS reservado | O que muda |
+|---|---:|---:|---|
+| V1-atual | 3 | 0 | Ana/v2 PCM24, trechos contínuos já aprovados; referência ouvida anteriormente |
+| V1-controle | 3 | 237 | Ana/v2 PCM24,3 controles novos com contexto/seed/settings de V2 |
+| V2 | 6 | 474 | Ana/v2 PCM48 aceito, neutra e dirigida por parâmetros |
+| V3 | 6 | 0 | As mesmas V2 com cadeia offline, sem sintetizar de novo |
+| V4 | 6 | 420 | Ana/v3 PCM48 + cadeia; tags dirigidas; sem previous/next suportado |
+| V5 | 6 | 474 | Gabriel pt-BR publicidade, v2 PCM48 + cadeia |
+| V6 | 6 | 474 | Bianca pt-BR publicidade, v2 PCM48 + cadeia |
+| probes | 0 | 36 | 5 formatos e1 contexto v3, incluindo negativas |
+
+V4 factual dirigida reutiliza exatamente o WAV neutro; é a mesma direção
+factual1, sem tag emotiva e sem novo gasto. Comparação em−20 LUFS por ganho
+estático, com teto−1,5 dBTP: ativos variam de−20,93 a−19,99 LUFS quando o
+teto impede igualar sem limiter; diferença explicitada por arquivo. Os
+brutos de geração permanecem separados dos WAVs de escuta e não foram
+aparados para eliminar pausas. Todos os27 registros de texto novo/alias
+passaram na checagem de texto/pontuação após retirar apenas as tags, sem
+dois-pontos. Isso verifica o pedido enviado, não a pronúncia final.
+
+Leitura do kit/Scribe permanece pista:32 segmentos alinharam;4 ficaram
+inconclusivos no ASR repetitivo. Entre os alinhados, V1-controle v02 alerta
+0,540 s após Abrasel e V2/V3 v02 neutras0,520; as dirigidas v02 não alertam.
+Esses áudios não estão aprovados para substituir a tomada atual de A.
+Sem novas sínteses corretivas ou novo Scribe para forçar aprovação.
+
+As36 WAVs têm hashes/LUFS/TP e pontos de escuta individuais em README do kit,
+com feedback livre. A preparação do mix/empacotamento foi delegada ao
+Compasso, por decisão expressa do Fabrício, em worktree/branch aux/audio-*,
+sem API e sem editar nossas vozes. Antes da integração, o teste de sidechain
+mostrou divergência de duração no gate completo; a investigação foi incluída
+na subtarefa. Não liberar commit/handoff final com esse gate falhando.
+
+### N10. Diagnóstico verificado e decisão técnica antes da escuta
+
+1. O código atual de geração realmente pede PCM24 e os brutos aprovados são
+   24 kHz. Nyquist12 kHz é a restrição, mas a conclusão “logo telefone/rádio”
+   não está demonstrada: a banda vai além da telefonia estreita, PCM não é
+   lossy, e ruído/timbre, interpretação e processamento global são causas
+   distintas. A/B controlado aponta banda adicional real no PCM48, mantendo
+   a mesma duração e texto; a preferência e a qualidade de publicidade são
+   decisões de ouvido, não da extensão do arquivo.
+2. No M1 a base−34,525439 e o duck22 dB estão confirmados. A voz não foi
+   colocada artificialmente em−20 dBFS: `preservar_amostras=true`, ganho0,
+   referências por frase medidas aproximadamente entre−16,44 e−20,06 dBFS.
+   O−20 configurado é alvo legado, ignorado nesse modo. A mediana VM37,68 dB
+   confirma a grande separação que tornou a cama discreta. O master de M1
+   usa loudnorm dinâmico; comparar V1 bruto com M1 ajuda a separar geração
+   e master. Os novos mixes usam as mesmas vozes, não as variantes do kit.
+3. O mapa narrativo está aprovado e integrado em main ed63819; já atualizamos
+   a base do branch. `vozes/direcao-estudio.json` fixa a curva/tabela e o hash
+   do documento, parâmetros/tags do kit e a restrição de não promover nova
+   voz/modelo sem escuta. v10 permanece intensidade3, pico moderado; não foi
+   aumentado para4. A proposta de A6 por banda ainda NÃO está aprovada.
+4. Nenhuma voz vencedora foi escolhida pelo agente. Prioridade de escuta:
+   comparar V1-controle→V2 neutra (formato), V2→V3 (cadeia), V3 neutra→dirigida
+   (parâmetros), V4 (tags/modelo) e V5/V6 (persona); conferir factual/v13 após
+   escolher a abertura v05. A avaliação será em texto livre, sem formulário.

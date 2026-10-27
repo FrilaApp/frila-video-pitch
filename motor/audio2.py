@@ -5,6 +5,7 @@ Não gera voz nem acessa API. A configuração pública fica em motor/mixagem.js
 """
 import argparse
 import json
+import os
 import pathlib
 import shutil
 import subprocess
@@ -267,6 +268,44 @@ def envoltoria(n, intervalos, cfg, protecao):
         aplicar(a, min(b, a + protecao['inicio_frase_ms'] / 1000), borda)
         aplicar(max(a, b - protecao['fim_frase_ms'] / 1000), b, borda)
     return np.power(10., -atenuacao / 20).astype(np.float32)
+
+
+def sidechain_raso(voz, saida, profundidade_db=8):
+    """Experimento offline: detector real do sinal, limitado a 6–10 dB; só música.
+
+    Causa do descarte de amostras no FFmpeg: o filtro sidechaincompress processa
+    em blocos de quadros (1024 amostras) e encerra no EOF do sinal de sidechain sem
+    esvaziar o buffer residual (ex.: descartava 640 amostras em 3 s / 144.000 amostras,
+    resultando em 143.360). Resolvido adicionando cauda de flush apenas no sinal
+    carrier de detecção e apad na entrada de sidechain do filtergraph, retirando a cauda
+    do envelope resultante (g[:n]) para garantir exatamente N amostras sem tocar nem
+    preencher o áudio da voz ouvida.
+    """
+    if not 6 <= profundidade_db <= 10:
+        raise ValueError('Experimento de ducking raso exige teto de 6–10 dB')
+    saida = pathlib.Path(saida)
+    saida.mkdir(parents=True, exist_ok=True)
+    n = len(ler(voz, 1))
+    cauda = round(0.5 * SR)
+    carrier_sinal = np.full((n + cauda, 1), 0.1, dtype=np.float32)
+    pid = os.getpid()
+    carrier = saida / f'carrier-sidechain-{pid}.wav'
+    resultado = saida / f'detector-sidechain-{pid}.wav'
+    try:
+        salvar(carrier, carrier_sinal)
+        filtro = '[1:a]apad[sc];[0:a][sc]sidechaincompress=threshold=0.035:ratio=4:attack=10:release=320:detection=rms[out]'
+        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(carrier), '-i', str(voz),
+                        '-filter_complex', filtro, '-map', '[out]', '-c:a', 'pcm_f32le', str(resultado)], check=True)
+        g_raw = ler(resultado, 1)[:, 0] / 0.1
+        if len(g_raw) < n:
+            raise ValueError('Detector alterou a duração; não mover a voz para compensar')
+        g = g_raw[:n]
+        g = np.clip(g, 10 ** (-profundidade_db / 20), 1.)
+        lookahead = min(round(0.025 * SR), n)
+        return np.r_[g[lookahead:], np.ones(lookahead, dtype=np.float32)].astype(np.float32)
+    finally:
+        for p in (carrier, resultado):
+            p.unlink(missing_ok=True)
 
 
 def cache_wav(raiz, nome, receita, produzir):
