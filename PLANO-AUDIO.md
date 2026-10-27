@@ -498,7 +498,7 @@ ou instalar dependências no checkout principal.
 
 Escopo autorizado pelo Maestro: `motor/analisar_emendas.py` e
 `vozes/eleven.py gerar-bloco A|B|C|D`; calibração somente de leitura sobre os
-MP4 v4 (`~/Downloads/frila-pitch-pt.mp4`) e v5 (`../fvp-tempos/pt/frila-pitch-pt.mp4`).
+MP4 v4 (`~/Downloads/frila-pitch-pt.mp4`) e v5 reprovada (`/Users/fabriciotosta/dev/video-frila/referencias/v5-reprovada/frila-pitch-pt.mp4`).
 Sem API nesta missão, sem editar `roteiro.json`, cenas ou música. Testes do
 serviço usam mock. Brutos e trechos ficam ignorados pelo Git.
 
