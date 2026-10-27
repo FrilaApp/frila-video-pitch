@@ -140,7 +140,7 @@
     "legenda": "Dos 22 apps que estudamos, nenhum mostra comparecimento medido."
    },
    "janela_s": 7.5,
-   "legenda_queimada": true,
+   "legenda_queimada": false,
    "tela": "22 pontos cinza; só o do Frila ganha o check. Rodapé: 'Pesquisa interna de 22 concorrentes, 01/10/2026'",
    "dado_e_fonte": "Pesquisa interna de 01/10/2026 (frila-docs, repositório privado)",
    "bloco": "C"
@@ -164,7 +164,7 @@
     "legenda": "Começamos por um núcleo de 15 km. Depois, bares e restaurantes. Depois, o Distrito Federal."
    },
    "janela_s": 9.0,
-   "legenda_queimada": true,
+   "legenda_queimada": false,
    "tela": "Mapa da cena de 15 km: três pontos-âncora, pontos menores, o círculo cresce até o DF. Só na tela: '23.271 empresas ativas no DF' e '~1.300 restaurantes e bares com 10+ pessoas · IBGE 2024'",
    "dado_e_fonte": "frila-docs (privado): CNPJs ativos no DF e cadastro IBGE 2024; ordem da prospecção em 02-O-NEGOCIO §10.3",
    "bloco": "C"
