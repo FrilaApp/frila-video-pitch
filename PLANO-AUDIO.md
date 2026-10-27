@@ -2010,7 +2010,48 @@ Com a métrica validada, foram sintetizadas 3 novas tomadas do Bloco C (Ana v3, 
    - `fronteira_B_C_reprovado.wav` e `fronteira_C_reprovado_D.wav`: Mantidas para comparação de contraste;
    - `README.md`: Documentação técnica completa das medições objetivas.
 
+### O16. Aprovação de C-T4, Atualização do Roteiro v14 e Regeneração do Bloco D (27/10/2026)
 
+Em 27/10/2026, com o merge do PR #32 e a aprovação de ouvido pelo Fabrício da Tomada 4 do Bloco C (seed 7, Ana v3, sibilante limpa):
+1. **Definições e Texto Oficial:**
+   - **Bloco C Oficial:** Tomada 4 (UUID `61181794d7b4471891be3c8ca30dda2a`), semente 7, taxa de chiado 6,7%;
+   - **Roteiro v14 Oficial (158 palavras):** *"Combinou? Pode contar. Dos dois lados. Frila."* (proposta F2 validada na audição, substituindo a frase genérica reprovada);
+   - **Diretriz de Régua:** A seleção definitiva e o recálculo da régua narrativa oficial permanecem congelados até a escuta soberana do Fabrício para o Bloco D novo.
+2. **Direção Narrativa e Síntese do Bloco D Inteiro (v13 + v14):**
+   - **Voz e Modelo:** Ana (`eleven_v3`, estabilidade 0,50, PCM 48 kHz mono);
+   - **Pronúncia Aprovada:** `Frila` -> `Fríla` (duas ocorrências, mantendo as demais palavras na forma original de estúdio);
+   - **Direção Interpretativa:**
+     - v13 (Pico 3, calor e alívio): `[thoughtful] Menos tempo procurando gente. [happy] Mais tempo no seu negócio. [thoughtful] Deixa que o Fríla cuida.`;
+     - v14 (Assinatura pausada e confiante): `[thoughtful] Combinou? Pode contar. Dos dois lados. Fríla.`;
+   - **Contabilidade e Travas:** Execução em sequência de 3 tomadas sob teto concedido de 600 caracteres. Saldo inicial apurado: 22.883; saldo final: **22.956 de 40.000 caracteres usados** (consumo de apenas 73 caracteres adicionais na quota da API).
+3. **Medições Acústicas Comparativas — Bloco D:**
 
+| Tomada | Semente | Duração (s) | Scribe | Regra A8 | Chiado Carioca | Taxa Chiado (%) | Razão L/C | F0 Mediano (Hz) | Loudness (LUFS) | True Peak (dBTP) | Pausa v13→v14 (s) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| **T1 (Seed 1)** | 1 | 10,880 | ✅ Idêntico | Sem falhas (0) | `limpo` | 20,0% (1/5) | 9,75 | 246,2 | -17,63 | -3,42 | 0,320 s |
+| **T2 (Seed 2)** | 2 | 11,840 | ✅ Idêntico | Sem falhas (0) | `limpo` | **0,0% (0/5)** | **259,42** | 235,3 | -17,88 | -2,95 | **0,480 s** |
+| **T3 (Seed 3)** | 3 | 10,880 | ✅ Idêntico | Sem falhas (0) | `limpo` | **0,0% (0/5)** | **135,35** | 235,3 | -17,98 | -3,08 | 0,260 s |
 
+4. **Deriva Tímbrica Vocal contra Blocos Aprovados da Ana:**
+   - **Bloco A (aprovado, F0 = 211,5 Hz, Centroide = 3.154,9 Hz):**
+     - T1: ΔF0 = 34,7 Hz (2,63 semitons), ΔCentroide = 441,1 Hz;
+     - T2: ΔF0 = 23,8 Hz (1,85 semitons), ΔCentroide = 402,2 Hz;
+     - T3: ΔF0 = 23,8 Hz (1,85 semitons), ΔCentroide = 672,7 Hz.
+   - **Bloco C-T4 (aprovado, F0 = 246,2 Hz, Centroide = 3.710,2 Hz):**
+     - T1: ΔF0 = 0,0 Hz (0,00 semitons), ΔCentroide = 114,2 Hz;
+     - T2: ΔF0 = 10,9 Hz (0,78 semitons), ΔCentroide = 153,1 Hz;
+     - T3: ΔF0 = 10,9 Hz (0,78 semitons), ΔCentroide = 117,4 Hz.
+   - Diagnóstico: a Tomada 2 apresenta estabilidade excepcional, variando apenas 0,78 semitons de F0 contra C-T4 e 1,85 semitons contra A, com centroide espectral (3.557 Hz) perfeitamente encaixado entre o tom intimista de A e a projeção de dados de C.
+5. **Conformidade Estrita com as Regras A1 e A8:**
+   - **Regra A8 (pausas internas < 0,500 s):** Zero falhas em todas as tomadas geradas;
+   - **Regra A1 (emendas entre cenas):** A tomada contínua preservou intervalo respiratório silencioso entre *"Deixa que o Frila cuida."* (v13) e *"Combinou?"* (v14): 0,320 s em T1; **0,480 s em T2**; 0,260 s em T3. Nenhuma frase cruza a emenda de transição de cena.
+6. **Prévias de Fronteira C(T4)→D Novo (Compasso 35):**
+   - `fronteira_C_t4_D_t1.wav`: Transição para Tomada 1 (pausa verbal: 1,048 s, -18,14 LUFS, TP: -3,84 dBTP);
+   - `fronteira_C_t4_D_t2.wav`: Transição para Tomada 2 (pausa verbal: 1,068 s, -17,54 LUFS, TP: -4,58 dBTP);
+   - `fronteira_C_t4_D_t3.wav`: Transição para Tomada 3 (pausa verbal: 1,088 s, -18,45 LUFS, TP: -4,58 dBTP).
+7. **Atualização do Kit de Escuta (`~/Downloads/frila-escuta-vozes-blocos/`):**
+   - O arquivo `bloco_D_ana_v3.wav` anterior foi renomeado para `bloco_D_ana_v3_antigo.wav`;
+   - A prévia `fronteira_C_t4_D.wav` anterior foi renomeada para `fronteira_C_t4_D_antigo.wav`;
+   - Incluídos: `bloco_D_ana_v3_t1.wav`, `bloco_D_ana_v3_t2.wav`, `bloco_D_ana_v3_t3.wav`, `fronteira_C_t4_D_t1.wav`, `fronteira_C_t4_D_t2.wav` e `fronteira_C_t4_D_t3.wav`;
+   - `README.md` reescrito com texto livre e detalhamento dos 13 arquivos de áudio do kit.
 
