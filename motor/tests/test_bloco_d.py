@@ -24,7 +24,7 @@ def regua_d():
          (2.22, 3.52, 'Mais tempo no seu negócio.'),
          (4.06, 5.54, 'Deixa que o Frila cuida.')],
         [(6.08, 6.42, 'Frila.'),
-         (7.00, 8.80, 'Turno combinado, regra clara.')]
+         (7.00, 8.80, 'Combinou? Pode contar. Dos dois lados.')]
     ]
     falas = []
     for id_, js in zip(ids, janelas):
@@ -134,7 +134,7 @@ class BlocoD(unittest.TestCase):
 
                     # Tag de assinatura, contato e rodapé
                     tag_tx = pg.locator('#d-tag').text_content().strip()
-                    self.assertEqual(tag_tx, 'Turno combinado, regra clara.')
+                    self.assertEqual(tag_tx, 'Combinou? Pode contar. Dos dois lados.')
                     contato_tx = pg.locator('#d-contato').text_content().strip()
                     self.assertEqual(contato_tx, 'frila.org@gmail.com')
 

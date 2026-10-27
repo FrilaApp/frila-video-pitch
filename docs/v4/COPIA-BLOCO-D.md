@@ -6,12 +6,12 @@ Fonte: `roteiro.json` (cenas v13-fecho, v14-assinatura), `docs/v4/STORYBOARD.md`
 | Origem | Literais visíveis em tela |
 |---|---|
 | roteiro.json (v13-fecho) | Menos tempo procurando gente. · Mais tempo no seu negócio. · Deixa que o Frila cuida. · Menos tempo procurando gente · Mais tempo no seu negócio · Deixa que o Frila cuida |
-| roteiro.json (v14-assinatura) / STORYBOARD c16 / NARRATIVA-v5 | Frila · Turno combinado, regra clara. · frila.org@gmail.com · Narração com voz sintética (IA). Frila em teste no iPhone. · Narração com voz sintética (IA). |
+| roteiro.json (v14-assinatura) / STORYBOARD c16 / NARRATIVA-v5 | Frila · Combinou? Pode contar. Dos dois lados. · frila.org@gmail.com · Narração com voz sintética (IA). Frila em teste no iPhone. · Narração com voz sintética (IA). |
 
 ## Observações de conformidade (Regra D6)
 1. Nenhum texto ou número inventado:
    - Em `v13-fecho`, as frases são estritamente as da fala oficial do `roteiro.json`, dispostas no centro da tela em ritmo de espelho ("Menos...", "Mais...", "Deixa que o Frila cuida."). Promessa de marca sem números nem selos inventados.
-   - Em `v14-assinatura`, a marca "Frila." surge com a assinatura formal "Turno combinado, regra clara." (idêntica ao roteiro e à c16 da v4).
+   - Em `v14-assinatura`, a tag de assinatura passa para "Combinou? Pode contar. Dos dois lados.", conforme nova fala de roteiro.json (adendo de 27/10/2026).
    - O e-mail `frila.org@gmail.com` provém da especificação de tela do roteiro (`'frila.org@gmail.com' discreto embaixo (só na tela)`) e de `NARRATIVA-v5-100s.md`.
    - O rodapé legal `Narração com voz sintética (IA). Frila em teste no iPhone.` provém da v4/c16 e do roteiro (`'Narração com voz sintética (IA)'`).
 2. Sem duplicidade de legenda/título:

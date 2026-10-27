@@ -1005,3 +1005,8 @@ Manifesto e pranchas arquivados em `motor/cache/bloco-d-imagem/comparacao-v4/`.
 ### 6. O que ficou apertado
 - **v13-fecho (5,81 s nominal vs 8,0 s no roteiro conceitual):** a cena abriga 3 frases sucessivas de acolhimento ("Menos tempo procurando gente", "Mais tempo no seu negócio", "Deixa que o Frila cuida"), com pausas de cerca de 0,4 s entre elas. O desenho com tipografia espelho (descendente na primeira, ascendente na segunda e repouso na terceira) permitiu manter a cadência sem sobreposição e sem pressa visual, apoiado pelo relógio circular contínuo ao fundo.
 - **v14-assinatura (7,96 s nominal vs 6,0 s no roteiro conceitual):** a locução conclui aos 8,80 s, proporcionando uma respiração confortável de ~5 segundos para que a assinatura visual, a linha de contato e o rodapé institucional assentem em repouso calmo até o congelamento da margem final, garantindo um fecho em compasso sem terminação abrupta.
+
+### 7. Adendo de 27/10/2026: nova fala e tag da v14
+Em decisão do Fabrício de 27/10/2026, a fala de `v14-assinatura` no roteiro foi atualizada para "Combinou? Pode contar. Dos dois lados. Frila." (a marca "Frila." passa a ser a última palavra dita, em vez da abertura).
+A tag visual de assinatura em tela passa interinamente para "Combinou? Pode contar. Dos dois lados." (mantendo a presença literal aprovada sem inventar texto, em conformidade com D6).
+A reordenação da coreografia de cena (logo A1 e pouso do ponto laranja por último, em sincronia com "Frila.") e o reajuste fino de tempos de entrada/saída serão executados na rodada de calibração com a nova régua de voz a ser fornecida pelo Compasso.
