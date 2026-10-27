@@ -8,6 +8,7 @@ Controles de segurança (PR #27):
 - Textos dos blocos derivados dinamicamente de roteiro.json via aplicar_pronuncia().
 """
 import argparse
+import copy
 import hashlib
 import json
 import os
@@ -29,6 +30,7 @@ from vozes.manifesto import normal, frases_do_roteiro
 from vozes.estudio import cadeia_estudio
 from vozes.pronuncia import aplicar_pronuncia, carregar_pronuncia
 from vozes.deriva_timbre import analisar_timbre_arquivo
+from vozes.metrica_chiado import analisar_chiado_tomada
 
 ROTEIRO_PATH = ROOT / "roteiro.json"
 
@@ -108,7 +110,7 @@ def compor_texto_bloco(cenas):
     return " ".join(partes)
 
 
-def planejar_blocos(roteiro=None, pronuncia_dict=None, blocos_filtro=None):
+def planejar_blocos(roteiro=None, pronuncia_dict=None, blocos_filtro=None, seed=None, forcar_nova_tomada=False):
     """Lê roteiro.json e pronuncia.json para planejar os blocos filtrados e identificar pendências de aprovação."""
     if roteiro is None:
         roteiro = json.loads(ROTEIRO_PATH.read_text(encoding="utf-8"))
@@ -124,7 +126,12 @@ def planejar_blocos(roteiro=None, pronuncia_dict=None, blocos_filtro=None):
     for bloco_id in ["A", "B", "C", "D"]:
         if bloco_id not in blocos_filtro:
             continue
-        cfg = CONFIG_MODELOS[bloco_id]
+        cfg = copy.deepcopy(CONFIG_MODELOS[bloco_id])
+        if seed is not None:
+            cfg["seed"] = seed
+            cfg["uuid_existente"] = None
+        if forcar_nova_tomada:
+            cfg["uuid_existente"] = None
         cenas_bloco = [c for c in roteiro["cenas"] if c.get("bloco") == bloco_id]
         fala_oficial = " ".join(c["pt"]["fala"].strip() for c in cenas_bloco)
         texto_direcao_base = compor_texto_bloco(cenas_bloco)
@@ -172,7 +179,7 @@ def planejar_blocos(roteiro=None, pronuncia_dict=None, blocos_filtro=None):
     return blocos_planejados, pendencias_bloqueantes
 
 
-def sintetizar_e_validar_bloco(bloco_info):
+def sintetizar_e_validar_bloco(bloco_info, continuar_apos_falha=False):
     bloco_id = bloco_info["bloco"]
     cfg = bloco_info["cfg"]
     texto_envio = bloco_info["texto_envio"]
@@ -248,6 +255,8 @@ def sintetizar_e_validar_bloco(bloco_info):
     if a8_result['falhas']:
         for f in a8_result['falhas']:
             print(f"  🚨 Falha A8: {f['duracao']:.3f} s em t={f['tempo']:.3f} s ({f['tipo']})")
+        if not continuar_apos_falha:
+            raise ValueError(f"Bloco {bloco_id}: regra A8 violada com {len(a8_result['falhas'])} pausa(s) interna(s) >= 0.500 s!")
 
     voz_tratada_wav = tomada_dir / "voz.wav"
     recibo_cadeia = cadeia_estudio(bruto_wav, voz_tratada_wav)
@@ -255,6 +264,9 @@ def sintetizar_e_validar_bloco(bloco_info):
 
     timbre = analisar_timbre_arquivo(voz_tratada_wav)
     print(f"Métricas tímbricas: F0={timbre.get('f0_mediano_hz')} Hz | Centroide={timbre.get('centroide_medio_hz')} Hz")
+
+    chiado = analisar_chiado_tomada(voz_tratada_wav, palavras)
+    print(f"Métrica de chiado: taxa={chiado['taxa_chiado_pct']}% ({chiado['palavras_com_chiado']}/{chiado['total_palavras_analisadas']}) | veredito={chiado['veredito_triagem']} | razão L/C={chiado['razao_mediana_limpo_chiado']}")
 
     meta = {
         "bloco": bloco_id,
@@ -271,6 +283,7 @@ def sintetizar_e_validar_bloco(bloco_info):
         },
         "cadeia_estudio": recibo_cadeia,
         "timbre": timbre,
+        "chiado": chiado,
         "substituicoes_pronuncia": bloco_info["substituicoes"],
         "sha256_bruto": hash_arquivo(bruto_wav),
         "sha256_voz": hash_arquivo(voz_tratada_wav),
@@ -292,6 +305,7 @@ def sintetizar_e_validar_bloco(bloco_info):
         "duracao": duracao_s,
         "chars": len(texto_envio),
         "timbre": timbre,
+        "chiado": chiado,
         "a8": a8_result
     }
 
@@ -301,12 +315,21 @@ def main(argv=None):
     parser.add_argument("--executar", action="store_true", help="Dispara a geração real contra a API ElevenLabs.")
     parser.add_argument("--teto-caracteres", type=int, default=None, help="Teto obrigatório de caracteres para execução.")
     parser.add_argument("--blocos", default="A,B,C,D", help="Lista de blocos separados por vírgula (ex: A,C,D).")
+    parser.add_argument("--seed", type=int, default=None, help="Semente de geração específica para os blocos selecionados.")
+    parser.add_argument("--forcar-nova-tomada", action="store_true", help="Gera nova tomada ignorando uuid_existente.")
+    parser.add_argument("--continuar-apos-falha", action="store_true", help="Permite prosseguir mesmo se houver falha A8.")
     args = parser.parse_args(argv)
 
     roteiro = json.loads(ROTEIRO_PATH.read_text(encoding="utf-8"))
     pronuncia_dict = carregar_pronuncia()
     blocos_filtro = [b.strip().upper() for b in args.blocos.split(",") if b.strip()]
-    blocos_planejados, pendencias = planejar_blocos(roteiro, pronuncia_dict, blocos_filtro=blocos_filtro)
+    blocos_planejados, pendencias = planejar_blocos(
+        roteiro,
+        pronuncia_dict,
+        blocos_filtro=blocos_filtro,
+        seed=args.seed,
+        forcar_nova_tomada=args.forcar_nova_tomada
+    )
 
     total_chars_previstos = sum(b["chars_envio"] for b in blocos_planejados.values())
 
@@ -356,7 +379,7 @@ def main(argv=None):
 
     resultados = {}
     for bloco_id in blocos_planejados.keys():
-        res = sintetizar_e_validar_bloco(blocos_planejados[bloco_id])
+        res = sintetizar_e_validar_bloco(blocos_planejados[bloco_id], continuar_apos_falha=args.continuar_apos_falha)
         resultados[bloco_id] = res
 
     saldo_depois_data = json.loads(chamar("/v1/user/subscription"))

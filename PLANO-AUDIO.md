@@ -1958,6 +1958,55 @@ Os arquivos tratados e as prévias de transição foram disponibilizados em `~/D
 - `fronteira_C_D.wav`: Prévia direta da continuidade Ana → Ana no compasso 35;
 - `README.md`: Documentação técnica sem notas ou scorecards, contendo parâmetros físicos e 2 a 4 pontos objetivos "o que ouvir" por arquivo.
 
+### O13. Decisão de Ouvido do Fabrício: Reprovação de C por Chiado Carioca e Diretriz de D (27/10/2026)
+
+Em 27/10/2026, o Fabrício avaliou o kit de escuta dos 4 blocos de voz:
+1. **Blocos A e D (Ana v3):** Aprovados quanto ao sotaque e timbre. A pausa respiratória de 500 ms em A foi mantida.
+2. **Bloco B (Gabriel v2):** Todos os áudios aprovados integralmente. O Bloco B não sofre alterações nem regerações.
+3. **Bloco C (Ana v3) e Fronteiras B→C / C→D:** Reprovados por sotaque: presença de "xiado carioca" (coda sibilante /ʃ/ pós-alveolar em vez de [s] alveolar limpo; ver `docs/PRONUNCIA-FALA.md` §4).
+4. **Bloco D (v13+v14):** Fabrício não aprovou a fala final da v14 (*"Frila. Turno combinado, regra clara."*), solicitando nova redação menos genérica. O Bloco D não deve ser regerado até a entrega do novo texto; o D atual fica apenas como referência de timbre e nenhuma régua narrativa oficial é recalculada antes da síntese do novo D.
+
+### O14. Métrica Acústica Objetiva de Chiado de Coda e Validação nos Casos Reais
+
+Para evitar gastos cegos de API e identificar objetivamente a presença de sotaque carioca /ʃ/ antes da escuta humana:
+- **Fundamento Físico-Acústico:**
+  - A fricativa alveolar limpa [s] concentra energia em frequências agudas (> 5.500 Hz até 10.000 Hz);
+  - A fricativa pós-alveolar /ʃ/ ("chiado") apresenta polo de ressonância primário na faixa de 2.500 Hz a 4.500 Hz;
+  - A métrica (`vozes/metrica_chiado.py`) extrai o segmento final (25% a 70 ms) de cada palavra com coda /s/ (identificada via timestamps de palavra do Scribe), calcula a FFT com janela de Hann e mede: centroide espectral, frequência de pico de ressonância e a razão de energia entre as bandas limpa (5,5–10 kHz) e chiada (2,5–4,5 kHz).
+- **Validação Cruzada nos Áudios Históricos:**
+  - **Bloco A (aprovado):** Taxa de chiado = **11,1%** (1/9 palavras), Pico mediano = **6.040 Hz**, Veredito = `limpo`.
+  - **Bloco D (aprovado):** Razão mediana limpo/chiado = **46,57**, Centroide mediano = **7.035 Hz**, Veredito = `limpo`.
+  - **Bloco C Tomada 1 (reprovado pelo Fabrício):** Taxa de chiado = **46,7%** (7/15 palavras com polo forte em 3.680–4.400 Hz: *"Dos"*, *"semanas"*, *"profissionais"*, *"presentes"*, *"restaurantes"*), Veredito = `chiado_carioca`.
+
+### O15. Regeneração do Bloco C, Resultados Técnicos e Atualização do Kit de Escuta
+
+Com a métrica validada, foram sintetizadas 3 novas tomadas do Bloco C (Ana v3, PCM 48 kHz, dirigida Pico 2, sementes 2, 3 e 7):
+1. **Contabilidade de Caracteres ElevenLabs:**
+   - Saldo inicial pré-regeneração: 22.391 caracteres;
+   - Saldo final apurado: **22.748 de 40.000 caracteres usados**;
+   - Consumo adicional efetivo: **357 caracteres** (TTS + Scribe), estritamente dentro do teto concedido de 1.500 caracteres.
+2. **Comparativo das 4 Tomadas do Bloco C:**
+
+| Tomada | Semente | Duração (s) | Métrica de Chiado | Taxa Chiado (%) | Pico Mediano Fricativa (Hz) | Razão Limpo/Chiado | F0 Mediano (Hz) | Loudness (LUFS) | True Peak (dBTP) | Regra A8 (Pausas >= 0,500s) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| **T1 (Original)** | 1 | 22,080 | `chiado_carioca` | 46,7% (7/15) | 5.760 Hz | 2,69 | 231,9 | -17,97 | -3,33 | 1 falha (0,660 s em t=8,350s) |
+| **T2** | 2 | 22,000 | `chiado_carioca` | 46,7% (7/15) | 5.760 Hz | 2,26 | 233,0 | -18,17 | -4,31 | 1 falha (0,880 s em t=8,220s) |
+| **T3** | 3 | 22,480 | `chiado_carioca` | 53,3% (8/15) | 4.240 Hz | 1,75 | 237,6 | -17,76 | -3,43 | 2 falhas (0,560s em t=6,840s; 0,700s em t=8,370s) |
+| **T4 (Candidata)** | 7 | 22,240 | `limpo` | **6,7%** (1/15) | **8.280 Hz** | **46,18** | 246,2 | -17,78 | -3,71 | 3 falhas (0,520s em t=2,100s; 0,520s em t=6,820s; 0,740s em t=8,330s) |
+
+3. **Diagnóstico da Tomada 4 (Candidata Limpa):**
+   - A tomada T4 (seed 7) eliminou a concentração de energia pós-alveolar em 3,6–4,5 kHz, atingindo taxa de chiado de apenas 6,7% (1 palavra em 15), pico espectral médio de 8.280 Hz e razão limpo/chiado de 46,18, padrão idêntico ao Bloco A aprovado;
+   - As 3 pausas internas > 0,500 s em T4 correspondem a pausas respiratórias/pontuação: 0,520 s em t=2,100 s (*"apps"* / *"que"*), 0,520 s em t=6,820 s (*"piloto,"* / *"oito"*) e 0,740 s em t=8,330 s (*"semanas,"* / *"cinquenta"*).
+4. **Atualização do Kit de Escuta (`~/Downloads/frila-escuta-vozes-blocos/`):**
+   - `bloco_C_ana_v3_reprovado_chiado.wav`: Antiga tomada 1 do Bloco C;
+   - `bloco_C_ana_v3_t2.wav` e `bloco_C_ana_v3_t3.wav`: Tomadas 2 e 3 (persistência de chiado);
+   - `bloco_C_ana_v3_t4.wav`: **Tomada 4 candidata (sibilante limpa, 6,7% de taxa)**;
+   - `fronteira_B_C_t4.wav`: Transição Gabriel → Ana com T4 (pausa: 1,143 s; -18,93 LUFS);
+   - `fronteira_C_t4_D.wav`: Transição Ana T4 → Ana D referência (pausa: 1,028 s; -18,09 LUFS);
+   - `fronteira_B_C_reprovado.wav` e `fronteira_C_reprovado_D.wav`: Mantidas para comparação de contraste;
+   - `README.md`: Documentação técnica completa das medições objetivas.
+
+
 
 
 
