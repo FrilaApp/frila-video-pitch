@@ -47,7 +47,8 @@ def aplicar_pronuncia(texto, voz="ambas", apenas_aprovadas=True, dicionario=None
 
     # Filtrar regras pertinentes
     regras = []
-    for palavra, dados in dicionario.items():
+    for chave_item, dados in dicionario.items():
+        palavra = dados.get("termo") or dados.get("palavra") or chave_item
         status = dados.get("status")
         if apenas_aprovadas and status != "aprovada":
             continue
@@ -119,7 +120,8 @@ def mapa_reverso_fonetico(dicionario=None):
         "federau": "federal"
     }
 
-    for palavra, dados in dicionario.items():
+    for chave_item, dados in dicionario.items():
+        palavra = dados.get("termo") or dados.get("palavra") or chave_item
         forma = dados.get("forma")
         if forma:
             chave = _limpar(forma)

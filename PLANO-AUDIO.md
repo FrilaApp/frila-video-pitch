@@ -1877,4 +1877,27 @@ Para evitar qualquer disparo acidental de chamadas de API, vazamento de quota e 
 5. **Auditoria de Saldo:**
    - A consulta e registro de saldo da API ElevenLabs ocorrem exclusivamente dentro do fluxo `--executar`.
 
+### O8. Decisão de ouvido do Fabrício sobre o Kit de Pronúncia e Liberação Parcial (26/10/2026)
+
+Em 26/10/2026, a partir da escuta atenta dos 48 ativos do Kit de Pronúncia em `~/Downloads/frila-escuta-pronuncia/`, o Fabrício formalizou a decisão de ouvido:
+
+1. **Ana Dias (Blocos A, C e D) — Decisão Completa:**
+   - **Formas Originais Aprovadas (sem substituição fonética):**
+     `Abrasel` (lida naturalmente como /abɾaˈzɛw/), `check-in`, `cinquenta`, `comparecimento`, `cuida`, `dezenove`, `negócio`, `restaurantes`, `rotatividade`, `Distrito`, `histórico`, `piloto`.
+   - **Formas Candidatas Aprovadas (aplicar substituição fonética na fala):**
+     - `Frila` → **`Fríla`** (assegura tônica forte na primeira sílaba e preserva a identidade de marca brasileira);
+     - `meta` → **`méta`** (evita vogal excessivamente fechada em "Meta do piloto");
+     - `dez` → **`déis`** (mantém a vogal aberta /dɛs/ no fechamento estatístico);
+     - `Federal` → **`Federau`** (assegura a vocalização em /w/ padrão do Brasil).
+   - Com isso, a locução da narradora Ana Dias nos blocos A, C e D está 100% calibrada e liberada para síntese.
+
+2. **Gabriel pt-BR publicidade (Bloco B) — Decisão Parcial:**
+   - **Decididos:** `check-in` na forma **ORIGINAL** (aprovado); `Abrasel` candidata e `cinquenta` original também decididos (não incidem no Bloco B);
+   - **Pendências de Ouvido do Bloco B:** Os termos `Frila` (ocorre 2 vezes no bloco B) e `histórico` (cena v07) permanecem com status `"candidata"` aguardando veredito de escuta do Fabrício.
+   - **Bloqueio:** O Bloco B NÃO é gerado até a definição soberana dessas formas.
+
+3. **Controle de Filtro por Bloco (`--blocos`):**
+   - Implementado o suporte a `--blocos A,C,D` em `vozes/produzir_blocos_tarefa6.py`, permitindo a produção parcial autorizada dos blocos plenamente aprovados sem afrouxar a trava de segurança que bloqueia o Bloco B.
+
+
 

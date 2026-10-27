@@ -108,17 +108,22 @@ def compor_texto_bloco(cenas):
     return " ".join(partes)
 
 
-def planejar_blocos(roteiro=None, pronuncia_dict=None):
-    """Lê roteiro.json e pronuncia.json para planejar os 4 blocos e identificar pendências de aprovação."""
+def planejar_blocos(roteiro=None, pronuncia_dict=None, blocos_filtro=None):
+    """Lê roteiro.json e pronuncia.json para planejar os blocos filtrados e identificar pendências de aprovação."""
     if roteiro is None:
         roteiro = json.loads(ROTEIRO_PATH.read_text(encoding="utf-8"))
     if pronuncia_dict is None:
         pronuncia_dict = carregar_pronuncia()
+    if blocos_filtro is None:
+        blocos_filtro = ["A", "B", "C", "D"]
+    blocos_filtro = [b.strip().upper() for b in blocos_filtro if b.strip()]
 
     blocos_planejados = {}
     pendencias_bloqueantes = []
 
     for bloco_id in ["A", "B", "C", "D"]:
+        if bloco_id not in blocos_filtro:
+            continue
         cfg = CONFIG_MODELOS[bloco_id]
         cenas_bloco = [c for c in roteiro["cenas"] if c.get("bloco") == bloco_id]
         fala_oficial = " ".join(c["pt"]["fala"].strip() for c in cenas_bloco)
@@ -126,7 +131,8 @@ def planejar_blocos(roteiro=None, pronuncia_dict=None):
         frases_oficiais = frases_do_roteiro({"cenas": cenas_bloco})
 
         # Verificar se termos de risco ocorrem nesta fala e qual seu status em pronuncia.json
-        for termo, dados in pronuncia_dict.items():
+        for chave_item, dados in pronuncia_dict.items():
+            termo = dados.get("termo") or dados.get("palavra") or chave_item
             padrao = r'(?<![\w-])' + re.escape(termo) + r'(?![\w-])'
             if re.search(padrao, fala_oficial, re.IGNORECASE):
                 status = dados.get("status", "candidata")
@@ -282,11 +288,13 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="Produção dos blocos de locução da Tarefa 6.")
     parser.add_argument("--executar", action="store_true", help="Dispara a geração real contra a API ElevenLabs.")
     parser.add_argument("--teto-caracteres", type=int, default=None, help="Teto obrigatório de caracteres para execução.")
+    parser.add_argument("--blocos", default="A,B,C,D", help="Lista de blocos separados por vírgula (ex: A,C,D).")
     args = parser.parse_args(argv)
 
     roteiro = json.loads(ROTEIRO_PATH.read_text(encoding="utf-8"))
     pronuncia_dict = carregar_pronuncia()
-    blocos_planejados, pendencias = planejar_blocos(roteiro, pronuncia_dict)
+    blocos_filtro = [b.strip().upper() for b in args.blocos.split(",") if b.strip()]
+    blocos_planejados, pendencias = planejar_blocos(roteiro, pronuncia_dict, blocos_filtro=blocos_filtro)
 
     total_chars_previstos = sum(b["chars_envio"] for b in blocos_planejados.values())
 
@@ -300,7 +308,7 @@ def main(argv=None):
             print(f"  Pronúncias aplicadas: {subs_str}")
         print(f"  Texto envio: \"{b_info['texto_envio']}\"")
 
-    print(f"\nTotal previsto para os 4 blocos: {total_chars_previstos} caracteres.")
+    print(f"\nTotal previsto para os blocos ({', '.join(blocos_planejados.keys())}): {total_chars_previstos} caracteres.")
 
     if pendencias:
         print("\n⚠️ AVISO DE TERMOS COM STATUS PENDENTE/NÃO APROVADO:")
@@ -324,7 +332,7 @@ def main(argv=None):
 
     if pendencias:
         print("\n🚨 EXECUÇÃO BLOQUEADA (Código 2):", file=sys.stderr)
-        print("Existem termos em vozes/pronuncia.json com status diferente de 'aprovada' presentes na fala dos blocos.", file=sys.stderr)
+        print("Existem termos em vozes/pronuncia.json com status diferente de 'aprovada' presentes na fala dos blocos selecionados.", file=sys.stderr)
         print("A produção oficial só pode prosseguir após a aprovação soberana de ouvido do Fabrício.", file=sys.stderr)
         sys.exit(2)
 
@@ -335,7 +343,7 @@ def main(argv=None):
     print(f"\nSaldo ElevenLabs antes: {caracteres_antes} de {limite} caracteres usados.")
 
     resultados = {}
-    for bloco_id in ["A", "B", "C", "D"]:
+    for bloco_id in blocos_planejados.keys():
         res = sintetizar_e_validar_bloco(blocos_planejados[bloco_id])
         resultados[bloco_id] = res
 

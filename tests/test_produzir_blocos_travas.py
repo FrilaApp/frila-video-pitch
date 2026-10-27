@@ -92,6 +92,39 @@ class TestProduzirBlocosTravas(unittest.TestCase):
             self.assertNotIn("tchéquin", c["pt"]["legenda"])
             self.assertNotIn("Fríla", c["pt"]["legenda"])
 
+    def test_filtro_blocos_acd_passa_e_bloco_b_bloqueia(self):
+        """Os blocos A, C e D (Ana) não possuem pendências; o bloco B (Gabriel) bloqueia por Frila e histórico."""
+        dicionario_atual = carregar_pronuncia()
+        
+        # Testando A, C, D: 0 pendências
+        blocos_acd, pendencias_acd = prod.planejar_blocos(
+            self.roteiro_original,
+            pronuncia_dict=dicionario_atual,
+            blocos_filtro=["A", "C", "D"]
+        )
+        self.assertEqual(len(pendencias_acd), 0)
+        self.assertEqual(set(blocos_acd.keys()), {"A", "C", "D"})
+        # Fríla aplicada nos blocos D e A onde cabível
+        self.assertIn("Fríla", blocos_acd["D"]["texto_envio"])
+        self.assertIn("Méta", blocos_acd["C"]["texto_envio"])
+        self.assertIn("déis", blocos_acd["C"]["texto_envio"])
+        self.assertIn("Federau", blocos_acd["C"]["texto_envio"])
+
+        # Testando Bloco B isolado: pendências de Frila e histórico
+        blocos_b, pendencias_b = prod.planejar_blocos(
+            self.roteiro_original,
+            pronuncia_dict=dicionario_atual,
+            blocos_filtro=["B"]
+        )
+        termos_pendentes = [p["termo"] for p in pendencias_b]
+        self.assertIn("Frila", termos_pendentes)
+        self.assertIn("histórico", termos_pendentes)
+
+        # Execução de B bloqueia com código 2
+        with self.assertRaises(SystemExit) as ctx:
+            prod.main(["--blocos", "B", "--executar", "--teto-caracteres", "2000"])
+        self.assertEqual(ctx.exception.code, 2)
+
 
 if __name__ == "__main__":
     unittest.main()
