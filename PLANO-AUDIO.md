@@ -1770,3 +1770,92 @@ na subtarefa. Não liberar commit/handoff final com esse gate falhando.
    comparar V1-controle→V2 neutra (formato), V2→V3 (cadeia), V3 neutra→dirigida
    (parâmetros), V4 (tags/modelo) e V5/V6 (persona); conferir factual/v13 após
    escolher a abertura v05. A avaliação será em texto livre, sem formulário.
+
+## O. Tarefa 6 — Vozes por Bloco e Alternância de Narradores (Decisão do Fabrício)
+
+**Decisão do Fabrício em 26/10/2026:**
+A partir da escuta do kit da Tarefa 5, o Fabrício aprovou de ouvido:
+- `V5_v05_dirigida` (Gabriel pt-BR publicidade, `eleven_multilingual_v2`, PCM 48 kHz, dirigida);
+- `V5_v13_neutra` (Gabriel);
+- `V4_v13_dirigida` (Ana Dias, `eleven_v3`, PCM 48 kHz, dirigida).
+
+E definiu a estratégia de **alternância de vozes por blocos inteiros** (nunca com trocas frequentes intra-bloco, garantindo que o ouvinte se adapte organicamente ao timbre):
+- **Bloco A (Dores v01–v04):** **Ana Dias** (`eleven_v3`, PCM 48 kHz, dirigida). O Bloco A aprovado na v4/v5 (gerado em v2, 24 kHz) é regerado com a Ana v3 para harmonizar timbre, resolução espectral (48 kHz) e intenção. A imagem e as janelas de v01–v04 serão reajustadas pelo motion na sequência.
+- **Bloco B (Soluções v05–v09):** **Gabriel pt-BR publicidade** (`eleven_multilingual_v2`, PCM 48 kHz, dirigida). A cena v05 abre o bloco com o **Pico 1** da virada narrativa (energia, calor, promessa do Frila).
+- **Bloco C (Prova e Metas v10–v12):** **Ana Dias** (`eleven_v3`, PCM 48 kHz, dirigida). Abre com o **Pico 2** em v10 ("nenhum mostra comparecimento medido"), trazendo autoridade e dados.
+- **Bloco D (Fecho e Assinatura v13–v14):** **Ana Dias** (`eleven_v3`, PCM 48 kHz, dirigida). Contém o **Pico 3** caloroso em v13 ("Deixa que o Frila cuida") e encerra com a assinatura firme e pausada em v14.
+
+### O1. Parâmetros efetivos e formatos de áudio
+
+Todas as sínteses utilizam **PCM 48 kHz linear mono** (`pcm_48000`, 16-bit little-endian, sample rate 48.000 Hz, 96.000 bytes/s), eliminando o teto de 12 kHz do antigo PCM 24 kHz.
+
+| Bloco | Voz | Voice ID | Modelo | Formato | Settings de Voz | Tags de Áudio / Direção |
+|---|---|---|---|---|---|---|
+| **A** | Ana Dias | `MZxV5lN3cv7hi1376O0m` | `eleven_v3` | `pcm_48000` | `stability: 0.5` | v01–v02 factual/urgência; v03 `[thoughtful]` ceticismo; v04 gravidade |
+| **B** | Gabriel | `WPgqgCVa3mD38JuyODU6` | `eleven_multilingual_v2` | `pcm_48000` | `stability: 0.45, similarity: 0.75, style: 0.22, speed: 0.98, speaker_boost: true` | Direcionamento por settings de voz; contexto vizinho ativo; Pico 1 em v05 |
+| **C** | Ana Dias | `MZxV5lN3cv7hi1376O0m` | `eleven_v3` | `pcm_48000` | `stability: 0.5` | v10 Pico 2 (descoberta); v11 factual metas; v12 expansão |
+| **D** | Ana Dias | `MZxV5lN3cv7hi1376O0m` | `eleven_v3` | `pcm_48000` | `stability: 0.5` | v13 `[thoughtful]` e `[happy]` Pico 3 caloroso; v14 assinatura calma |
+
+### O2. Cadeia de masterização de estúdio não destrutiva
+
+Conforme estabelecido na infraestrutura de estúdio, os brutos originais gerados pela API (`bruto.wav`) são **estritamente imutáveis** e preservados em disco. A cadeia de masterização é aplicada offline como **variante processada** (`voz.wav`):
+1. **Filtro Passa-Altas (High-pass):** Butterworth 2ª ordem em 80 Hz para eliminação de rumble subsônico e ruídos de baixa frequência sem afetar a fundamental vocal.
+2. **De-esser Suave Dinâmico:** Atenuação suave em sibilâncias acima de 6 kHz.
+3. **Equalização de Presença e Ar:**
+   - Ganho sutil de presença de +1,5 dB centrado em 3.800 Hz (Q = 0,8);
+   - High-shelf de ar de +1,0 dB em 11 kHz aplicado apenas quando há energia real na banda (garantido pelo PCM 48 kHz).
+4. **Compressão Óptica Leve:** Ratio suave 1,6:1, attack 15 ms, release 120 ms, controlando a dinâmica sem achatar os picos intencionais da locução.
+5. **Sem limiter destrutivo e sem reverb artificial:** A voz permanece limpa, seca e natural.
+
+### O3. Fronteiras entre blocos, cortes de cena e respiro musical
+
+1. **Coincidência com corte de cena:** Toda emenda entre blocos (A→B, B→C, C→D) coincide **exatamente com um corte de cena visual**. Nenhuma frase falada cruza emenda (Regra A1).
+2. **Pausa Inter-Blocos:** Pausa mínima entre a última palavra do bloco anterior e a primeira palavra do bloco seguinte de **≥ 500 ms** (alvo projetado na grade de **~700 ms**). Essa pausa é indispensável perceptivamente para que o cérebro do ouvinte processe a alternância de gênero/timbre entre Ana e Gabriel.
+3. **Respiro da Trilha:** Nas transições de bloco A→B e C→D, a automação musical aplica elevação suave de +1,5 dB na cama musical (curva senoidal nas pausas), marcando o corte de bloco e evitando silêncio vazio.
+
+### O4. Limitação técnica do eleven_v3 e mitigação da deriva de timbre
+
+- **Limitação confirmada em §N:** O modelo `eleven_v3` retorna `HTTP 400 Bad Request` se os parâmetros `previous_text` ou `next_text` forem enviados.
+- **Mitigação de Consistência:** A consistência tímbrica e estilística da Ana Dias nos blocos A, C e D é assegurada por:
+  - Idêntico `voice_id` (`MZxV5lN3cv7hi1376O0m`);
+  - Idêntico `seed` (`1`);
+  - Idêntico `stability` (`0.5`);
+  - Idêntica cadeia de masterização offline;
+  - **Aferição Objetiva de Deriva:** Medição de espectro médio, frequência fundamental média ($F_0$) e centroide espectral comparativo entre os blocos A, C e D para detectar qualquer salto aberrante de pitch antes do envio ao Fabrício.
+
+### O5. Orçamento, regras de gate e verificação
+
+- **Teto da Tarefa 6 ajustado:** Máximo de 5.500 caracteres somando TTS e Scribe (saldo anterior: 21.224 / 40.000). Sendo:
+  - Teto adicional de até **1.000 caracteres** reservado para o Kit de Pronúncia (§O6);
+  - Teto restante de **4.500 caracteres** reservado para a síntese dos 4 blocos integrais.
+- **Geração Atômica dos Blocos:** Exatamente 1 chamada TTS por bloco (4 chamadas no total) em tomada contínua (A3).
+- **Sem Regeração Automática em Loop:** Se um bloco falhar em A8 ou no alinhamento do Scribe, a execução é interrompida para aviso ao Maestro; regeneração somente sob autorização expressa.
+- **Condição Bloqueante:** NÃO sintetizar os 4 blocos definitivos antes da escuta e decisão soberana do Fabrício quanto às formas fonéticas candidatas do Kit de Pronúncia.
+- **Verificação Obrigatória:** `./scripts/verificar.sh` executado e aprovado com 100% de sucesso antes de qualquer commit ou handoff.
+
+### O6. Mecânica de pronúncia e fonética familiar (Diretriz do Fabrício)
+
+Para assegurar locução em português do Brasil editorial, neutro e sem sotaques regionais ou leituras anglicizadas de marcas e números, adota-se a correção fonética prévia:
+1. **Imutabilidade do Roteiro e Legendas:** `roteiro.json` e as legendas visuais são estritamente preservados com a ortografia padrão oficial. Nenhuma grafia de tela é alterada.
+2. **Dicionário de Pronúncia (`vozes/pronuncia.json`):**
+   - Mapeia cada termo de risco para sua substituição fonética:
+     ```json
+     {
+       "termo": {
+         "forma": "substituicao_fonetica",
+         "voz": "ana" | "gabriel" | "ambas",
+         "status": "candidata" | "aprovada" | "descartada",
+         "nota": "motivo ou contexto"
+       }
+     }
+     ```
+   - Somente entradas com `status: "aprovada"` são elegíveis para substituição na síntese dos blocos oficiais.
+3. **Mecânica de Aplicação:**
+   - A substituição ocorre estritamente na string de envio para o TTS no momento da geração do áudio;
+   - Substituição por palavra inteira (`\bpalavra\b`), preservando caixa alta/baixa do primeiro caractere;
+   - As substituições aplicadas são registradas explicitamente no manifesto do bloco (`bruto.json`).
+4. **Conferência Literal e Normalização no ASR:**
+   - O normalizador (`vozes.manifesto.normal` e conferência Scribe) reconhece o mapeamento inverso das formas aprovadas, permitindo que transcrições fonéticas ou grafias alternativas (ex.: Scribe ouvindo `Freela` para `Frila` ou `Fríla`) casem com o texto oficial do roteiro sem falso positivo.
+5. **Kit de Pronúncia de Escuta:**
+   - Palavras das prioridades 1 e 2 geradas em frases-veículo curtas (original vs. candidata) para ambas as vozes (Ana v3 e Gabriel v2), tratadas com a cadeia de estúdio e disponibilizadas em `~/Downloads/frila-escuta-pronuncia/` para julgamento de ouvido do Fabrício.
+

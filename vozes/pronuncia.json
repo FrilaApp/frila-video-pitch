@@ -1,0 +1,98 @@
+{
+  "Frila": {
+    "forma": "Fríla",
+    "voz": "ambas",
+    "status": "candidata",
+    "nota": "Tônica no ri para evitar leitura inglesa fraila ou oxítona frilá"
+  },
+  "check-in": {
+    "forma": "tchéquin",
+    "voz": "ambas",
+    "status": "candidata",
+    "nota": "Adaptação fonética do estrangeirismo para o português do Brasil"
+  },
+  "Abrasel": {
+    "forma": "Abrazéu",
+    "voz": "ana",
+    "status": "candidata",
+    "nota": "s sonoro /z/ e l final vocalizado em u /aw/"
+  },
+  "meta": {
+    "forma": "méta",
+    "voz": "ana",
+    "status": "candidata",
+    "nota": "e aberto para evitar fechamento excessivo ou confusão com método"
+  },
+  "piloto": {
+    "forma": "piloto",
+    "voz": "ana",
+    "status": "candidata",
+    "nota": "Verificar se mantém paroxítona sem virar pilotó"
+  },
+  "dezenove": {
+    "forma": "dezenóve",
+    "voz": "ana",
+    "status": "candidata",
+    "nota": "o aberto na tônica"
+  },
+  "cinquenta": {
+    "forma": "cinkuenta",
+    "voz": "ana",
+    "status": "candidata",
+    "nota": "Fallback fonético se cinquenta soar sem u ou k duro"
+  },
+  "dez": {
+    "forma": "déis",
+    "voz": "ambas",
+    "status": "candidata",
+    "nota": "Abertura da vogal /dɛs/ sem fechar em dêz"
+  },
+  "Federal": {
+    "forma": "Federau",
+    "voz": "ana",
+    "status": "candidata",
+    "nota": "l final vocalizado em u /aw/ sem lateral velar"
+  },
+  "cuida": {
+    "forma": "cúida",
+    "voz": "ana",
+    "status": "candidata",
+    "nota": "Ditongo decrescente para evitar hiato cu-í-da"
+  },
+  "comparecimento": {
+    "forma": "com-pa-re-ci-men-to",
+    "voz": "ana",
+    "status": "candidata",
+    "nota": "Fallback hifenizado se deslocar a tônica em palavra longa"
+  },
+  "rotatividade": {
+    "forma": "rotatividade",
+    "voz": "ana",
+    "status": "candidata",
+    "nota": "Verificar r inicial e terminação dade"
+  },
+  "negócio": {
+    "forma": "negócio",
+    "voz": "ana",
+    "status": "candidata",
+    "nota": "Verificar se mantém ditongo sem separar em quatro sílabas"
+  },
+  "histórico": {
+    "forma": "histórico",
+    "voz": "gabriel",
+    "status": "candidata",
+    "nota": "s de coda limpo /s/ sem chiado /ʃ/"
+  },
+  "restaurantes": {
+    "forma": "restaurantes",
+    "voz": "ambas",
+    "status": "candidata",
+    "nota": "s de coda e final limpos /s/ sem chiado"
+  },
+  "Distrito": {
+    "forma": "Distrito",
+    "voz": "ana",
+    "status": "candidata",
+    "nota": "s de coda limpo /s/ sem chiado /ʃ/"
+  }
+}
