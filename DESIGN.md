@@ -2,7 +2,7 @@
 
 **Para que serve.** Ser a fonte única de verdade do design do vídeo: tokens, componentes, movimento, som, ritmo e regras. Toda mudança de design da v5 começa aqui e só depois vai para o `motor/filme.html`.
 
-**Status (26/10/2026).** Retomada a partir da v4 após reprovação da v5 de 108 s. A bíblia medida, a proposta do aparelho e a calibração D2 estão em §§20–23. §§14–19 registram o ensaio anterior rejeitado; não são a base da retomada. Roteiro ~80 s e aprovação das propostas ainda pendentes. Nenhuma nova cena montada nesta tarefa.
+**Status (26/10/2026).** Retomada da v4 por blocos. Roteiro enxuto aprovado em main; regras D6/D7/D8 vigentes. Tarefa 1 e calibração em §§20–23. **Proposta corrente do aparelho em §24**, com estudos anteriores substituídos. Nenhuma cena do bloco montada nesta tarefa; avaliação visual do Fabrício pendente.
 
 **Levantamento original (histórico; a medição desta tarefa está no §20).** Lidos: `motor/filme.html` (CSS, tokens, textos, cenas, HUD), `motor/tempos2.py`, `motor/audio2.py`, `docs/v4/STORYBOARD.md`, `docs/v4/LEIA-ME.md`, `assets/cores.json`, e a revisão de narrativa. **Não verificado:** posições e tamanhos de cada elemento por captura (só os que o código declara); níveis de volume ouvindo o MP4. Onde o texto diz "Inferência", é leitura minha.
 
@@ -513,3 +513,76 @@ Limites: detector de texto é geométrico texto↔texto, exclui odômetros sob r
 **Fechamento da revisão do código:** os três casos foram corrigidos e ganharam testes. A rechecagem encontrou ainda um override de selector reservado mascarado pelo default; corrigido com agrupamento separado dos selectors declarados e teste em Chromium. A suíte final tem **16 testes**. A calibração mantém os mesmos limiares e resultados da tabela; a presença considera oclusão também nos elementos acompanhados.
 
 Índice local para revisão dos vídeos e acesso às evidências: `motor/cache/revisao-v4-v5/index.html` (191 links locais conferidos). Verificação final: 16/16 testes, recompilação Python, leitura dos dois MP4 e seus relatórios, 27 cortes com PTS na grade real e 29 clipes a 60 fps. Rechecagem independente do código confirmou as quatro correções. Isso valida o instrumento e a integridade dos artefatos; aprovação editorial continua pendente.
+
+## 24. Estudo corrigido — câmera sobre o conjunto, D6/D7/D8
+
+**Direção autorizada no briefing de 26/10/2026; aprovação visual pendente do Fabrício.** Base `main 41b406b` (PRs #12 e #13), branch `feat/mockup-aparelho`. Este estudo isolado substitui os ensaios rejeitados de §§21/23 e o zoom interno anterior. Não monta nenhuma cena de bloco. Preserva a geometria, tipografia, formulário, botão, confirmação e curva `eio` da fonte v4 `4efa75a:motor/filme.html`; não reescreve uma cena.
+
+### Câmera e planos (especificação antes do código)
+
+- **Objeto único:** chassi `#dot`, tela `#scr`, ilha e todos os filhos da UI recebem uma única transformação ancestral uniforme. Sem wrapper de zoom interno, pan, rolagem ou máscara adicional na tela. O botão mantém apenas a pressão intrínseca da v4 e seus estados nativos. Cursor `#cur` oculto por CSS `!important`, inclusive após `seek`; não é reposicionado nem substituído por marcador.
+- **Plano principal:** objeto v4 de 380×780 a1,10×, caixa inicial **(891,55), 418×858**, centro **(1100,484)**. Câmera sobre esse conjunto: fator **1→1,10→1** (escala total1,10→1,21→1,10). Pan máximo **(−14,+6) px**. Pico: caixa **(856,1;18,1), 459,8×943,8**, centro **(1086,490)**, altura87,39% do quadro. Ilha, moldura, campos e botão crescem juntos. Botão24→29,04 px no pico; ganho limitado deliberadamente pela preservação das bordas. Não prometer leitura de tela inteira a distância sem avaliação do Fabrício.
+- **Plano lento:** fundo areia v4 plano, sem textura ou elemento novo (movê-lo não cria sinal visual); rótulo à esquerda em(260,350), largura420, acompanha **0,35×** o pan e **0,35×** a variação de escala. Não esmaece nem compete com o aparelho.
+- **Plano de ação:** contador **01/04** e quatro traços do passo, em(260,235), acompanham **1,10×** o pan e a variação de escala, ligeiramente mais rápidos que o conjunto. É sinalização externa já solicitada, não um elemento novo do app. **Nenhum filho dentro do aparelho recebe parallax próprio**: deslocar o botão independentemente violaria D7. A profundidade fica entre rótulo, aparelho e sinalização de ação, sem deformar a UI.
+- **Legenda:** mesma frase aprovada de v06; fixa ao quadro, bottom28px, abaixo do limite inferior do aparelho961,9px. Nenhuma anotação de revisão dentro das imagens propostas.
+- **Curva:** `eio(u)=4u³` até0,5 e `1−(−2u+2)³/2` depois; mesma cúbica da v4, sem quique, velocidades nulas nos extremos. Apresentação0–0,60s; aproximação0,60–1,30s; ação1,30–2,00s; retorno2,00–2,90s; leitura final2,90–3,60s. A duração é do estudo de enquadramento, não ajuste de cena à voz. O tempo longo de câmera segue a direção cinematográfica v4, não o limite de transição de controle de uma UI interativa.
+
+### Demonstração sem cursor
+
+O formulário entra no estudo já preenchido (estado v4 em25,55s). A ação é a pressão do próprio botão **Publicar**, seu carregamento e a confirmação **Vaga publicada**, com cor e check nativos. Mapa temporal: estudo0/0,60→v425,55;1,30→25,792 (pressão);1,90→26,312 (início da confirmação);2,10/3,60→26,55 (confirmação assentada). A câmera não provoca nenhuma alteração interna de layout. Não se demonstra preenchimento por ponteiro, nem se inventa toque, texto ou tela. A confirmação começa a aparecer por volta de1,92s e assenta até2,10s durante o começo do retorno; inspecionar a passagem inteira.
+
+### Continuidade futura v06→v07
+
+O mesmo nó do chassi e seu grupo de câmera ficam na camada persistente do fluxo, fora do fade das raízes de cena, como `fluxo` em c06/c07 da v4. O corte troca apenas o estado da interface recortada pela tela existente. Nas margens de **pelo menos12frames de cada lado**, a câmera estará no enquadramento geral, mesma caixa inicial acima, opacidade efetiva1, mesmo centro, cor, raio e dimensões; posição e velocidade são compartilhadas. Não apagar, duplicar, desmontar ou recriar o aparelho. Nenhum corte seco de câmera autorizado.
+
+Referência obrigatória: v4 **29,5101s**, último/primeiro frame do corte e ±0,5s. Antirreferência: desaparecimento v5 **42,500–42,667s**. Este clipe não implementa nem prova a futura transição; isso será auditado quando o blocoB puder ser montado (D5).
+
+### D6 — origem de cada string
+
+Inventário literal arquivado em **docs/v4/COPIA-NOVA-VAGA.md**: transcrição verificável da tela v4 e da lista do lado “antes”; não alega captura de app atual. Os campos da tela foram conferidos em `TX.pt.form` da fonte v4. O manifesto deve registrar origem por string normalizada e falhar para texto não inventariado.
+
+| Strings | Origem |
+|---|---|
+| `Você publica a vaga.` | `roteiro.json`, v06-solucao1.pt.legenda, primeira frase |
+| `Exemplo` | `roteiro.json`, v07-solucao2.tela |
+| `01/04` | formato pedido pelo Fabrício no briefing; quatro passos v4; registrado no inventário |
+| `Contratante`, `Nova vaga`, `Função`, `Garçom`, `Horário`, `Endereço`, `Plano Piloto`, `Valor`, `R$ 120`, `Publicar`, `Vaga publicada` | `docs/v4/COPIA-NOVA-VAGA.md`, transcrição `TX.pt.form.role/t/f1/v1/f2/f3/v3/f4/v4/b/b2` |
+| `19h às 23h` (nós `19h às ` + `23` + `h`) | mesmo inventário, composição `TX.pt.form.v2` + `#hora=23` no intervalo v425,55–26,55s |
+| `4 passos`, `01`, `02`, `03`, `04` | apenas lado antes; inventário, `TX.pt.passos` e `build()` v4 |
+| `Contratante publica a vaga`, `função, horário, endereço, valor`, `Profissional recebe o aviso`, `até 15 km`, `Contratante escolhe quem vai`, `vê o histórico`, `Os dois lados conferem`, `check-in, sim ou não` | apenas lado antes; inventário, `TX.pt.steps[0..3]` |
+| `O contratante publica a vaga.` | apenas legenda antes; `docs/v4/roteiro-v4.json`, c06-passos-a.pt.legenda |
+
+### Evidências e validação previstas
+
+Pasta substituída: `motor/cache/mockup-aparelho-d6-d7/` (fora do git). Clipe **zoom-continuo.mp4**,3,60s,216frames,1920×1080,60fps,sem áudio; três PNGs comparativos3840×1080 em0,20/1,30/3,40s (v4 original à esquerda, proposta à direita; pico ampliado no segundo); manifesto com strings, caixas, escala comum e geometria local de cada frame; fonte HTML reproduzível com `boot/seek` para o analisador. Os estudos antigos não continuam publicados como proposta vigente. Os frames da v4 preservam sua evidência original, inclusive o cursor histórico apenas no lado antes.
+
+Revisão: analisar o MP4 raster a60fps, fonte/colisões/presença a12fps, faixas12fps e janelas±0,5s nas fronteiras de câmera0,60/1,30/2,00/2,90s; sem corte entre cenas. Contrato exige chassi/tela visíveis no clipe inteiro e movimento nas rampas. Checagem adicional por frame exige escala comum, bordas dentro do quadro, botão/confirmação dentro da tela e geometria interna constante (exceto pressão nativa). Testes de regressão devem falhar para chassi fixo/UI ampliada e cursor visível. Validar `seek` reversível.
+
+Reprodução: `.venv/bin/python motor/fotos.py --estudo-aparelho`, depois `.venv/bin/python motor/analisar_video.py motor/cache/mockup-aparelho-d6-d7/zoom-continuo.mp4 --tempos motor/cache/mockup-aparelho-d6-d7/tempos-estudo.json --html motor/cache/mockup-aparelho-d6-d7/estudo.html --contrato motor/cache/mockup-aparelho-d6-d7/contrato.json --emendas 0.6 1.3 2 2.9 --saida motor/cache/mockup-aparelho-d6-d7/analise`, seguido de `./scripts/verificar.sh` antes de commit e handoff.
+
+Recall: detector raster recuperou o flash artificial de um frame a60fps e o caso de salto dos testes; contrato de presença recuperou o mergulho conhecido da v5 em42,500–42,667s (§23). Isso não mede recall geral (amostra pequena); não garante ausência de defeitos locais ou qualidade artística. Alertas heurísticos informam; Fabrício aprova após vídeo.
+
+### Resultado do estudo corrigido (26/10/2026)
+
+Clipe e três comparativos entregues em `motor/cache/mockup-aparelho-d6-d7/`: `zoom-continuo.mp4`, `01-apresentar.png`, `02-acao.png` (conjunto ampliado) e `03-retorno.png`; índice em `index.html`. PNGs de 3840×1080, tempos de estudo 0,20 / 1,30 / 3,40 s; referências reais v4 25,550 / 25,800 / 26,550 s. `ffprobe`: 216 frames, 3,600 s, 1920×1080, 60/1 fps, uma única stream de vídeo. Os estudos reprovados `revisao-v4-v5/proposta-*.png` e seu gerador foram retirados do cache; o índice anterior aponta para o novo estudo. Referências originais v4/v5 preservadas para auditoria.
+
+**Comparação com a v4:** moldura, ilha, formulário, pressão, spinner e confirmação mantidos; aparelho antes com 380×780 px, proposta geral com 418×858 px e pico com 459,8×943,8 px. A lista grande foi substituída pelo progresso solicitado. Na proposta, nenhum cursor em qualquer um dos 216 frames. O lado antes dos comparativos é a v4 original e conserva o cursor histórico como evidência. Ganho de leitura medido no texto de botão: 24→26,4 px no geral e 29,04 px no pico. O parallax é contido: pan do rótulo (−4,9;+2,1) px, do aparelho (−14;+6) e do indicador (−15,4;+6,6), com escalas respectivas 1,035 / 1,10 / 1,11. Não é ganho de leitura por rolagem interna.
+
+**Revisão temporal:** conferidas as 44 amostras do MP4 a 12 fps, as quatro janelas de ±0,5 s e a geometria dos 216 frames. Aproximação e retorno usam a mesma curva, sem quique; bordas não nascem/somem, formulário não desliza em relação à ilha e a confirmação fica dentro da tela. O passo não atravessa o aparelho ou a legenda. A reserva superior mínima no pico é 18,1 px; é pequena, porém preserva o contorno. Parallax discreto e legibilidade à distância continuam sujeitos ao olhar do Fabrício.
+
+| Instante do estudo | Achado e interpretação |
+|---|---|
+| 0,000–0,600 s | Alerta de pausa; apresentação estática deliberada, já prevista. Sem travada em janela de movimento. |
+| 0,600–1,300 s | Câmera aproxima o conjunto; caixa cresce até (856,1;18,1), 459,8×943,8. Não há escala/pan próprio de tela. |
+| 1,300–1,500 s | Pressão nativa de Publicar e começo do carregamento; nenhum ponteiro. |
+| 1,917–2,100 s | Vaga publicada aparece e assenta com check e cor nativos. Confirmação inteira, sem corte lateral. |
+| 2,000–2,900 s | Retorno contínuo; câmera, chassi, ilha e campos voltam juntos ao enquadramento geral. |
+| 2,900–3,583 s | Alerta de pausa; leitura final deliberada. Mesmo chassi inicial (891,55), 418×858, opacidade 1. |
+
+**Analisador:** `analise/achados.json` contém somente os dois alertas de pausa acima. Zero alertas de salto, sumiço, nascimento, travada contratual, cintilação e sobreposição de texto. `analise/geometria.json` registra presença de chassi/tela a 12 fps, opacidade mínima 0,999; nenhuma ausência. Fonte auxiliar sem erro de página e MAD 1,196 (cinza 480×270) contra MP4 no instante 1,980 s; essa comparação é parcial. Para conferir a presença no próprio MP4 em todos os frames, `analise/chassi-raster.json` mede a componente conexa escura da moldura em resolução nativa: 216/216 presentes, erro máximo contra a caixa prevista **1,742 px**, tolerância declarada 2 px para rasterização/compressão. Não foi alterado nenhum limiar do analisador.
+
+**Evidências de movimento:** `analise/faixas/estudo-01.png` e `estudo-02.png`; `analise/cortes/000.600000.png`, `001.300000.png`, `002.000000.png`, `002.900000.png` e respectivos MP4. Esses nomes “cortes” são do gerador; os quatro instantes são fronteiras da câmera, sem corte de cena. `manifesto.json` contém origens por string, estados e caixas por frame; delta máximo de fator entre frames **0,006809**. Todas as strings observadas têm origem no inventário acima; nenhuma cópia editorial nova.
+
+**Falha encontrada e corrigida na validação:** a primeira análise com fonte falhou porque o wrapper chamava `seek` antes de aguardar o `boot` assíncrono v4. Corrigido com `await`; o teste agora inicializa o HTML exportado com uma régua de estudo, exercita o mesmo caminho usado pelo analisador e percorre os 216 estados. Regressões cobrem câmera comum (incluindo ilha), posição normalizada dos campos, botão/confirmação dentro da tela, cursor ausente e seek reversível. O teste contra o código rejeitado falhou por cursor visível e limite de zoom antigo, antes da correção. Não foi necessário mexer no filme de produção.
+
+**Verificação:** `./scripts/verificar.sh` passou no `.venv` compartilhado: 13 testes gerais, 19 de motor e 27 de áudio/emendas/blocos, **59 ao todo**. São verificações técnicas, sem aprovação artística implícita. Não foi montado bloco, gerado áudio nem implementada a passagem v06→v07; a especificação de continuidade acima segue pendente de implementação na fase autorizada. Recall continua limitado aos casos conhecidos, sem estimativa geral. Próximo passo: auditoria independente do Maestro e avaliação do vídeo pelo Fabrício.
