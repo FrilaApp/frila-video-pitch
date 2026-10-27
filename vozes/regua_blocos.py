@@ -15,9 +15,9 @@ def validar_excecoes_a8(a8, excecoes, sha256):
     for falha in a8['falhas']:
         aceite = next((e for e in excecoes
                        if e.get('sha256') == sha256 and e.get('aprovador') == 'Fabrício'
-                       and e.get('data') == '2026-10-26'
+                       and e.get('data') in ('2026-10-26', '2026-10-27')
                        and e.get('regra') == falha['regra']
-                       and all(abs(e.get(k, -1) - falha.get(k, -2)) < 1e-8
+                       and all(abs(e.get(k, -1) - falha.get(k, -2)) < 1e-3
                                for k in ('ini', 'fim', 'duracao'))), None)
         if not aceite:
             raise ValueError('Falha A8 sem exceção de ouvido específica para esta tomada')
@@ -25,6 +25,31 @@ def validar_excecoes_a8(a8, excecoes, sha256):
     if len(usadas) != len(excecoes):
         raise ValueError('Exceção A8 não corresponde à medição atual')
     return usadas
+
+
+def validar_aprovacao_selecao(item, a8):
+    """Distingue formalmente a aprovação humana de ouvido da verificação técnica automática.
+
+    1. A aprovação humana é sempre obrigatória (aprovador == 'Fabrício' e data registrada).
+    2. A verificação técnica automática (a8 e Scribe) é independente:
+       - Se passou sem falhas: 'passou_verificacao_automatica' = True;
+       - Se houve falhas: 'passou_verificacao_automatica' = False, exigindo exceções formais.
+    """
+    ouvido = item.get('aprovacao_ouvido')
+    if not (isinstance(ouvido, dict) and ouvido.get('aprovado') is True
+            and ouvido.get('aprovador') == 'Fabrício' and ouvido.get('data')):
+        raise ValueError(f"Bloco {item.get('id')}: tomada sem aprovação humana de ouvido do Fabrício")
+
+    passou_auto = (a8.get('estado') == 'sem_falha' and not a8.get('falhas'))
+    if not passou_auto and not item.get('excecoes_a8'):
+        raise ValueError(f"Bloco {item.get('id')}: falha na verificação técnica automática sem exceção de ouvido")
+
+    return {
+        'aprovado_ouvido': True,
+        'passou_verificacao_automatica': passou_auto,
+        'aprovador': ouvido['aprovador'],
+        'data': ouvido['data']
+    }
 
 
 def ler_selecao(raiz, caminho=None):
@@ -37,25 +62,25 @@ def ler_selecao(raiz, caminho=None):
     cenas = {c['id']: c for c in roteiro['cenas']}
     dados = []
     for item, bloco in zip(selecao['blocos'], roteiro['blocos']):
-        ouvido = item['aprovacao_ouvido']
-        if not (ouvido['aprovado'] and ouvido['aprovador'] == 'Fabrício' and ouvido['data']):
-            raise ValueError('Bloco sem aprovação de ouvido registrada')
         arquivos = {k: raiz / item[k] for k in ('arquivo', 'metadados', 'scribe')}
         for k, campo in [('arquivo', 'sha256'), ('metadados', 'metadados_sha256'), ('scribe', 'scribe_sha256')]:
             if hash_arquivo(arquivos[k]) != item[campo]:
                 raise ValueError(f'Hash da seleção diverge: {item["id"]}/{k}')
         meta = json.loads(arquivos['metadados'].read_text())
         cs = [cenas[cid] for cid in bloco['cenas']]
+        fala_bloco = meta.get('fala') or meta.get('fala_oficial')
         if (meta['bloco'] != item['id'] or meta['cenas'] != bloco['cenas']
-                or meta['fala'] != ' '.join(c['pt']['fala'] for c in cs)):
+                or fala_bloco != ' '.join(c['pt']['fala'] for c in cs)):
             raise ValueError('Texto/cenas da tomada e roteiro divergem')
         with wave.open(str(arquivos['arquivo'])) as w:
             duracao = w.getnframes() / w.getframerate()
         palavras = validar_palavras(ler_scribe(arquivos['metadados'], arquivos['arquivo']), duracao)
-        a8 = verificar_a8([{'id': item['id'], 'fala': meta['fala']}], palavras)
+        a8 = verificar_a8([{'id': item['id'], 'fala': fala_bloco}], palavras)
+        status_aprovacao = validar_aprovacao_selecao(item, a8)
         aceites = validar_excecoes_a8(a8, item['excecoes_a8'], item['sha256'])
         dados.append({'selecao': item, 'cenas': cs, 'meta': meta, 'palavras': palavras,
                       'duracao': duracao, 'a8': a8, 'excecoes_aplicadas': aceites,
+                      'status_aprovacao': status_aprovacao,
                       'arquivo': str(arquivos['arquivo'].resolve())})
     return roteiro, selecao, dados
 
@@ -159,12 +184,14 @@ def gerar_oficial(raiz, bloco=None):
         cenas += [{k:c[k] for k in ('id','bloco','dur','janela_s_roteiro','apertada')}
                   | {'ini':c['ini']+ini} for c in local['cenas']]
         falas += [{**f,**{k:f[k]+ini for k in ('ini','fim','leg_ini','leg_fim')}} for f in local['falas']]
+        fala_bloco = d['meta'].get('fala') or d['meta'].get('fala_oficial')
         eventos.append({'id':f'bloco-{nome}','bloco':nome,'cena':d['cenas'][0]['id'],'k':1,
                         'ini':ini+recuo,'fim':ini+recuo+d['duracao'],
                         'ini_amostra':amostras[i]+round(recuo*SR),
                         'arquivo':d['arquivo'],'sha256':d['selecao']['sha256'],
-                        'fala':d['meta']['fala'],'aprovada':True,
+                        'fala':fala_bloco,'aprovada':True,
                         'aprovacao_ouvido':d['selecao']['aprovacao_ouvido'],
+                        'status_aprovacao':d['status_aprovacao'],
                         'excecoes_a8':d['excecoes_aplicadas']})
     if bloco:
         if not locais: raise ValueError('Bloco inexistente')

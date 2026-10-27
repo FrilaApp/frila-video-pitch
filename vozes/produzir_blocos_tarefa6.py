@@ -105,6 +105,8 @@ def compor_texto_bloco(cenas):
             partes.append(f"[thoughtful] {fala}")
         elif cid == "v13-fecho":
             partes.append("[thoughtful] Menos tempo procurando gente. [happy] Mais tempo no seu negócio. [thoughtful] Deixa que o Frila cuida.")
+        elif cid == "v14-assinatura":
+            partes.append(f"[thoughtful] {fala}")
         else:
             partes.append(fala)
     return " ".join(partes)

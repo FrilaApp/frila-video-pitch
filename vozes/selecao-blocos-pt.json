@@ -1,83 +1,120 @@
 {
-  "versao": 1,
+  "versao": 2,
   "idioma": "pt",
   "aprovador": "Fabrício",
-  "data": "2026-10-26",
-  "origem_decisao": "Tarefa 3: aprovação de ouvido informada pelo Maestro, em nome do Fabrício",
+  "data": "2026-10-27",
+  "origem_decisao": "Decisão do Fabrício informada pelo Maestro em 27/10/2026: seleção oficial dos 4 blocos (A: 5dcbc288..., B: 8f28d33d..., C: 61181794... T4 seed 7, D: 1cf3cc77... T2 seed 2) e aceite de ouvido das pausas A8",
   "blocos": [
     {
       "id": "A",
-      "uuid": "b92c749be0314efea49558e467da3eb8",
-      "arquivo": "vozes/tomadas/blocos/pt/A/b92c749be0314efea49558e467da3eb8/bruto.wav",
-      "metadados": "vozes/tomadas/blocos/pt/A/b92c749be0314efea49558e467da3eb8/bruto.json",
-      "scribe": "vozes/tomadas/blocos/pt/A/b92c749be0314efea49558e467da3eb8/scribe.json",
-      "sha256": "056f3ac2572220ed2b10160548dc276f4ff668fe7b84584519d5257f7e65b596",
-      "metadados_sha256": "d0c6f24b3f42c47edbcb93cfa01325a8acae96f3c52dbb0aa43dfc57b39218a5",
-      "scribe_sha256": "17dcee1f1015d3e84ca53fdb6b23180182456a29bdeb7e49eb22af1c8a524f83",
+      "uuid": "5dcbc2883164470aa2d0cb7fbe2b4a44",
+      "arquivo": "vozes/tomadas/blocos/pt/A/5dcbc2883164470aa2d0cb7fbe2b4a44/bruto.wav",
+      "metadados": "vozes/tomadas/blocos/pt/A/5dcbc2883164470aa2d0cb7fbe2b4a44/bruto.json",
+      "scribe": "vozes/tomadas/blocos/pt/A/5dcbc2883164470aa2d0cb7fbe2b4a44/scribe.json",
+      "sha256": "c513f97069e9d109e79e00c48a06c722f2b409a98c5be478e82fda24e70102c7",
+      "metadados_sha256": "a9265b1d63ba992745c7a70dd3fbda0928b21c5460a669ede17b087078ebb630",
+      "scribe_sha256": "bc30b10e30b98f17a33c3632eaf9aec536579231fcfebb9ee980dd8c5c9d50fd",
       "aprovacao_ouvido": {
         "aprovador": "Fabrício",
-        "data": "2026-10-26",
+        "data": "2026-10-27",
         "aprovado": true
       },
-      "excecoes_a8": []
+      "excecoes_a8": [
+        {
+          "regra": "A8_pausa_interna",
+          "ini": 5.66,
+          "fim": 6.16,
+          "duracao": 0.5,
+          "sha256": "c513f97069e9d109e79e00c48a06c722f2b409a98c5be478e82fda24e70102c7",
+          "palavra_antes": "Abrasel,",
+          "palavra_depois": "nove",
+          "aprovador": "Fabrício",
+          "data": "2026-10-27",
+          "motivo": "Pausa interna de 0,500 s após 'Abrasel,' aceita de ouvido pelo Fabrício em 27/10/2026."
+        }
+      ]
     },
     {
       "id": "B",
-      "uuid": "43bbc4666c484358834e92131dad38ce",
-      "arquivo": "vozes/tomadas/blocos/pt/B/43bbc4666c484358834e92131dad38ce/bruto.wav",
-      "metadados": "vozes/tomadas/blocos/pt/B/43bbc4666c484358834e92131dad38ce/bruto.json",
-      "scribe": "vozes/tomadas/blocos/pt/B/43bbc4666c484358834e92131dad38ce/scribe.json",
-      "sha256": "d0df9058dcf898fb88fb615caf9ed86791ad22102675413ca9348a70e02f2be2",
-      "metadados_sha256": "b649bcdeb4d05c7e3f57d9fd9828690bd75d1c4ff925a36031134d33879f2b93",
-      "scribe_sha256": "4b35d7949d9bfca8ad074c85ad8b4d451db43efa2d8bf86eec9873960d0ec8c4",
+      "uuid": "8f28d33d7aa44331ab4b8fccc47cdced",
+      "arquivo": "vozes/tomadas/blocos/pt/B/8f28d33d7aa44331ab4b8fccc47cdced/bruto.wav",
+      "metadados": "vozes/tomadas/blocos/pt/B/8f28d33d7aa44331ab4b8fccc47cdced/bruto.json",
+      "scribe": "vozes/tomadas/blocos/pt/B/8f28d33d7aa44331ab4b8fccc47cdced/scribe.json",
+      "sha256": "de7fd29e15d11f6bd851989fc7ded4548ac14fbfa3400131afc2a0b3e2f92962",
+      "metadados_sha256": "889fc5c402316a56b3c67184db03135c6575cb6ff1421897925a06e6f4810bb1",
+      "scribe_sha256": "e0110c8bc3a0001e9f50594e5f42cdd2de8c70db1b6f233f722ed7760e710489",
       "aprovacao_ouvido": {
         "aprovador": "Fabrício",
-        "data": "2026-10-26",
+        "data": "2026-10-27",
         "aprovado": true
       },
       "excecoes_a8": []
     },
     {
       "id": "C",
-      "uuid": "5e4184f8bc7840f39acd9e74169417c1",
-      "arquivo": "vozes/tomadas/blocos/pt/C/5e4184f8bc7840f39acd9e74169417c1/bruto.wav",
-      "metadados": "vozes/tomadas/blocos/pt/C/5e4184f8bc7840f39acd9e74169417c1/bruto.json",
-      "scribe": "vozes/tomadas/blocos/pt/C/5e4184f8bc7840f39acd9e74169417c1/scribe.json",
-      "sha256": "cfba9ecef3c2279bd78e98886ded81bf0f743d39988f95fd44e28b2bc6b5da1b",
-      "metadados_sha256": "fae79242dbdfe7dbacef6cc113e08f1bca5b9fd125d8efd7d1b42ad763b8db33",
-      "scribe_sha256": "c4317d52362897253db0dc5f07aa099dda247ae009a9125657f302d120ae0180",
+      "uuid": "61181794d7b4471891be3c8ca30dda2a",
+      "arquivo": "vozes/tomadas/blocos/pt/C/61181794d7b4471891be3c8ca30dda2a/bruto.wav",
+      "metadados": "vozes/tomadas/blocos/pt/C/61181794d7b4471891be3c8ca30dda2a/bruto.json",
+      "scribe": "vozes/tomadas/blocos/pt/C/61181794d7b4471891be3c8ca30dda2a/scribe.json",
+      "sha256": "30952dc5d40881d01deb783a9e26950743f1088596b1c5cc41bfd8d04cc74897",
+      "metadados_sha256": "b53c1bc0206da038201e925e3da61e46108514018b3bb9b7e65a474aedf88c17",
+      "scribe_sha256": "84dfbd75dd3dda17379c2de3d723fca87e0cd7b2bd315e26dc3cf4cb5a665629",
       "aprovacao_ouvido": {
         "aprovador": "Fabrício",
-        "data": "2026-10-26",
+        "data": "2026-10-27",
         "aprovado": true
       },
       "excecoes_a8": [
         {
           "regra": "A8_pausa_interna",
-          "ini": 6.86,
-          "fim": 7.46,
-          "duracao": 0.6,
-          "sha256": "cfba9ecef3c2279bd78e98886ded81bf0f743d39988f95fd44e28b2bc6b5da1b",
+          "ini": 1.84,
+          "fim": 2.36,
+          "duracao": 0.52,
+          "sha256": "30952dc5d40881d01deb783a9e26950743f1088596b1c5cc41bfd8d04cc74897",
+          "palavra_antes": "estudamos,",
+          "palavra_depois": "nenhum",
+          "aprovador": "Fabrício",
+          "data": "2026-10-27",
+          "motivo": "Pausa interna de 0,520 s após 'estudamos,' aceita de ouvido pelo Fabrício em 27/10/2026."
+        },
+        {
+          "regra": "A8_pausa_interna",
+          "ini": 6.56,
+          "fim": 7.08,
+          "duracao": 0.52,
+          "sha256": "30952dc5d40881d01deb783a9e26950743f1088596b1c5cc41bfd8d04cc74897",
+          "palavra_antes": "piloto:",
+          "palavra_depois": "oito",
+          "aprovador": "Fabrício",
+          "data": "2026-10-27",
+          "motivo": "Pausa interna de 0,520 s após 'piloto:' aceita de ouvido pelo Fabrício em 27/10/2026."
+        },
+        {
+          "regra": "A8_pausa_interna",
+          "ini": 7.96,
+          "fim": 8.7,
+          "duracao": 0.74,
+          "sha256": "30952dc5d40881d01deb783a9e26950743f1088596b1c5cc41bfd8d04cc74897",
           "palavra_antes": "semanas,",
           "palavra_depois": "50",
           "aprovador": "Fabrício",
-          "data": "2026-10-26",
-          "motivo": "Pausa de 0,600 s aceita de ouvido; preservar vírgula e tomada seed 1, sem regeneração."
+          "data": "2026-10-27",
+          "motivo": "Pausa interna de 0,740 s após 'semanas,' aceita de ouvido pelo Fabrício em 27/10/2026."
         }
       ]
     },
     {
       "id": "D",
-      "uuid": "4acfe322e133423faa154465d85fc3cf",
-      "arquivo": "vozes/tomadas/blocos/pt/D/4acfe322e133423faa154465d85fc3cf/bruto.wav",
-      "metadados": "vozes/tomadas/blocos/pt/D/4acfe322e133423faa154465d85fc3cf/bruto.json",
-      "scribe": "vozes/tomadas/blocos/pt/D/4acfe322e133423faa154465d85fc3cf/scribe.json",
-      "sha256": "1dfa3ad8e355a7e588e2ba685592fbb645bd9e51e769ed2305e918ffe815de0e",
-      "metadados_sha256": "28aa862d8270bd83e1fda23fc4d0898977b94bcfd72b5504b42b6c5e3e992ed0",
-      "scribe_sha256": "a868d0a1659bb820cb88544a2462b7c611b3b9ebdfd90b8795a93109970e86df",
+      "uuid": "1cf3cc77c05843048808b69346d243ac",
+      "arquivo": "vozes/tomadas/blocos/pt/D/1cf3cc77c05843048808b69346d243ac/bruto.wav",
+      "metadados": "vozes/tomadas/blocos/pt/D/1cf3cc77c05843048808b69346d243ac/bruto.json",
+      "scribe": "vozes/tomadas/blocos/pt/D/1cf3cc77c05843048808b69346d243ac/scribe.json",
+      "sha256": "b20225d401a24ea0b0fbd99f33f9036ca6d0c07a743512faf0206497e0872a30",
+      "metadados_sha256": "8663d9051ce5c4ed5fca92844f51fd84989548b86894524a148fe33e43c7aff0",
+      "scribe_sha256": "7f7b59e2ef51b30536bcdd407e2c33f5cf1504fca1e1c9174f5df702d4a27445",
       "aprovacao_ouvido": {
         "aprovador": "Fabrício",
-        "data": "2026-10-26",
+        "data": "2026-10-27",
         "aprovado": true
       },
       "excecoes_a8": []
@@ -90,22 +127,42 @@
       0,
       13,
       23,
-      33,
-      40
+      35,
+      42
     ],
     "recuos_voz_s": {
-      "A": 2.459175,
-      "B": 0.08,
-      "C": 0.34,
-      "D": 0.24
+      "A": 0.98367,
+      "B": 0.65,
+      "C": 0.6,
+      "D": 0.1
     },
-    "nota": "Tempos de régua planejados pelo engenheiro; aprovação das vozes não é aprovação automática da régua/mix."
+    "nota": "Régua final oficial calculada em 27/10/2026 com os 4 blocos chancelados pelo Fabrício (42 compassos = 82,628 s)."
   },
   "descartadas": [
+    {
+      "bloco": "A",
+      "uuid": "b92c749be0314efea49558e467da3eb8",
+      "acao": "substituída pela tomada 5dcbc2883164470aa2d0cb7fbe2b4a44 (Ana v3)"
+    },
+    {
+      "bloco": "B",
+      "uuid": "43bbc4666c484358834e92131dad38ce",
+      "acao": "substituída pela tomada 8f28d33d7aa44331ab4b8fccc47cdced (Gabriel v2)"
+    },
     {
       "bloco": "C",
       "uuid": "1eb568e024f04d7e8832cb2e5f6d1781",
       "acao": "preservar imutável; não selecionar"
+    },
+    {
+      "bloco": "C",
+      "uuid": "5e4184f8bc7840f39acd9e74169417c1",
+      "acao": "substituída pela tomada T4 61181794d7b4471891be3c8ca30dda2a (seed 7, sem chiado)"
+    },
+    {
+      "bloco": "D",
+      "uuid": "4acfe322e133423faa154465d85fc3cf",
+      "acao": "substituída pela tomada T2 1cf3cc77c05843048808b69346d243ac (seed 2, texto novo)"
     }
   ]
 }
