@@ -134,6 +134,27 @@ class TestPronuncia(unittest.TestCase):
         self.assertIn("Abrasel", txt_gabriel)  # Não mudou para Abrazéu
         self.assertIn("histórico-limpo", txt_gabriel)
 
+    def test_decisoes_gabriel_bloco_b(self):
+        """As decisões de ouvido de 27/10 para Gabriel mantêm a fala do Bloco B 100% no original."""
+        cena_v05 = next(c for c in self.roteiro["cenas"] if c["id"] == "v05-virada")
+        fala_b = cena_v05["pt"]["fala"]
+        
+        texto_modificado, subs = aplicar_pronuncia(
+            fala_b,
+            voz="gabriel",
+            apenas_aprovadas=True,
+            dicionario=self.dicionario
+        )
+        # Nenhuma substituição fonética para o Gabriel no Bloco B
+        self.assertEqual(texto_modificado, fala_b)
+        self.assertIn("Frila", texto_modificado)
+        self.assertNotIn("Fríla", texto_modificado)
+        
+        # Gabriel tem Frila, check-in e histórico com status aprovada
+        self.assertEqual(self.dicionario["Frila_gabriel"]["status"], "aprovada")
+        self.assertEqual(self.dicionario["check-in_gabriel"]["status"], "aprovada")
+        self.assertEqual(self.dicionario["histórico_gabriel"]["status"], "aprovada")
+
 
 if __name__ == "__main__":
     unittest.main()

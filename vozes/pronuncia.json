@@ -1,98 +1,226 @@
 {
   "Frila": {
+    "termo": "Frila",
     "forma": "Fríla",
-    "voz": "ambas",
-    "status": "candidata",
-    "nota": "Tônica no ri para evitar leitura inglesa fraila ou oxítona frilá"
+    "voz": "ana",
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 26/10: candidata aprovada para Ana"
+  },
+  "Frila_gabriel": {
+    "termo": "Frila",
+    "forma": "Frila",
+    "voz": "gabriel",
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 27/10: original aprovada para Gabriel (sem substituição fonética)"
   },
   "check-in": {
-    "forma": "tchéquin",
-    "voz": "ambas",
-    "status": "candidata",
-    "nota": "Adaptação fonética do estrangeirismo para o português do Brasil"
+    "termo": "check-in",
+    "forma": "check-in",
+    "voz": "ana",
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 26/10: original aprovada para Ana"
+  },
+  "check-in_gabriel": {
+    "termo": "check-in",
+    "forma": "check-in",
+    "voz": "gabriel",
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 27/10: original aprovada para Gabriel"
   },
   "Abrasel": {
-    "forma": "Abrazéu",
+    "termo": "Abrasel",
+    "forma": "Abrasel",
     "voz": "ana",
-    "status": "candidata",
-    "nota": "s sonoro /z/ e l final vocalizado em u /aw/"
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 26/10: original aprovada para Ana"
+  },
+  "Abrasel_gabriel": {
+    "termo": "Abrasel",
+    "forma": "Abrazéu",
+    "voz": "gabriel",
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 27/10: candidata aprovada para Gabriel"
   },
   "meta": {
+    "termo": "meta",
     "forma": "méta",
     "voz": "ana",
-    "status": "candidata",
-    "nota": "e aberto para evitar fechamento excessivo ou confusão com método"
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 26/10: candidata aprovada para Ana"
+  },
+  "meta_gabriel": {
+    "termo": "meta",
+    "forma": "meta",
+    "voz": "gabriel",
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 27/10: original aprovada para Gabriel"
   },
   "piloto": {
+    "termo": "piloto",
     "forma": "piloto",
     "voz": "ana",
-    "status": "candidata",
-    "nota": "Verificar se mantém paroxítona sem virar pilotó"
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 26/10: original aprovada para Ana"
+  },
+  "piloto_gabriel": {
+    "termo": "piloto",
+    "forma": "piloto",
+    "voz": "gabriel",
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 27/10: original aprovada para Gabriel"
   },
   "dezenove": {
-    "forma": "dezenóve",
+    "termo": "dezenove",
+    "forma": "dezenove",
     "voz": "ana",
-    "status": "candidata",
-    "nota": "o aberto na tônica"
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 26/10: original aprovada para Ana"
+  },
+  "dezenove_gabriel": {
+    "termo": "dezenove",
+    "forma": "dezenove",
+    "voz": "gabriel",
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 27/10: original aprovada para Gabriel"
   },
   "cinquenta": {
-    "forma": "cinkuenta",
+    "termo": "cinquenta",
+    "forma": "cinquenta",
     "voz": "ana",
-    "status": "candidata",
-    "nota": "Fallback fonético se cinquenta soar sem u ou k duro"
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 26/10: original aprovada para Ana"
+  },
+  "cinquenta_gabriel": {
+    "termo": "cinquenta",
+    "forma": "cinquenta",
+    "voz": "gabriel",
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 27/10: original aprovada para Gabriel"
   },
   "dez": {
+    "termo": "dez",
     "forma": "déis",
-    "voz": "ambas",
-    "status": "candidata",
-    "nota": "Abertura da vogal /dɛs/ sem fechar em dêz"
+    "voz": "ana",
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 26/10: candidata aprovada para Ana"
+  },
+  "dez_gabriel": {
+    "termo": "dez",
+    "forma": "déis",
+    "voz": "gabriel",
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 27/10: candidata aprovada para Gabriel"
   },
   "Federal": {
+    "termo": "Federal",
     "forma": "Federau",
     "voz": "ana",
-    "status": "candidata",
-    "nota": "l final vocalizado em u /aw/ sem lateral velar"
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 26/10: candidata aprovada para Ana"
+  },
+  "Federal_gabriel": {
+    "termo": "Federal",
+    "forma": "Federal",
+    "voz": "gabriel",
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 27/10: original aprovada para Gabriel"
   },
   "cuida": {
-    "forma": "cúida",
+    "termo": "cuida",
+    "forma": "cuida",
     "voz": "ana",
-    "status": "candidata",
-    "nota": "Ditongo decrescente para evitar hiato cu-í-da"
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 26/10: original aprovada para Ana"
+  },
+  "cuida_gabriel": {
+    "termo": "cuida",
+    "forma": "cuida",
+    "voz": "gabriel",
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 27/10: original aprovada para Gabriel"
   },
   "comparecimento": {
-    "forma": "com-pa-re-ci-men-to",
+    "termo": "comparecimento",
+    "forma": "comparecimento",
     "voz": "ana",
-    "status": "candidata",
-    "nota": "Fallback hifenizado se deslocar a tônica em palavra longa"
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 26/10: original aprovada para Ana"
+  },
+  "comparecimento_gabriel": {
+    "termo": "comparecimento",
+    "forma": "comparecimento",
+    "voz": "gabriel",
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 27/10: original aprovada para Gabriel"
   },
   "rotatividade": {
+    "termo": "rotatividade",
     "forma": "rotatividade",
     "voz": "ana",
-    "status": "candidata",
-    "nota": "Verificar r inicial e terminação dade"
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 26/10: original aprovada para Ana"
+  },
+  "rotatividade_gabriel": {
+    "termo": "rotatividade",
+    "forma": "rotatividade",
+    "voz": "gabriel",
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 27/10: original aprovada para Gabriel"
   },
   "negócio": {
+    "termo": "negócio",
     "forma": "negócio",
     "voz": "ana",
-    "status": "candidata",
-    "nota": "Verificar se mantém ditongo sem separar em quatro sílabas"
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 26/10: original aprovada para Ana"
+  },
+  "negócio_gabriel": {
+    "termo": "negócio",
+    "forma": "negócio",
+    "voz": "gabriel",
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 27/10: original aprovada para Gabriel"
   },
   "histórico": {
+    "termo": "histórico",
+    "forma": "histórico",
+    "voz": "ana",
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 26/10: original aprovada para Ana"
+  },
+  "histórico_gabriel": {
+    "termo": "histórico",
     "forma": "histórico",
     "voz": "gabriel",
-    "status": "candidata",
-    "nota": "s de coda limpo /s/ sem chiado /ʃ/"
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 27/10: original aprovada para Gabriel (sem substituição fonética)"
   },
   "restaurantes": {
+    "termo": "restaurantes",
     "forma": "restaurantes",
-    "voz": "ambas",
-    "status": "candidata",
-    "nota": "s de coda e final limpos /s/ sem chiado"
+    "voz": "ana",
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 26/10: original aprovada para Ana"
+  },
+  "restaurantes_gabriel": {
+    "termo": "restaurantes",
+    "forma": "restaurantes",
+    "voz": "gabriel",
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 27/10: original aprovada para Gabriel"
   },
   "Distrito": {
+    "termo": "Distrito",
     "forma": "Distrito",
     "voz": "ana",
-    "status": "candidata",
-    "nota": "s de coda limpo /s/ sem chiado /ʃ/"
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 26/10: original aprovada para Ana"
+  },
+  "Distrito_gabriel": {
+    "termo": "Distrito",
+    "forma": "Distrito",
+    "voz": "gabriel",
+    "status": "aprovada",
+    "nota": "Decisão do Fabrício em 27/10: original aprovada para Gabriel"
   }
 }

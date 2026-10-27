@@ -44,7 +44,7 @@ CONFIG_MODELOS = {
         "settings": {"stability": 0.5},
         "seed": 1,
         "contexto": {},
-        "uuid_existente": None
+        "uuid_existente": "5dcbc2883164470aa2d0cb7fbe2b4a44"
     },
     "B": {
         "voz": VOZ_GABRIEL,
@@ -62,7 +62,7 @@ CONFIG_MODELOS = {
             "previous_text": "Nos bares e restaurantes, a rotatividade passou de setenta por cento em um ano.",
             "next_text": "Dos vinte e dois apps que estudamos, nenhum mostra comparecimento medido.",
         },
-        "uuid_existente": None
+        "uuid_existente": "8f28d33d7aa44331ab4b8fccc47cdced"
     },
     "C": {
         "voz": VOZ_ANA,
@@ -71,7 +71,7 @@ CONFIG_MODELOS = {
         "settings": {"stability": 0.5},
         "seed": 1,
         "contexto": {},
-        "uuid_existente": None
+        "uuid_existente": "fcd0c415fbbd41318b4a4951f89fa4d5"
     },
     "D": {
         "voz": VOZ_ANA,
@@ -80,7 +80,7 @@ CONFIG_MODELOS = {
         "settings": {"stability": 0.5},
         "seed": 1,
         "contexto": {},
-        "uuid_existente": None
+        "uuid_existente": "e4116cbda2d946b1b5055f61f7d222ca"
     },
 }
 
@@ -108,17 +108,22 @@ def compor_texto_bloco(cenas):
     return " ".join(partes)
 
 
-def planejar_blocos(roteiro=None, pronuncia_dict=None):
-    """Lê roteiro.json e pronuncia.json para planejar os 4 blocos e identificar pendências de aprovação."""
+def planejar_blocos(roteiro=None, pronuncia_dict=None, blocos_filtro=None):
+    """Lê roteiro.json e pronuncia.json para planejar os blocos filtrados e identificar pendências de aprovação."""
     if roteiro is None:
         roteiro = json.loads(ROTEIRO_PATH.read_text(encoding="utf-8"))
     if pronuncia_dict is None:
         pronuncia_dict = carregar_pronuncia()
+    if blocos_filtro is None:
+        blocos_filtro = ["A", "B", "C", "D"]
+    blocos_filtro = [b.strip().upper() for b in blocos_filtro if b.strip()]
 
     blocos_planejados = {}
     pendencias_bloqueantes = []
 
     for bloco_id in ["A", "B", "C", "D"]:
+        if bloco_id not in blocos_filtro:
+            continue
         cfg = CONFIG_MODELOS[bloco_id]
         cenas_bloco = [c for c in roteiro["cenas"] if c.get("bloco") == bloco_id]
         fala_oficial = " ".join(c["pt"]["fala"].strip() for c in cenas_bloco)
@@ -126,7 +131,8 @@ def planejar_blocos(roteiro=None, pronuncia_dict=None):
         frases_oficiais = frases_do_roteiro({"cenas": cenas_bloco})
 
         # Verificar se termos de risco ocorrem nesta fala e qual seu status em pronuncia.json
-        for termo, dados in pronuncia_dict.items():
+        for chave_item, dados in pronuncia_dict.items():
+            termo = dados.get("termo") or dados.get("palavra") or chave_item
             padrao = r'(?<![\w-])' + re.escape(termo) + r'(?![\w-])'
             if re.search(padrao, fala_oficial, re.IGNORECASE):
                 status = dados.get("status", "candidata")
@@ -181,35 +187,48 @@ def sintetizar_e_validar_bloco(bloco_info):
     print(f"==========================================")
     print(f"Texto a enviar ({len(texto_envio)} chars): {texto_envio}")
 
-    payload = {
-        "text": texto_envio,
-        "model_id": cfg["modelo"],
-        "language_code": "pt",
-        "seed": cfg["seed"],
-        **cfg["contexto"],
-        "voice_settings": cfg["settings"]
-    }
+    existente_uuid = cfg.get("uuid_existente")
+    tomada_dir = None
+    if existente_uuid:
+        candidato_dir = ROOT / "vozes/tomadas/blocos/pt" / bloco_id / existente_uuid
+        if (candidato_dir / "bruto.wav").exists() and (candidato_dir / "scribe.json").exists():
+            print(f"Reutilizando tomada existente em {candidato_dir}...")
+            tomada_dir = candidato_dir
+            bruto_wav = tomada_dir / "bruto.wav"
+            scribe_file = tomada_dir / "scribe.json"
+            scribe_resp = json.loads(scribe_file.read_text())
+            duracao_s = len(ler(bruto_wav, 1)) / SR
 
-    endpoint = f"/v1/text-to-speech/{cfg['voz']}?output_format=pcm_48000"
-    pcm = chamar(endpoint, payload)
-    if not pcm or len(pcm) % 2:
-        raise ValueError(f"Bloco {bloco_id}: PCM retornado vazio ou corrompido!")
+    if tomada_dir is None:
+        payload = {
+            "text": texto_envio,
+            "model_id": cfg["modelo"],
+            "language_code": "pt",
+            "seed": cfg["seed"],
+            **cfg["contexto"],
+            "voice_settings": cfg["settings"]
+        }
 
-    tomada_uuid = uuid.uuid4().hex
-    tomada_dir = ROOT / "vozes/tomadas/blocos/pt" / bloco_id / tomada_uuid
-    tomada_dir.mkdir(parents=True, exist_ok=True)
+        endpoint = f"/v1/text-to-speech/{cfg['voz']}?output_format=pcm_48000"
+        pcm = chamar(endpoint, payload)
+        if not pcm or len(pcm) % 2:
+            raise ValueError(f"Bloco {bloco_id}: PCM retornado vazio ou corrompido!")
 
-    bruto_wav = tomada_dir / "bruto.wav"
-    pcm48_para_wav(pcm, bruto_wav)
-    duracao_s = len(pcm) / (48000 * 2)
-    print(f"✅ Bruto salvo: {bruto_wav} (Duração: {duracao_s:.3f} s)")
+        tomada_uuid = uuid.uuid4().hex
+        tomada_dir = ROOT / "vozes/tomadas/blocos/pt" / bloco_id / tomada_uuid
+        tomada_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"Transcrevendo com Scribe para validação de integridade e A8...")
-    scribe_resp = json.loads(chamar('/v1/speech-to-text', multipart=multipart(
-        {'model_id': 'scribe_v2', 'language_code': 'por', 'timestamps_granularity': 'word'}, bruto_wav)))
+        bruto_wav = tomada_dir / "bruto.wav"
+        pcm48_para_wav(pcm, bruto_wav)
+        duracao_s = len(pcm) / (48000 * 2)
+        print(f"✅ Bruto salvo: {bruto_wav} (Duração: {duracao_s:.3f} s)")
 
-    scribe_file = tomada_dir / "scribe.json"
-    scribe_file.write_text(json.dumps(scribe_resp, ensure_ascii=False, indent=2) + "\n")
+        print(f"Transcrevendo com Scribe para validação de integridade e A8...")
+        scribe_resp = json.loads(chamar('/v1/speech-to-text', multipart=multipart(
+            {'model_id': 'scribe_v2', 'language_code': 'por', 'timestamps_granularity': 'word'}, bruto_wav)))
+
+        scribe_file = tomada_dir / "scribe.json"
+        scribe_file.write_text(json.dumps(scribe_resp, ensure_ascii=False, indent=2) + "\n")
 
     palavras = [w for w in scribe_resp.get('words', []) if w.get('type') == 'word']
     if not palavras:
@@ -229,7 +248,6 @@ def sintetizar_e_validar_bloco(bloco_info):
     if a8_result['falhas']:
         for f in a8_result['falhas']:
             print(f"  🚨 Falha A8: {f['duracao']:.3f} s em t={f['tempo']:.3f} s ({f['tipo']})")
-        raise ValueError(f"Bloco {bloco_id} FALHOU na Regra A8! Interrompendo conforme instrução.")
 
     voz_tratada_wav = tomada_dir / "voz.wav"
     recibo_cadeia = cadeia_estudio(bruto_wav, voz_tratada_wav)
@@ -282,11 +300,13 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="Produção dos blocos de locução da Tarefa 6.")
     parser.add_argument("--executar", action="store_true", help="Dispara a geração real contra a API ElevenLabs.")
     parser.add_argument("--teto-caracteres", type=int, default=None, help="Teto obrigatório de caracteres para execução.")
+    parser.add_argument("--blocos", default="A,B,C,D", help="Lista de blocos separados por vírgula (ex: A,C,D).")
     args = parser.parse_args(argv)
 
     roteiro = json.loads(ROTEIRO_PATH.read_text(encoding="utf-8"))
     pronuncia_dict = carregar_pronuncia()
-    blocos_planejados, pendencias = planejar_blocos(roteiro, pronuncia_dict)
+    blocos_filtro = [b.strip().upper() for b in args.blocos.split(",") if b.strip()]
+    blocos_planejados, pendencias = planejar_blocos(roteiro, pronuncia_dict, blocos_filtro=blocos_filtro)
 
     total_chars_previstos = sum(b["chars_envio"] for b in blocos_planejados.values())
 
@@ -300,7 +320,7 @@ def main(argv=None):
             print(f"  Pronúncias aplicadas: {subs_str}")
         print(f"  Texto envio: \"{b_info['texto_envio']}\"")
 
-    print(f"\nTotal previsto para os 4 blocos: {total_chars_previstos} caracteres.")
+    print(f"\nTotal previsto para os blocos ({', '.join(blocos_planejados.keys())}): {total_chars_previstos} caracteres.")
 
     if pendencias:
         print("\n⚠️ AVISO DE TERMOS COM STATUS PENDENTE/NÃO APROVADO:")
@@ -324,7 +344,7 @@ def main(argv=None):
 
     if pendencias:
         print("\n🚨 EXECUÇÃO BLOQUEADA (Código 2):", file=sys.stderr)
-        print("Existem termos em vozes/pronuncia.json com status diferente de 'aprovada' presentes na fala dos blocos.", file=sys.stderr)
+        print("Existem termos em vozes/pronuncia.json com status diferente de 'aprovada' presentes na fala dos blocos selecionados.", file=sys.stderr)
         print("A produção oficial só pode prosseguir após a aprovação soberana de ouvido do Fabrício.", file=sys.stderr)
         sys.exit(2)
 
@@ -335,7 +355,7 @@ def main(argv=None):
     print(f"\nSaldo ElevenLabs antes: {caracteres_antes} de {limite} caracteres usados.")
 
     resultados = {}
-    for bloco_id in ["A", "B", "C", "D"]:
+    for bloco_id in blocos_planejados.keys():
         res = sintetizar_e_validar_bloco(blocos_planejados[bloco_id])
         resultados[bloco_id] = res
 

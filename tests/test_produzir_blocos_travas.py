@@ -50,10 +50,20 @@ class TestProduzirBlocosTravas(unittest.TestCase):
 
     def test_termo_candidata_bloqueia_com_codigo_2(self):
         """Se houver termos com status 'candidata' na fala dos blocos, aborta com código 2."""
-        # O dicionário atual vozes/pronuncia.json contém termos com status 'candidata' (ex: Frila, check-in)
-        with self.assertRaises(SystemExit) as ctx:
-            prod.main(["--executar", "--teto-caracteres", "5000"])
-        self.assertEqual(ctx.exception.code, 2)
+        dicionario_com_candidata = {
+            "Frila": {
+                "termo": "Frila",
+                "forma": "Fríla",
+                "voz": "gabriel",
+                "status": "candidata",
+                "nota": "teste pendente"
+            }
+        }
+        with patch("vozes.produzir_blocos_tarefa6.carregar_pronuncia", return_value=dicionario_com_candidata), \
+             patch("vozes.produzir_blocos_tarefa6.chamar", side_effect=AssertionError("Rede não pode ser chamada!")):
+            with self.assertRaises(SystemExit) as ctx:
+                prod.main(["--blocos", "B", "--executar", "--teto-caracteres", "5000"])
+            self.assertEqual(ctx.exception.code, 2)
 
     def test_termo_aprovado_aplica_forma_fonetica_sem_mudar_roteiro(self):
         """Quando aprovadas, as formas fonéticas entram na fala enviada, e roteiro/legendas não mudam."""
@@ -91,6 +101,36 @@ class TestProduzirBlocosTravas(unittest.TestCase):
         for c in roteiro_atual["cenas"]:
             self.assertNotIn("tchéquin", c["pt"]["legenda"])
             self.assertNotIn("Fríla", c["pt"]["legenda"])
+
+    def test_filtro_blocos_todos_aprovados(self):
+        """Todos os blocos (A, B, C, D) estão com status aprovado de acordo com as decisões do Fabrício."""
+        dicionario_atual = carregar_pronuncia()
+        
+        # Testando A, C, D: 0 pendências
+        blocos_acd, pendencias_acd = prod.planejar_blocos(
+            self.roteiro_original,
+            pronuncia_dict=dicionario_atual,
+            blocos_filtro=["A", "C", "D"]
+        )
+        self.assertEqual(len(pendencias_acd), 0)
+        self.assertEqual(set(blocos_acd.keys()), {"A", "C", "D"})
+        # Fríla aplicada nos blocos D e A onde cabível
+        self.assertIn("Fríla", blocos_acd["D"]["texto_envio"])
+        self.assertIn("Méta", blocos_acd["C"]["texto_envio"])
+        self.assertIn("déis", blocos_acd["C"]["texto_envio"])
+        self.assertIn("Federau", blocos_acd["C"]["texto_envio"])
+
+        # Testando Bloco B (Gabriel): 0 pendências e texto idêntico ao original (formas originais aprovadas)
+        blocos_b, pendencias_b = prod.planejar_blocos(
+            self.roteiro_original,
+            pronuncia_dict=dicionario_atual,
+            blocos_filtro=["B"]
+        )
+        self.assertEqual(len(pendencias_b), 0)
+        self.assertEqual(blocos_b["B"]["texto_envio"], blocos_b["B"]["fala_oficial"])
+        self.assertIn("Frila", blocos_b["B"]["texto_envio"])
+        self.assertIn("check-in", blocos_b["B"]["texto_envio"])
+        self.assertIn("histórico", blocos_b["B"]["texto_envio"])
 
 
 if __name__ == "__main__":
