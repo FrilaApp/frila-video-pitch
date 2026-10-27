@@ -105,6 +105,7 @@ class Sessao(unittest.TestCase):
                  'falas':[{'id':f'legenda-{i}','cena':'v01','k':i+1,'ini':.2,'fim':.3}
                           for i in range(8)]}
             cfg=json.loads((RAIZ/'motor/mixagem.json').read_text())
+            cfg['musica'].pop('montagem', None)  # Este ensaio usa trilha sintética de quatro segundos.
             cfg['voz']['frases']={b['id']:{'ganho_db':0} for b in blocos}
             m=audio2.montar(t,[],cfg,d/'sessao',trilha=d/'trilha.wav')
             self.assertEqual([f['id'] for f in m['frases']],[b['id'] for b in blocos])
@@ -130,6 +131,10 @@ class Sessao(unittest.TestCase):
                  'ini': 1., 'fim': 2., 'arquivo': str(d / 'frase.wav'), 'fala': 'Teste.',
                  'limites_confirmados': True, 'fala_ini_amostra': 0, 'fala_fim_amostra': 48000}]}
             cfg = json.loads((RAIZ / 'motor/mixagem.json').read_text())
+            cfg['efeitos']['habilitado'] = True  # Regressão específica do bus de efeitos legado.
+            # O ensaio aumenta o ducking em 1 dB para provar reúso do cache;
+            # começa abaixo do teto, independentemente da receita de produção.
+            cfg['musica']['duck']['profundidade_db'] = 14
             eventos = [{'id': 'g', 'tipo': 'grave', 't': .7145}, {'id': 'colisao', 'tipo': 'grave', 't': 1.}]
             m = audio2.montar(t, eventos, cfg, d / 'sessao', trilha=d / 'trilha.wav')
             stems = d / 'sessao/stems'

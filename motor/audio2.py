@@ -163,6 +163,41 @@ EFEITOS = {"clique": (clique, .55), "tick": (tique, .35), "pop": (pop, .5), "swi
 
 
 # ---------- montagem ----------
+def montagem_musical(T, n, trilha, plano):
+    """Trechos contínuos; só saltos declarados recebem crossfade, nunca a voz."""
+    src = ler(trilha, 2)
+    if plano.get('sha256') and hash_arquivo(trilha) != plano['sha256']:
+        raise ValueError('Hash da trilha diverge da montagem analisada')
+    bar = T['bar']; origem = plano['origem_s']
+    trechos = plano['trechos']; meio = round(plano['crossfade_ms'] * SR / 2000)
+    m = np.zeros((n, 2), dtype=np.float32)
+    anterior = None
+    for s in trechos:
+        a, b = (round(s[k] * bar * SR) for k in ('ini_compasso', 'fim_compasso'))
+        i = round((origem + s['origem_compasso'] * bar) * SR)
+        if a != (anterior[1] if anterior else 0) or not 0 <= a < b <= n or i < 0 or i+b-a > len(src):
+            raise ValueError('Trecho musical fora da fonte ou montagem descontínua')
+        m[a:b] = src[i:i+b-a]
+        if anterior:
+            pa, pb, pi = anterior
+            if abs(pi + pb-pa-i) > 1:
+                l, r = a-meio, a+meio
+                if l < 0 or r > n or i-meio < 0 or pi+r-pa > len(src):
+                    raise ValueError('Crossfade sem contexto na fonte')
+                if any(f['ini'] < r/SR and f['fim'] > l/SR for f in T['falas']):
+                    raise ValueError('Crossfade musical coincide com fala')
+                u = np.linspace(0, 1, r-l, dtype=np.float32)
+                u = (u*u*(3-2*u))[:, None]
+                m[l:r] = src[pi+l-pa:pi+r-pa]*(1-u) + src[i-meio:i+meio]*u
+        anterior = (a,b,i)
+    if not anterior or anterior[1] != n:
+        raise ValueError('Montagem musical não cobre a régua inteira')
+    fade = round(plano.get('fade_final_ms', 0)*SR/1000)
+    if fade:
+        m[-fade:] *= np.linspace(1,0,fade,dtype=np.float32)[:,None]
+    return m
+
+
 def musica(T, N, trilha=TRILHA):
     src = ler(trilha, 2)
     m = np.zeros((N, 2))
@@ -236,7 +271,7 @@ def envoltoria(n, intervalos, cfg, protecao):
 
 def cache_wav(raiz, nome, receita, produzir):
     """Cache por conteúdo e versão da receita; mantém os stems correntes legíveis."""
-    chave = hash_json({'receita': receita, 'versao_motor': 1})
+    chave = hash_json({'receita': receita, 'versao_motor': 2})
     arquivo = raiz / 'objetos' / f'{nome}-{chave}.wav'
     if not arquivo.exists():
         salvar(arquivo, produzir())
@@ -280,9 +315,12 @@ def montar(T, eventos, cfg, saida, trilha=TRILHA, voz_dir=None):
         if not ativo.size:
             raise ValueError(f'Frase sem atividade: {fid}')
         ajuste = cfg['voz']['rms_ativo_alvo_dbfs'] - db(ativo)
-        ganho = op.get('ganho_db', float(np.clip(ajuste, -cfg['voz']['ajuste_automatico_max_db'],
-                                                cfg['voz']['ajuste_automatico_max_db'])))
-        ganho += cfg['voz']['ganho_bus_db']
+        if cfg['voz'].get('preservar_amostras', False):
+            ganho = 0.
+        else:
+            ganho = op.get('ganho_db', float(np.clip(ajuste, -cfg['voz']['ajuste_automatico_max_db'],
+                                                    cfg['voz']['ajuste_automatico_max_db'])))
+            ganho += cfg['voz']['ganho_bus_db']
         x = (x * 10 ** (ganho / 20)).astype(np.float32)
         preparado = saida / 'frases' / f'{fid}-{hash_json([hash_arquivo(p), ganho])}.wav'
         if not preparado.exists():
@@ -296,6 +334,8 @@ def montar(T, eventos, cfg, saida, trilha=TRILHA, voz_dir=None):
                        'limites_confirmados': meta.get('limites_confirmados', False)})
     if not frases:
         raise ValueError('Sessão sem frases')
+    if T.get('audio_blocos'):
+        intervalos = [(f['ini'], f['fim']) for f in T['falas']]
     caminhos, chaves = {}, {}
 
     def stem(nome, receita, produzir):
@@ -311,14 +351,21 @@ def montar(T, eventos, cfg, saida, trilha=TRILHA, voz_dir=None):
                       {k: val for k, val in cfg['musica'].items() if k != 'duck'}, cfg['cenas'], T['cenas']]
 
     def base_musical():
-        m = musica(T, n, trilha)
+        plano = cfg['musica'].get('montagem') if T.get('audio_blocos') else None
+        m = montagem_musical(T, n, trilha, plano) if plano else musica(T, n, trilha)
         ativo = np.sqrt(np.mean(m * m, axis=1)) > 1e-6
         if not ativo.any():
             raise ValueError('Música sem atividade')
         m *= 10 ** ((cfg['musica']['rms_referencia_dbfs'] - db(m[ativo]) + cfg['musica']['ganho_bus_db']) / 20)
+        niveis = np.zeros(n, dtype=np.float32)
         for c in T['cenas']:
             ganho = cfg['cenas'].get(c['id'], {}).get('musica_ganho_adicional_db', 0)
-            m[round(c['ini'] * SR):round((c['ini'] + c['dur']) * SR)] *= 10 ** (ganho / 20)
+            niveis[round(c['ini']*SR):round((c['ini']+c['dur'])*SR)] = ganho
+        for k in np.flatnonzero(np.diff(niveis)) + 1:
+            a,b = max(0,k-round(.1*SR)),min(n,k+round(.1*SR))
+            u = np.linspace(0,1,b-a); u=u*u*(3-2*u)
+            niveis[a:b] = niveis[a]*(1-u)+niveis[b-1]*u
+        m *= np.power(10.,niveis/20)[:,None]
         return m
 
     mb = stem('musica-base', receita_musica, base_musical)
@@ -331,7 +378,7 @@ def montar(T, eventos, cfg, saida, trilha=TRILHA, voz_dir=None):
               lambda: mb * em[:, None])
     eb = np.zeros(n, dtype=np.float32)
     inventario = []
-    for e in eventos:
+    for e in (eventos if cfg['efeitos'].get('habilitado', True) else []):
         seed = semente_evento(e)
         receita = [e['tipo'], seed]
         amostra, _ = cache_wav(saida, 'evento', receita, lambda: sintetizar_evento(e)[0])
@@ -359,6 +406,8 @@ def montar(T, eventos, cfg, saida, trilha=TRILHA, voz_dir=None):
     gravar_json(saida / 'mixagem.json', cfg)
     manifesto = {'versao': 1, 'sample_rate': SR, 'amostras': n, 'regua_sha256': hash_json(T),
                  'config_sha256': hash_json(cfg), 'frases': frases, 'eventos': inventario,
+                 'janelas_fala': T['falas'] if T.get('audio_blocos') else [],
+                 'intervalos_duck_s': intervalos,
                  'stems': caminhos, 'chaves': chaves,
                  'sha256_stems': {k: hash_arquivo(p) for k, p in caminhos.items()},
                  'premix_sha256': hash_arquivo(saida / 'premix.wav'),
@@ -428,7 +477,8 @@ def main():
     args = ap.parse_args()
     cfg = json.loads(args.config.read_text())
     T = json.loads((args.regua or AQUI / f'tempos-{args.idioma}.json').read_text())
-    eventos = json.loads((args.eventos or AQUI / f'eventos-{args.idioma}.json').read_text())
+    eventos = (json.loads((args.eventos or AQUI / f'eventos-{args.idioma}.json').read_text())
+               if cfg['efeitos'].get('habilitado', True) else [])
     saida = args.saida or AQUI / f'cache/audio/{args.idioma}'
     montar(T, eventos, cfg, saida, args.trilha, args.voz_dir or AQUI / f'cache/voz/{args.idioma}')
     try:

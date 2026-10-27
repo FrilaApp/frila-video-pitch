@@ -73,9 +73,16 @@ def medir_frase(v, m, e, a, b, cfg):
     ok = (vm is None or vm >= p['margem_voz_musica_min_db']) and (ve is None or ve >= p['margem_voz_efeitos_min_db'])
     ok &= (vf is None or vf >= p['margem_voz_fundo_min_db']) and (local is None or local >= p['margem_voz_fundo_min_db'])
     ok &= all(r['ok'] for r in bordas)
-    ok &= abs(referencia - cfg['voz']['rms_ativo_alvo_dbfs']) <= cfg['voz']['tolerancia_db']
+    if not cfg['voz'].get('preservar_amostras', False):
+        ok &= abs(referencia - cfg['voz']['rms_ativo_alvo_dbfs']) <= cfg['voz']['tolerancia_db']
+    ativos_vm = [r['voz_musica_db'] for r in janelas
+                 if r['voz_dbfs'] >= referencia-20 and r['voz_musica_db'] is not None]
+    if cfg['qa'].get('vm_local_ativo_db') is not None and ativos_vm:
+        ok &= min(ativos_vm) >= cfg['qa']['vm_local_ativo_db']
     return {'ok': bool(ok), 'referencia_voz_dbfs': referencia, 'voz_musica_db': vm,
             'voz_efeitos_coexistencia_min_db': ve, 'voz_fundo_db': vf,
+            'voz_musica_ativa_min_db': min(ativos_vm) if ativos_vm else None,
+            'voz_musica_ativa_mediana_db': float(np.median(ativos_vm)) if ativos_vm else None,
             'voz_fundo_local_min_db': local, 'bordas': bordas, 'janelas': janelas,
             'trechos_fracos_para_escuta': fracas,
             'mono_voz_fundo_db': diferenca_db(v[a:b].mean(axis=1), fundo[a:b].mean(axis=1))}
@@ -203,9 +210,16 @@ def conferir_sessao(sessao, cfg=None, final=None, trechos=False):
                                  'pico_bus_efeitos_dbfs': float(20 * np.log10(np.max(np.abs(e[i:j])) + 1e-12)),
                                  'voz_efeitos_db': diferenca_db(v[i:j], e[i:j]),
                                  'palavras_afetadas': 'pendente de voz/Scribe/escuta'})
+    por_frase = []
+    for f in man.get('janelas_fala', []):
+        medidas = medir_frase(v,m,e,round(f['ini']*SR),round(f['fim']*SR),cfg)
+        por_frase.append({'id':f['id'],'ini':f['ini'],'fim':f['fim'],'fala':f['fala'],'medidas':medidas})
+        if not medidas['ok']:
+            falhas.append(f"Margem por frase falhou: {f['id']}")
     resultado = {'tecnico_ok': not falhas, 'estado': 'divergência' if falhas else 'inconclusivo' if avisos else 'apto para escuta',
                  'null_maximo': null, 'falhas': falhas, 'avisos': avisos, 'frases': frases,
                  'colisoes': colisoes, 'aprovacao_cauê': None}
+    resultado['margens_por_frase'] = por_frase
     if final:
         resultado['final'] = conferir_final(final, cfg, premix)
         if not resultado['final']['ok']:

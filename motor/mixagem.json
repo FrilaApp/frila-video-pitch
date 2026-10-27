@@ -16,20 +16,50 @@
     "protecao_inicio_ms": 80,
     "protecao_fim_ms": 160,
     "fade_em_fala": false,
-    "frases": {}
+    "frases": {},
+    "preservar_amostras": true
   },
   "musica": {
-    "rms_referencia_dbfs": -24,
+    "rms_referencia_dbfs": -34.52543948963765,
     "referencia_independe_da_voz": true,
     "ganho_bus_db": 0,
     "duck": {
-      "profundidade_db": 14,
+      "profundidade_db": 22,
       "inicio_rampa_antes_ms": 200,
       "atenuacao_completa_antes_ms": 50,
-      "segura_ms": 250,
-      "volta_ms": 450,
-      "extra_nas_bordas_db": 3,
+      "segura_ms": 200,
+      "volta_ms": 984,
+      "extra_nas_bordas_db": 0,
       "maximo_db": 22
+    },
+    "montagem": {
+      "sha256": "29a93bdd8ff4ebfe1eff786eb788c0bcc8c82db2338690c5bceebb7aff8eb1e5",
+      "origem_s": 1.014,
+      "crossfade_ms": 40,
+      "fade_final_ms": 80,
+      "indices": "base zero, fim exclusivo",
+      "trechos": [
+        {
+          "ini_compasso": 0,
+          "fim_compasso": 13,
+          "origem_compasso": 0
+        },
+        {
+          "ini_compasso": 13,
+          "fim_compasso": 29,
+          "origem_compasso": 32
+        },
+        {
+          "ini_compasso": 29,
+          "fim_compasso": 33,
+          "origem_compasso": 20
+        },
+        {
+          "ini_compasso": 33,
+          "fim_compasso": 40,
+          "origem_compasso": 50
+        }
+      ]
     }
   },
   "efeitos": {
@@ -44,7 +74,8 @@
       "grave": {
         "ajuste_sobre_referencia_legada_db": -9
       }
-    }
+    },
+    "habilitado": false
   },
   "protecao": {
     "inicio_frase_ms": 200,
@@ -75,6 +106,7 @@
   "qa": {
     "lufs_tolerancia_lu": 0.5,
     "janela_ms": 100,
-    "passo_ms": 10
+    "passo_ms": 10,
+    "vm_local_ativo_db": 12
   }
 }
