@@ -9,8 +9,11 @@ Substitui o fluxo "tudo de uma vez" do `HANDOFF.md` §5–6. Origem: a v5 de 108
 | **Maestro** (Claude Code) | Roteiro mestre, divisão em blocos, montagem final, auditoria independente de toda emenda e de toda transição | Código de áudio e de cena (só revisa) |
 | **Engenheiro de Áudio** (role `Engenheiro de Áudio`) | `vozes/`, `PLANO-AUDIO.md`, `motor/audio2.py`, `motor/conferir_audio.py`, `motor/mixagem.json`, ferramenta de emendas. Gera a voz, mixa **e revisa o próprio som contra o vídeo** | `motor/filme.html`, `DESIGN.md` |
 | **Diretor de Motion** (role `Diretor de Motion`) | `motor/filme.html`, `DESIGN.md`, `motor/render.py`, ferramenta de revisão de vídeo. Cenas, animação, transições, continuidade | `vozes/`, `mixagem.json` |
+| **Revisor** (Antigravity, o "Gemini" do Fabrício) | Revisão e veredito de **todo PR** | Qualquer arquivo (somente leitura) |
 
-Cada papel trabalha no seu worktree e commita no seu branch, sem push. O Maestro abre o PR. **Quem produz também revisa, e o Maestro audita de forma independente** (mede de novo; não repete o relatório de quem fez).
+Cada papel trabalha no seu worktree e commita no seu branch, sem push.
+
+**Revisão de PR.** Todo PR é enviado ao **Revisor (Antigravity)**, que avalia contra o `AGENTS.md` e este playbook, mede por conta própria (roda `./scripts/verificar.sh` num worktree descartável), e emite o veredito: APROVAR, APROVAR COM RESSALVAS ou REPROVAR, com achados por gravidade (arquivo:linha) e o que não conseguiu verificar. **O veredito do Revisor basta** (decisão do Fabrício em 26/10/2026): com APROVAR, o Maestro faz o merge e avisa o Fabrício; com RESSALVAS, o autor corrige e o Revisor reavalia; com REPROVAR, volta ao autor. O Revisor nunca edita nem faz merge. O Maestro continua auditando de forma independente antes de enviar o PR ao Revisor. O Maestro abre o PR. **Quem produz também revisa, e o Maestro audita de forma independente** (mede de novo; não repete o relatório de quem fez).
 
 ## 2. Fluxo
 
