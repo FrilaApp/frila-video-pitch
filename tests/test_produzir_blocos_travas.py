@@ -132,6 +132,66 @@ class TestProduzirBlocosTravas(unittest.TestCase):
         self.assertIn("check-in", blocos_b["B"]["texto_envio"])
         self.assertIn("histórico", blocos_b["B"]["texto_envio"])
 
+    def test_parada_a8_padrao_aborta_e_continuar_apos_falha_permite(self):
+        """Falha A8 aborta por padrão com ValueError, mas continua se continuar_apos_falha=True."""
+        bloco_mock = {
+            "bloco": "T",
+            "texto_envio": "Texto de teste sem dois pontos.",
+            "frases_oficiais": [{"id": "v01", "fala": "Texto de teste sem dois pontos."}],
+            "fala_oficial": "Texto de teste sem dois pontos.",
+            "cenas": ["v01"],
+            "substituicoes": [],
+            "cfg": {
+                "voz": "mock_voice_id",
+                "modelo": "eleven_v3",
+                "seed": 1,
+                "contexto": {},
+                "settings": {},
+                "uuid_existente": None
+            }
+        }
+
+        # Mock PCM 48kHz (1 segundo de silêncio = 48000 * 2 bytes)
+        fake_pcm = b"\x00\x00" * 48000
+        # Mock Scribe retornando duas palavras com pausa de 0.600 s (viola A8)
+        fake_scribe = {
+            "text": "Texto teste",
+            "words": [
+                {"text": "Texto", "start": 0.100, "end": 0.300, "type": "word"},
+                {"text": "teste", "start": 0.900, "end": 1.200, "type": "word"}
+            ]
+        }
+
+        with patch("vozes.produzir_blocos_tarefa6.chamar", side_effect=[fake_pcm, json.dumps(fake_scribe)]), \
+             patch("vozes.produzir_blocos_tarefa6.multipart", return_value=b"fake_multipart"), \
+             patch("vozes.produzir_blocos_tarefa6.normal", return_value="texto teste"), \
+             patch("vozes.produzir_blocos_tarefa6.pcm48_para_wav"), \
+             patch("vozes.produzir_blocos_tarefa6.gravar_json"), \
+             patch("pathlib.Path.mkdir"), \
+             patch("pathlib.Path.write_text"), \
+             patch("vozes.produzir_blocos_tarefa6.cadeia_estudio", return_value={"shelf_ar_aplicado": False}), \
+             patch("vozes.produzir_blocos_tarefa6.analisar_timbre_arquivo", return_value={"f0_mediano_hz": 200, "centroide_medio_hz": 3000}), \
+             patch("vozes.produzir_blocos_tarefa6.analisar_chiado_tomada", return_value={
+                 "total_palavras_analisadas": 2,
+                 "palavras_com_chiado": 0,
+                 "taxa_chiado_pct": 0.0,
+                 "razao_mediana_limpo_chiado": 10.0,
+                 "veredito_triagem": "limpo"
+             }), \
+             patch("vozes.produzir_blocos_tarefa6.hash_arquivo", return_value="fakehash"):
+
+            # 1. Por padrão (continuar_apos_falha=False), deve levantar ValueError
+            with self.assertRaises(ValueError) as ctx:
+                prod.sintetizar_e_validar_bloco(bloco_mock, continuar_apos_falha=False)
+            self.assertIn("regra A8 violada", str(ctx.exception))
+
+            # 2. Com continuar_apos_falha=True, deve prosseguir e retornar o resultado
+            with patch("vozes.produzir_blocos_tarefa6.chamar", side_effect=[fake_pcm, json.dumps(fake_scribe)]):
+                res = prod.sintetizar_e_validar_bloco(bloco_mock, continuar_apos_falha=True)
+                self.assertEqual(res["bloco"], "T")
+                self.assertEqual(res["a8"]["estado"], "falha")
+                self.assertEqual(len(res["a8"]["falhas"]), 1)
+
 
 if __name__ == "__main__":
     unittest.main()
