@@ -1,6 +1,6 @@
 # Plano de áudio — Frila v5, PT-BR
 
-**Estado atual (26/10/2026): roteiro enxuto e voz Ana Dias aprovados pelo Fabrício; autorizada uma geração real apenas do Bloco A. Base visual: v4 de 76,7 s, nota 8/10. PLAYBOOK A1–A9 e §J substituem as orientações históricas de geração/edição por frase e a baseline Fernanda. §§A–I preservam o histórico das tarefas anteriores.**
+**Estado atual (26/10/2026): Bloco A aprovado pelo Fabrício e preservado. B e D gerados, A8 sem falha; C bloqueado nas duas seeds autorizadas, sem tomada selecionada. Nenhuma nova geração está liberada. §K registra autorizações, medições e fronteiras locais; §§A–J preservam o histórico. Base visual: v4 de 76,7 s, nota 8/10. PLAYBOOK A1–A9 permanece vigente.**
 
 Prioridade: preservar a frase inteira, manter a voz inteligível e permitir ajustes independentes de voz, música e efeitos. A narrativa de referência é `docs/historico/NARRATIVA-v5-aprovada.md`; este plano não altera texto, imagem, voz escolhida ou trilha.
 
@@ -828,3 +828,229 @@ hashes íntegros e três arquivos da tomada A sem alteração, registrados em
 `motor/cache/bloco-a/verificacao-exportacao.json`.
 Nenhum vídeo do bloco foi entregue para revisão audiovisual nesta tarefa;
 escuta perceptiva e avaliação editorial/A9 continuam pendentes do Fabrício.
+
+## K. Blocos B/C/D e auditoria local das fronteiras — plano antes da execução
+
+**Autorizado pelo Fabrício/Maestro:** A aprovado, PR #10 integrado. Branch
+`feat/blocos-bcd`, criado de main e atualizado sobre `61a8407` (inclui PR #9,
+que só altera a dependência OpenCV). Nenhuma nova geração de A. Hashes dos
+três arquivos da tomada aprovada de A conferidos antes de começar.
+
+Gerar B, C e D sequencialmente, **uma requisição TTS e uma Scribe por bloco**,
+sem loop/repetição automática. Conferir texto, tempos e A8 imediatamente após
+cada bloco; se divergir o Scribe, houver timestamp inválido ou falha/pendência
+A8, parar antes do próximo bloco e avisar o Maestro. Não regenerar sem nova
+autorização. Tomadas/receitas/respostas preservadas inclusive se houver falha.
+
+Mesma baseline de A: Ana Dias `MZxV5lN3cv7hi1376O0m`,
+`eleven_multilingual_v2`, estabilidade 0,55, similaridade 0,75, estilo 0,10,
+velocidade 1,0, seed 1, speaker boost true. Chave lida do arquivo autorizado,
+sem exposição. Contextos em campos separados: B leva A/C; C leva B/D; D leva
+C/next vazio. Texto integral do roteiro, sem reescrita. **Medido antes da
+geração:** B 273, C 279, D 118 caracteres; total previsto 670 caracteres em
+`text`. Consumo efetivo será conferido no histórico do serviço, não estimado
+como equivalente ao tamanho do texto.
+
+### K1. Auditoria por bloco
+
+Guardar WAV, metadata, Scribe bruto, todas as palavras e pausas. Rodar
+`motor/analisar_emendas.py` com Scribe vinculado por hash, fala de origem e
+manifesto local da tomada sem emendas internas. A8 mantém o limite inclusivo
+0,500 s de §J. Não usar pistas cegas como reprovação sem calibração (§5b).
+No handoff, informar ausência de escuta perceptiva e não aprovar artisticamente
+B/C/D por gate técnico.
+
+### K2. Fronteiras locais, sem régua nem mixagem
+
+**Confirmado pelo Maestro nesta tarefa:** não existem clipes ou manifesto de
+cortes aprovados para o texto enxuto de 13 cenas. Os clipes antigos não servem.
+A coincidência estrutural vem do roteiro: A termina em v04; B, v09; C, v12;
+D, v14. Auditar A→B (v04/v05), B→C (v09/v10), C→D (v12/v13), sem imagem.
+Sincronismo com corte de cena fica **PENDENTE** até haver imagem e T5.
+
+Para cada par, medir cauda do bruto anterior e início do seguinte: tempos das
+palavras extremas, energia em janelas curtas, ruído e salto na junção. Extrair
+somente trecho local da cauda/início para escuta, com origem/hash/offsets;
+não cortar, preencher, sobrescrever ou reposicionar nenhuma tomada original.
+Uma prévia local de emenda não é régua oficial nem mixagem do filme.
+
+Relatar separadamente: folga temporal estimada pelo Scribe; energia medida nas
+bordas; pausa mínima planejada entre blocos de **500 ms**; e eventual folga
+adicional necessária para montar uma emenda com proteção ±120 ms, respeitando
+também A5 (0,2–1,2 s). Nenhuma montagem global ou ajuste musical nesta tarefa.
+Frase completa e tomada única são conferidas pelo texto/proveniência; ausência
+de palavra em Scribe não basta para afirmar silêncio acústico. Se a junção
+direta não cumprir A2/A5, registrar a falha e a necessidade de desenho da pausa
+na futura montagem, sem modificar os brutos nem afrouxar limiares.
+
+### K3. Entrega e critérios
+
+`motor/cache/blocos-bcd/RELATORIO.md`, JSONs por bloco/fronteira, palavras,
+pausas, hashes e trechos locais; WAVs nas tomadas imutáveis de B/C/D. Registrar
+contagem por requisição e consumo retornado pelo serviço. Commit local no
+branch novo, sem áudio/vídeo/cache, sem push. Encerrar com `maestri ask
+"Claude Code"` contendo resultados, limites e caminhos. Se a execução parar,
+o relatório identifica o bloco que falhou e os que não foram gerados.
+
+
+### K4. Decisão posterior do Maestro — D independente e uma alternativa de C
+
+Autorizado nesta sessão após medir C/seed 1: gerar D uma vez, baseline original,
+com `previous_text` igual ao texto inteiro de C, independentemente da pausa de C.
+Depois, uma única regeneração de C com **seed 2**, mesmas palavras/pontuação,
+voz e parâmetros, contextos B/D. Preservar seed 1 imutável. Comparar pausas e
+A8 nas duas tomadas; se seed 2 passar, selecioná-la para as prévias locais.
+Se também apresentar pausa interna ≥0,500 s, parar sem terceira tomada e
+entregar ambas com trechos ±2 s para decisão do Fabrício. Uma eventual troca
+da vírgula de “semanas, cinquenta” é apenas proposta para o Fabrício, sem
+alteração do roteiro ou nova chamada autorizada nesta tarefa.
+
+A decisão substitui apenas a parada antes de D e autoriza exatamente uma
+nova chamada TTS/Scribe de C; não libera outras regenerações. Alertas cegos
+continuam Nível 2, para escuta. O gate de Nível 1 é `./scripts/verificar.sh`
+no próprio worktree, rebaseado em main `30da07c` (PR #11); scripts canônicos
+não serão duplicados no commit de áudio. `.venv` permanece compartilhado.
+
+### K5. Retomada da auditoria — sem novas gerações
+
+Após reinício, os arquivos existentes já contêm Scribe e auditoria de B, C/1,
+C/2 e D. C/2 também falha na A8 (0,620 s em “semanas, cinquenta” e 0,520 s
+em “Depois, bares”); nenhuma tomada de C fica selecionada para produção.
+Reexecutar as auditorias offline e preservar as duas alternativas. Não chamar
+TTS ou Scribe novamente. Consultas GET ao histórico/consumo servem apenas
+para fechar a contabilidade das quatro chamadas TTS já feitas.
+
+As prévias de fronteira serão a concatenação direta, sem ganho/fade/padding,
+dos últimos e primeiros 2,5 s dos brutos, em arquivos locais independentes.
+Auditar A→B e ambas as alternativas B→C e C→D, com um único ponto de junção
+por prévia, manifesto com as frases completas e offsets de cada origem.
+Essa prévia permite localizar defeitos da junção direta, sem fingir que uma
+pausa planejada já foi aprovada. Medir e reportar a pausa entre palavras,
+proteção ±120 ms, energia/ruído/salto e eventual folga adicional necessária;
+nenhum corte de cena será inventado para satisfazer o detector. Sincronismo
+visual e musical, escuta perceptiva e avaliação A9 permanecem pendentes.
+O relatório incluirá todas as palavras/pausas e os trechos de todas as falhas
+A8, além das pistas cegas (Nível 2), declarando os limites da calibração.
+
+### K6. Resultados da retomada — C bloqueado, sem seleção
+
+**Medido aqui, offline:** Scribe, texto normalizado, hashes das respostas e
+timestamps conferidos novamente nas cinco tomadas. Reexecutadas auditoria
+com manifesto e varredura cega por `motor/analisar_emendas.py`. Nenhuma chamada
+TTS/Scribe nesta retomada; somente dois GETs de histórico/consumo. Sem Computer,
+GUI, régua global, mixagem, música, master ou render.
+
+| Tomada | Duração (s) | Palavras Scribe | Maior pausa interna (s) | A8 | Pistas cegas |
+|---|---:|---:|---:|---|---:|
+| A, seed 1, `b92c749b…` | 22,894875 | 46 | 0,480 | sem falha; aprovado pelo Fabrício conforme briefing | 26 |
+| B, seed 1, `43bbc466…` | 19,922708 | 46 | 0,420 | sem falha | 22 |
+| C, seed 1, `5e4184f8…` | 19,551208 | 40 | 0,600 | falha | 22 |
+| C, seed 2, `1eb568e0…` | 20,433542 | 40 | 0,620 | duas falhas | 26 |
+| D, seed 1, `4acfe322…` | 8,962917 | 19 | 0,320 | sem falha | 9 |
+
+O manifesto de cada bruto declara zero emendas internas; cada frase pertence
+a uma tomada contínua. Não houve corte, fade, ganho ou silêncio inserido nos
+brutos. Os 15 arquivos (cinco WAVs, cinco metadados, cinco respostas Scribe)
+permanecem idênticos antes/depois; snapshots anteriores de A e C/1 também
+conferidos. **116 trechos** exportados comparados amostra por amostra às
+origens decodificadas, erro máximo 0,0. As cinco prévias de fronteira também
+reproduzem exatamente os segmentos decodificados, sem alterar os originais.
+
+#### C — entregar as duas tomadas para escuta, sem terceira tentativa
+
+| Tomada | Palavra anterior (s) | Palavra seguinte (s) | Pausa (s) | Centro (s) | Trecho ±2 s (s) |
+|---|---|---|---:|---:|---|
+| Seed 1 | semanas, [6,320–6,860] | 50 [7,460–7,660] | 0,600 | 7,160 | 5,160–9,160 |
+| Seed 2 | semanas, [6,840–7,360] | 50 [7,980–8,180] | 0,620 | 7,670 | 5,670–9,670 |
+| Seed 2 | Depois, [15,580–16,100] | bares [16,620–16,980] | 0,520 | 16,360 | 14,360–18,360 |
+
+Trechos, a partir de `motor/cache/blocos-bcd/`:
+
+- `C/auditoria/a8/001-7.160s.wav`;
+- `C-seed2/auditoria/a8/001-7.670s.wav`;
+- `C-seed2/auditoria/a8/002-16.360s.wav`.
+
+**Proposta, sem execução:** vale submeter ao Fabrício um teste retirando só a
+vírgula de “semanas, cinquenta”, mesmas palavras. O intervalo repetiu a falha
+nas duas seeds; a relação com pontuação é hipótese, não causa comprovada nem
+garantia de solução. Seed 2 tem ainda a pausa independente em “Depois, bares”.
+Não trocar por ponto apenas para reclassificar a falha. Nenhum texto foi
+alterado; nova tentativa seria do bloco inteiro, mediante nova autorização.
+
+#### Fronteiras — prévias diretas, sem liberação para montagem
+
+Todas têm duração local de 5 s e **uma junção em 2,500000 s**; analisador
+exporta 0,500–4,500 s (±2 s). Origem anterior: últimos 2,5 s; seguinte:
+primeiros 2,5 s. Os limites externos são recortes de contexto para escuta,
+não cortes internos de frase na montagem. Os manifestos conservam os
+intervalos das frases completas e não inventam cortes de cena.
+
+Pausa planejada mínima: **500 ms**, teto A5 de 1,2 s. A pausa direta abaixo é
+estimativa entre palavras Scribe, não silêncio acústico. A folga adicional
+é só limite inferior temporal para futuro desenho, não receita aplicada.
+
+| Fronteira | Fim da origem anterior (s) | Cauda / início Scribe (ms) | Pausa direta (ms) | Folga adicional mínima (ms) | Δ fundo estimado (dB) |
+|---|---:|---|---:|---:|---:|
+| A→B | 22,894875 | 634,875 / 120 | 754,875 | 0 | 7,34 |
+| B→C/1 | 19,922708 | 582,708 / 100 | 682,708 | 20 | 36,21 |
+| C/1→D | 19,551208 | 531,208 / 60 | 591,208 | 60 | 36,28 |
+| B→C/2 | 19,922708 | 582,708 / 80 | 662,708 | 40 | 40,95 |
+| C/2→D | 20,433542 | 433,542 / 60 | 493,542 | 60 | 29,64 |
+
+Cada par está em `motor/cache/blocos-bcd/fronteiras/<anterior>--<seguinte>/`,
+com `previa-direta.wav`, `manifesto.json`, `scribe-local.json`, `resultado.json`
+e `auditoria/` (emendas, palavras e trecho ±2 s). Os tempos do Scribe local
+foram deslocados das respostas originais; nenhuma nova transcrição.
+
+As cinco prévias retornam bloqueio no detector de emendas declaradas, sem
+liberação para montagem. B→C e C→D têm palavra dentro de ±120 ms segundo
+o Scribe. C/2→D também falha no mínimo de 500 ms. A→B fica no limite de
++120 ms pelo Scribe, mas tem energia na borda. Nenhum manifesto indica frase
+dividida, e não houve clique sinalizado no ponto; ausência de alerta não
+prova integridade perceptiva da palavra na origem. Diferença de fundo e
+energia são pistas de Nível 2: o método mono/mid inclui voz/respiração, não
+isola ruído, e algumas janelas alcançam a primeira palavra. Limiares mantidos.
+
+**Sincronismo visual e musical PENDENTE:** não há imagem do texto enxuto nem
+cortes aprovados; o detector registra “sem corte de cena correspondente”.
+Nenhuma fronteira foi marcada como aprovada. Faltam escuta perceptiva e revisão
+contra vídeo, não executáveis neste runtime; aprovação continua com Fabrício.
+
+#### Contabilidade e calibração
+
+Histórico do serviço: B **273** caracteres em `text` / débito declarado **109**;
+C/1 **279 / 112**; D **118 / 47**; C/2 **279 / 112**. Totais desta etapa:
+**949 caracteres enviados e 380 de soma dos deltas TTS declarados**. A, de
+etapa anterior, permanece 299 / 120. Registros em `historico-final.json`.
+Contador global: **19.902 → 20.303**, variação **401**; residual de **21** sem
+atribuição comprovada. Os snapshots de D e C/2 se sobrepõem; os deltas por
+item não são extrato exclusivo conciliado nem custo monetário. C/1 e C/2
+identificados no histórico pela ordem informada e instantes, pois o texto é
+idêntico e os campos consultados não trazem seed. Não atribuir o residual
+automaticamente ao Scribe.
+
+Releitura das calibrações existentes com hashes das fontes/Scribe reconferidos:
+A8 recupera **4/4** referências v5 em ±120 ms (54,020833 / 62,090208 /
+77,751833 / 79,541833 s). Na v4, detector cego alcança **1/4** centros da régua
+em ±120 ms; é proximidade, não recall auditiva validada. As demais heurísticas
+não têm recall validada e somente informam (§5b). Não houve nova escuta.
+
+#### Artefatos e reprodução
+
+- Relatório completo local: `motor/cache/blocos-bcd/RELATORIO.md` — cinco WAVs,
+  todas as 191 palavras Scribe e 186 pausas, falhas A8, 105 pistas cegas,
+  fronteiras com palavras/offsets, consumo e limites de evidência.
+- Resultados por tomada: `{A,B,C,C-seed2,D}/resultado-final.json` e
+  `auditoria/emendas.json`; integridade em `verificacao-final.json`;
+  calibração em `calibracao-conferida.json`, sob o mesmo cache.
+- WAVs imutáveis: `vozes/tomadas/blocos/pt/<bloco>/<uuid>/bruto.wav`, com
+  `bruto.json` e `scribe.json` ao lado; UUIDs completos no relatório.
+- Auxiliar local offline: `.venv/bin/python
+  motor/cache/blocos-bcd/retomar_auditoria.py`; fica no cache ignorado e não
+  integra o código de produção. Usa o analisador versionado, sem API.
+- Gate canônico: `./scripts/verificar.sh`, no `.venv` compartilhado pelo
+  `scripts/worktree.sh`: **passou, código 0**, com AST/dependências, linters
+  de roteiro/cópia, ausência de binários/chaves e **56 testes** (13 + 16 + 27).
+  Log local: `motor/cache/blocos-bcd/verificar-final.log`. `git diff --check`
+  também passou. Isso valida a infraestrutura, não aprova o som de C nem
+  libera as fronteiras.
