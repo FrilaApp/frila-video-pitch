@@ -5,9 +5,9 @@ Fonte: `roteiro.json` (cenas v10, v11, v12), `docs/v4/STORYBOARD.md` (c08, c10, 
 
 | Origem | Literais visíveis em tela |
 |---|---|
-| roteiro.json (v10-dado) | Comparecimento medido · Pesquisa interna de 22 concorrentes, 01/10/2026 · Frila · Dos 22 apps que estudamos, nenhum mostra comparecimento medido. |
+| roteiro.json (v10-dado) | Comparecimento medido · Pesquisa interna de 22 concorrentes, 01/10/2026 · Frila · Dos 22 apps que estudamos, · nenhum mostra comparecimento medido. (legenda queimada suprimida por NOCAP; mantida no .srt) |
 | roteiro.json (v11-meta) | Meta do piloto · hipótese a calibrar [H] · 8 · semanas · 50 · vagas por semana · 9 · em cada 10 profissionais presentes · Meta do piloto: 8 semanas, 50 vagas por semana e 9 em cada 10 profissionais presentes. |
-| roteiro.json (v12-estrategia) / NARRATIVA-v5-100s.md | Estratégia de expansão · Núcleo de 15 km · Bares e restaurantes · Distrito Federal · 15 km · 23.271 · empresas ativas no DF · ~1.300 · restaurantes e bares com 10+ pessoas · IBGE 2024 · Dados · CNPJs ativos no DF; IBGE 2024. · Começamos por um núcleo de 15 km. Depois, bares e restaurantes. Depois, o Distrito Federal. |
+| roteiro.json (v12-estrategia) / NARRATIVA-v5-100s.md | Estratégia de expansão · Núcleo de 15 km · Bares e restaurantes · Distrito Federal · 15 km · 23.271 · empresas ativas no DF · ~1.300 · restaurantes e bares com 10+ pessoas · IBGE 2024 · Dados · CNPJs ativos no DF; IBGE 2024. (legenda queimada suprimida por NOCAP; mantida no .srt) |
 | docs/v4/COPIA-NOVA-VAGA.md | Exemplo |
 
 ## Observações de conformidade (Regra D6)
@@ -20,3 +20,4 @@ Fonte: `roteiro.json` (cenas v10, v11, v12), `docs/v4/STORYBOARD.md` (c08, c10, 
 2. Sem cursor (Regra D8): ausência de ponteiro ou cursor em todo o Bloco C.
 3. Transição contínua B→C: o ponto herda a posição de repouso do aparelho de `estado-fim-B.json`.
 4. Saída para D: o estado final estabiliza o ponto laranja e o fundo off-white nos 30 frames de margem, exportando `estado-fim-C.json`.
+5. Supressão de legenda queimada redundante (NOCAP em v10 e v12): em 27/10/2026, a legenda duplicada em `#cap` foi removida em v10 e v12, pois a tipografia central já exibe literalmente a fala da locução; a cena v11 preserva a legenda por exibir apenas os contadores numéricos. A legenda completa em todas as cenas continua preservada no arquivo `.srt`.

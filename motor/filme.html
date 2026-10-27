@@ -386,6 +386,17 @@ function seekBlocoA(tempo){
  src.textContent=fonte;src.style.maxWidth='1776px';src.style.color=mixc(C.mut,'#8A8F96',th);st(src,{o:fonte?fade(t,s.ini+.3,.25)*(1-fade(t,Math.min(s.end-.35,T.bloco_fim-.5),.2)):0});
  return {ponto:{x,y,w,h,r:val('dr_',t),cor:E.dot.style.background},camera:[1,0,0,1,0,0]};
 }
+window.estadoBlocoA=()=>{
+ const v=$('#a-vaga');
+ const r=v?v.getBoundingClientRect():{x:660,y:588,width:600,height:104};
+ return {
+  instante:E.t,
+  ponto:{x:val('dx',E.t),y:val('dy',E.t),w:val('dw',E.t),h:val('dh',E.t),r:val('dr_',E.t),cor:getComputedStyle(E.dot).backgroundColor},
+  camera:[1,0,0,1,0,0],
+  fundo:getComputedStyle($('#stage')).backgroundColor,
+  vaga:{x:r.x||660,y:r.y||588,w:r.width||600,h:r.height||104,o:v?getComputedStyle(v).opacity:'1',texto:v?v.textContent.trim():'Garçom · hoje, 19h'}
+ };
+};
 
 const COPIA_B={
 form:{role:'Contratante',t:'Nova vaga',f1:'Função',ph:'Escolha a função',v1:'Garçom',f2:'Horário',v2:['19h às ','h'],f3:'Endereço',v3:'Plano Piloto',f4:'Valor',v4:'R$ 120',b:'Publicar',b2:'Vaga publicada'},
@@ -572,7 +583,7 @@ function seekBlocoB(tempo){
  vaga.style.opacity=1-fade(t,E.b.conecta,.22);
  telaBlocoB(t);
  const cp=$('#cap'),f=T.falas.find(f=>t>=f.leg_ini&&t<f.leg_fim);
- if(f){cp.textContent=f.legenda;st(cp,{o:fade(t,f.leg_ini,.14)*(1-fade(t,f.leg_fim-.14,.14)),y:(1-spr(t-f.leg_ini,'ui'))*10});}
+ if(f&&!NOCAP.has(f.cena.slice(0,3))){cp.textContent=f.legenda;st(cp,{o:fade(t,f.leg_ini,.14)*(1-fade(t,f.leg_fim-.14,.14)),y:(1-spr(t-f.leg_ini,'ui'))*10});}
  else cp.style.opacity=0;
  E.bMatriz=matriz;
 }
@@ -670,7 +681,7 @@ function seekBlocoC(tempo){
  
  $('#c-phone').style.opacity=1-fade(t,0.08,0.28);
  
- const in10=fade(t,0.12,0.3)*(1-fade(t,S.v11.ini-0.25,0.22));
+ const in10=fade(t,0.68,0.25)*(1-fade(t,S.v11.ini-0.25,0.22));
  $('#c-v10').style.opacity=in10;
  $$('.c-ponto-concorrente').forEach((el,i)=>{
   el.style.opacity=fade(t,0.2+i*0.02,0.15)*in10;
@@ -695,7 +706,7 @@ function seekBlocoC(tempo){
  const menores=$('#c-mapa .menores');if(menores)menores.style.opacity=b;
  
  const cp=$('#cap'),f=T.falas.find(f=>t>=f.leg_ini&&t<f.leg_fim);
- if(f){cp.textContent=f.legenda;st(cp,{o:fade(t,f.leg_ini,.14)*(1-fade(t,f.leg_fim-.14,.14)),y:(1-spr(t-f.leg_ini,'ui'))*10});}
+ if(f&&!NOCAP.has(f.cena.slice(0,3))){cp.textContent=f.legenda;st(cp,{o:fade(t,f.leg_ini,.14)*(1-fade(t,f.leg_fim-.14,.14)),y:(1-spr(t-f.leg_ini,'ui'))*10});}
  else cp.style.opacity=0;
 }
 
@@ -844,7 +855,7 @@ window.estadoBlocoD=()=>{
 };
 
 /* ---------- HUD, câmera, ponto e cursor ---------- */
-const NOCAP=new Set(['v01','v13','v14']);
+const NOCAP=new Set(['v01','v10','v12','v13','v14']);
 function runHUD(t){const th=val('th',t);$('#stage').style.background=mixc(C.paper,C.ink,th);const ink=mixc(C.ink,C.paper,th),mut=mixc(C.mut,'#8A8F96',th);const cp=$('#cap');const fl=T.falas.find(f=>t>=f.leg_ini&&t<f.leg_fim);
   if(fl&&!NOCAP.has(fl.cena.slice(0,3))){cp.textContent=fl.legenda;cp.style.color=ink;st(cp,{o:fade(t,fl.leg_ini,.14)*(1-fade(t,fl.leg_fim-.14,.14)),y:(1-spr(t-fl.leg_ini,'ui'))*10});}else cp.style.opacity=0;
   const sr=$('#src'),s=ORD.find(s=>t>=s.ini&&t<s.end),fonte=s&&X[s.id].fonte;sr.textContent=fonte||'';sr.style.color=mut;st(sr,{o:fonte?fade(t,s.ini+.3,.2)*(1-fade(t,s.end-.3,.2)):0});

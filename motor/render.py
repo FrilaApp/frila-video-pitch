@@ -121,10 +121,13 @@ def render_bloco(args):
                 (6.16,7.2),(8.42,9.2),(10.14,11.04),(12.74,13.44),
                 (14.1,15.4),(16.05,16.8),(17.1,17.4),(18.45,19.62)]])
     elif args.bloco == 'C':
+        c11 = regua['cenas'][1]['ini']
+        c12 = regua['cenas'][2]['ini']
         contrato = dict(presenca=[
             dict(id='ponto', selector='#dot', de=0, ate=regua['total'], opacidade_min=.999)],
-            movimento=[dict(de=a, ate=b) for a,b in [(.1, 1.8), (2.5, 3.5), (4.8, 6.2),
-                (6.8, 7.8), (9.2, 10.5), (12.0, 14.5), (14.8, 17.0), (17.2, 19.5)]])
+            movimento=[dict(de=a, ate=b) for a,b in [(.1, 1.8), (2.5, 3.5),
+                (c11-.2, c11+.9), (c11+1.5, c11+3.0), (c11+3.2, c11+4.8), (c11+5.2, c11+6.5),
+                (c12-.2, c12+1.0), (c12+3.0, c12+4.5), (c12+6.0, c12+7.5)]])
     elif args.bloco == 'D':
         contrato = dict(presenca=[
             dict(id='ponto', selector='#dot', de=0, ate=regua['total'], opacidade_min=.999)],
@@ -148,7 +151,7 @@ def render_bloco(args):
         lista = partes/'lista.txt'
         lista.write_text(''.join(f"file '{r[0].resolve()}'\n" for r in res))
         subprocess.run(['ffmpeg', '-v', 'error', '-y', '-f', 'concat', '-safe', '0', '-i', str(lista), '-c', 'copy', str(final)], check=True)
-        if args.bloco in ('B', 'C', 'D'):
+        if args.bloco in ('A', 'B', 'C', 'D'):
             from playwright.sync_api import sync_playwright
             with sync_playwright() as pw:
                 b = pw.chromium.launch()
